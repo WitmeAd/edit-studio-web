@@ -1,0 +1,10 @@
+# édit · https://editstudio.app
+# Cloudflare añade delante sus propias reglas (las de los robots de entrenamiento se gestionan en su panel).
+
+User-agent: *
+Allow: /
+Disallow: /content/
+Disallow: /tools/
+Disallow: /README.md
+
+Sitemap: https://editstudio.app/sitemap.xml

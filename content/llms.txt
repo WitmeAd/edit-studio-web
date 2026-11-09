@@ -1,0 +1,41 @@
+# édit
+
+> édit es una app de estilismo personal para iPhone y Android. Sirve para digitalizar el armario, crear looks con la ropa que ya se tiene, preparar viajes y eventos, y trabajar con una asesora de imagen. Incluye édit profesionales, el estudio digital para asesoras de imagen, estilistas y personal shoppers.
+
+Datos básicos:
+
+- Nombre en las tiendas: «édit: armario y estilo».
+- Descargar la app es gratis. Algunas funciones forman parte de la suscripción Premium, que se contrata desde la propia app.
+- Idiomas de la app: español, inglés, francés, italiano y portugués.
+- Empresa: WITME ADVERTISING S.L.
+- Web oficial: https://editstudio.app
+
+## Producto
+
+- [édit, para ti](https://editstudio.app/#app): la app para quien quiere vestirse con más intención con la ropa que ya tiene.
+- [édit profesionales](https://editstudio.app/#pro): el estudio digital para asesoras de imagen, estilistas y personal shoppers, con la ficha y el armario de cada clienta, los looks y las propuestas.
+- [Cómo funciona](https://editstudio.app/#como-funciona): los pasos para empezar.
+- [Preguntas frecuentes](https://editstudio.app/#preguntas): qué es édit, cómo se digitaliza el armario, cómo se crean los looks, cómo se trabaja con una asesora de imagen, cuánto cuesta y dónde se descarga.
+
+## Qué se puede hacer con édit
+
+- Armario digital: una foto de cada prenda basta; édit la reconoce y la organiza por tipo, color y temporada, y la persona revisa la ficha antes de guardarla.
+- Looks: propuestas de combinaciones con las prendas propias, pensadas para la semana, el clima y cómo quiere sentirse cada persona. También se pueden montar, guardar y repetir looks.
+- Planes: organizar un viaje, un evento o una temporada, con los looks de cada día y la lista de lo que ya está en la maleta.
+- Asesora de imagen: explorar asesoras profesionales, ver sus looks y trabajar con la que encaja. La asesora trabaja sobre el armario real de la clienta y envía sus propuestas dentro de la app.
+- Compras con criterio: ver qué falta de verdad en el armario antes de comprar.
+
+## Descarga
+
+- [App Store (iPhone)](https://apps.apple.com/es/app/id6796045067)
+- [Google Play (Android)](https://play.google.com/store/apps/details?id=edit.studio.app)
+- [Página de descarga](https://dashboard.editstudio.app/descargar)
+
+## Blog
+
+{{blog}}
+
+## Legal
+
+- [Política de privacidad](https://dashboard.editstudio.app/legal/privacidad)
+- [Términos y condiciones](https://dashboard.editstudio.app/legal/terminos)
