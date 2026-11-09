@@ -4,7 +4,9 @@ Landing estática de [édit](https://editstudio.app): une tecnología, criterio 
 
 > No va de ropa. Va de vestirse con intención.
 
-Un solo archivo, `index.html`, con estilos y scripts en línea. No hay dependencias ni paso de build.
+La portada es `index.html`, con estilos y scripts en línea. El blog se escribe en Markdown y se convierte en páginas con un script de Node sin dependencias (`tools/build.mjs`). Las páginas generadas se guardan en el repositorio: el alojamiento publica la carpeta tal cual, sin paso de build.
+
+> Subir a `main` publica el sitio. Antes de subir: `node tools/build.mjs` y `node tools/check.mjs`.
 
 ## Dos productos, una plataforma
 
@@ -46,8 +48,73 @@ El mismo sistema se aplica a las clientas de una profesional: una experiencia m�
 6. Visión.
 7. Cómo funciona (`#como-funciona`).
 8. Ecosistema.
-9. Descarga (`#descargar`): App Store y Google Play.
-10. Pie: redes, enlaces del ecosistema y acceso a la cuenta.
+9. Preguntas frecuentes (`#preguntas`).
+10. Descarga (`#descargar`): App Store y Google Play.
+11. Pie: redes, enlaces del ecosistema, blog, preguntas, acceso a la cuenta y textos legales.
+
+## Archivos
+
+| Ruta | Qué es | Se edita a mano |
+| --- | --- | --- |
+| `index.html` | Portada | Sí (salvo el bloque de datos estructurados) |
+| `assets/img/` | Imágenes de la portada, iconos e imagen para compartir | Sí |
+| `assets/css/blog.css` | Estilos del blog | Sí |
+| `content/blog/*.md` | Artículos del blog | Sí |
+| `content/llms.txt` | Plantilla de `llms.txt` | Sí |
+| `robots.txt` | Reglas para robots y dirección del sitemap | Sí |
+| `blog/` | Páginas del blog | No, las genera `tools/build.mjs` |
+| `sitemap.xml`, `llms.txt` | Mapa del sitio y resumen para asistentes | No, los genera `tools/build.mjs` |
+| `tools/build.mjs` | Generador | |
+| `tools/check.mjs` | Comprobaciones antes de publicar | |
+
+## Generar y comprobar
+
+Hace falta Node (probado con la versión 24). No hay nada que instalar.
+
+```bash
+node tools/build.mjs          # genera lo que haya cambiado
+node tools/build.mjs --check  # no escribe nada; falla si falta generar algo
+node tools/check.mjs          # revisa todas las páginas; falla si hay errores
+```
+
+`tools/build.mjs` hace cuatro cosas:
+
+1. Escribe los datos estructurados (JSON-LD) de la portada entre los comentarios `datos-estructurados:inicio` y `datos-estructurados:fin`. Las preguntas frecuentes del marcado salen del texto visible de `#preguntas`, así que siempre coinciden.
+2. Genera `blog/index.html` y una página por artículo en `blog/<slug>/index.html`.
+3. Genera `sitemap.xml`.
+4. Genera `llms.txt` a partir de `content/llms.txt` (sustituye `{{blog}}` por la lista de artículos).
+
+`tools/check.mjs` comprueba, entre otras cosas: título y descripción de cada página, dirección canónica única, un solo `<h1>`, datos estructurados válidos y sin valoraciones, que las preguntas del marcado sean las visibles, enlaces internos y anclas, textos alternativos de las imágenes, que `sitemap.xml` y `llms.txt` estén al día y que no aparezcan términos que no usamos en los textos.
+
+## Cambiar las preguntas frecuentes
+
+Edita la sección `#preguntas` de `index.html` y ejecuta `node tools/build.mjs`: el marcado se actualiza solo.
+
+## Publicar un artículo
+
+1. Crea `content/blog/AAAA-MM-DD-titulo-del-articulo.md` con esta cabecera:
+
+   ```
+   ---
+   titulo: Cómo digitalizar tu armario paso a paso
+   descripcion: Una o dos frases (entre 70 y 165 caracteres) para buscadores y para el listado.
+   fecha: 2026-11-10
+   resumen: Dos o tres frases con la respuesta corta. Sale en un recuadro al principio.
+   ---
+   ```
+
+   Opcionales: `actualizado` (fecha), `slug`, `autor`, `imagen` y `imagen_alt`, `borrador: si` (no se publica). Si el título lleva dos puntos, va entre comillas.
+2. Escribe el texto en Markdown: `##` y `###` para los apartados, párrafos, negrita, cursiva, enlaces, listas, citas e imágenes con texto alternativo. Funciona mejor si cada `##` es la pregunta que se haría una lectora y el primer párrafo la responde.
+3. Ejecuta `node tools/build.mjs` y `node tools/check.mjs`.
+4. Sube juntos el `.md` y los archivos generados.
+
+Para retirar un artículo, borra su `.md` y su carpeta en `blog/` (el generador avisa de las carpetas que sobran).
+
+## Buscadores y asistentes
+
+- `robots.txt` permite todo salvo `content/`, `tools/` y `README.md`, y declara el sitemap. Cloudflare añade delante sus propias reglas: el bloqueo de los robots de entrenamiento se gestiona en su panel, no aquí.
+- `llms.txt` resume el producto y enlaza las páginas principales. Es una convención todavía poco adoptada: cuesta poco mantenerla, pero no sustituye a un buen contenido.
+- Los datos estructurados describen la organización, la web, la app, las preguntas frecuentes y cada artículo. No incluyen valoraciones ni precios.
 
 ## Enlaces
 
@@ -63,4 +130,4 @@ El mismo sistema se aplica a las clientas de una profesional: una experiencia m�
 
 ## Ver en local
 
-Sirve la carpeta con cualquier servidor estático, o ábrela en MAMP y visita la raíz del sitio. El idioma de la página es español.
+Sirve la carpeta con cualquier servidor estático (por ejemplo `python3 -m http.server 8000`), o ábrela en MAMP y visita la raíz del sitio. El blog usa rutas desde la raíz (`/assets/…`), así que hay que verlo con servidor, no abriendo el archivo. El idioma de la página es español.
