@@ -245,6 +245,17 @@ nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-co
 .eco-pro .eco-link{color:#9B9A7A}
 .eco-col:hover .eco-link{gap:14px}
 
+/* Preguntas frecuentes */
+.faq{max-width:880px;margin:0 auto;border-bottom:1px solid var(--stone)}
+.faq details{border-top:1px solid var(--stone)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 0}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary h3{font-family:var(--serif);font-size:clamp(19px,2.6vw,24px);font-weight:500;letter-spacing:-.3px;line-height:1.2}
+.faq summary::after{content:"+";flex:none;font-size:26px;font-weight:300;line-height:1;color:var(--terracotta);transition:transform .25s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq summary:focus-visible{outline:2px solid var(--olive);outline-offset:4px;border-radius:4px}
+.faq-a{padding:0 44px 24px 0;max-width:70ch;font-size:16px;color:var(--umber);font-weight:300}
+.faq-a a{color:var(--olive);font-weight:500;text-decoration:none;border-bottom:1px solid var(--olive)}
 .signup{background:var(--oat);border-radius:24px;padding:40px 24px;max-width:1280px;margin:0 auto}
 @media(min-width:768px){.signup{border-radius:32px;padding:clamp(56px,6vw,88px) clamp(32px,4vw,56px)}}
 .signup-head{text-align:center;max-width:620px;margin:0 auto 36px}
@@ -489,7 +500,55 @@ footer{background:var(--ink);color:var(--bone);padding:56px 0 36px}
   </section>
 </div>
 
-<!-- 9 · DESCARGA -->
+<!-- 9 · PREGUNTAS FRECUENTES -->
+<div class="wrap">
+  <section class="section" id="preguntas">
+    <div class="sec-head center">
+      <span class="eyebrow reveal">Preguntas frecuentes</span>
+      <h2 class="reveal d1">Antes de <em>empezar</em>.</h2>
+    </div>
+    <div class="faq reveal d2">
+      <details>
+        <summary><h3>¿Qué es édit?</h3></summary>
+        <p class="faq-a">édit es una app de estilismo personal. Digitalizas tu armario, creas looks con la ropa que ya tienes y, si quieres, trabajas con una asesora de imagen. Todo en un mismo sitio, para vestirte con más intención y menos esfuerzo.</p>
+      </details>
+      <details>
+        <summary><h3>¿Cómo digitalizo mi armario?</h3></summary>
+        <p class="faq-a">Haz una foto a cada prenda. édit la reconoce y la organiza por tipo, color y temporada, y tú revisas la ficha antes de guardarla. Con unas pocas prendas ya puedes empezar a combinar.</p>
+      </details>
+      <details>
+        <summary><h3>¿Tengo que comprar ropa nueva?</h3></summary>
+        <p class="faq-a">No. édit empieza por lo que ya tienes: te ayuda a redescubrir prendas olvidadas y a encontrar combinaciones nuevas. Y cuando quieras comprar, te ayuda a ver qué falta de verdad en tu armario.</p>
+      </details>
+      <details>
+        <summary><h3>¿Cómo se crean los looks?</h3></summary>
+        <p class="faq-a">édit te propone combinaciones con tus propias prendas, pensadas para tu semana, el clima y cómo quieres sentirte. También puedes montar tus looks, guardarlos y repetirlos cuando quieras.</p>
+      </details>
+      <details>
+        <summary><h3>¿Puedo preparar un viaje o un evento?</h3></summary>
+        <p class="faq-a">Sí. Con los planes organizas un viaje, un evento o una temporada: eliges los looks de cada día y marcas lo que ya has metido en la maleta.</p>
+      </details>
+      <details>
+        <summary><h3>¿Cómo trabaja conmigo una asesora de imagen?</h3></summary>
+        <p class="faq-a">Puedes explorar asesoras de imagen profesionales, ver sus looks y elegir la que encaja contigo. Ella trabaja sobre tu armario real y te envía sus propuestas dentro de la app. La tecnología amplifica su criterio; no lo sustituye.</p>
+      </details>
+      <details>
+        <summary><h3>¿Qué es édit profesionales?</h3></summary>
+        <p class="faq-a">Es el estudio digital para asesoras de imagen, estilistas y personal shoppers. Reúne la ficha y el armario de cada clienta, los looks, las cápsulas y las propuestas, para trabajar de forma más visual y organizada.</p>
+      </details>
+      <details>
+        <summary><h3>¿Cuánto cuesta édit?</h3></summary>
+        <p class="faq-a">Descargar édit es gratis. Algunas funciones forman parte de la suscripción Premium, que se contrata desde la propia app: allí verás el precio y las condiciones antes de confirmar.</p>
+      </details>
+      <details>
+        <summary><h3>¿Dónde puedo descargar édit?</h3></summary>
+        <p class="faq-a">édit está disponible para iPhone en el <a href="https://apps.apple.com/es/app/id6796045067" target="_blank" rel="noopener">App Store</a> y para Android en <a href="https://play.google.com/store/apps/details?id=edit.studio.app" target="_blank" rel="noopener">Google Play</a>.</p>
+      </details>
+    </div>
+  </section>
+</div>
+
+<!-- 10 · DESCARGA -->
 <div class="wrap">
   <section class="section" id="descargar" style="padding-bottom:64px">
     <div class="signup">
