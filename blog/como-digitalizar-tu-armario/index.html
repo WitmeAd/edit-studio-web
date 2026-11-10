@@ -164,7 +164,7 @@
         </ul>
       </nav>
     </div>
-    <p class="colofon__base sc">© 2026 édit</p>
+    <p class="colofon__base sc">© 2026 édit · WITME ADVERTISING S.L.</p>
   </div>
 </footer>
 
@@ -172,7 +172,7 @@
 (function (n, t) {
   t = /iPhone|iPad|iPod/.test(n.userAgent) || (n.platform === 'MacIntel' && n.maxTouchPoints > 1) ? 'https://apps.apple.com/es/app/id6796045067'
     : /Android/.test(n.userAgent) ? 'https://play.google.com/store/apps/details?id=edit.studio.app' : '';
-  if (t) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
+  if (t && !/bot|crawl|spider/i.test(n.userAgent)) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
 })(navigator);
 </script>
 </body>

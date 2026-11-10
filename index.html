@@ -1196,17 +1196,17 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
         </ul>
       </nav>
     </div>
-    <p class="colofon__base sc">© 2026 édit</p>
+    <p class="colofon__base sc">© 2026 édit · WITME ADVERTISING S.L.</p>
   </div>
 </footer>
 
 <script>
 /* tienda:inicio — «Descargar» lleva al ancla con las dos insignias; con JavaScript, en iPhone y iPad va directo al App Store
-   y en Android, a Google Play. tools/build.mjs copia este bloque al blog y a 404.html. */
+   y en Android, a Google Play (los robots de los buscadores se quedan con el ancla). tools/build.mjs copia este bloque al blog y a 404.html. */
 (function (n, t) {
   t = /iPhone|iPad|iPod/.test(n.userAgent) || (n.platform === 'MacIntel' && n.maxTouchPoints > 1) ? 'https://apps.apple.com/es/app/id6796045067'
     : /Android/.test(n.userAgent) ? 'https://play.google.com/store/apps/details?id=edit.studio.app' : '';
-  if (t) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
+  if (t && !/bot|crawl|spider/i.test(n.userAgent)) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
 })(navigator);
 /* tienda:fin */
 </script>
