@@ -42,6 +42,8 @@ const SITE = {
   logo: '/assets/img/icon-512.png',
   ogImage: '/assets/img/og.png',
   author: 'Equipo édit',
+  // Hora de publicación que se declara en los datos estructurados (hora peninsular); los artículos solo llevan fecha.
+  publishTime: '09:00',
   fonts: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap',
   blogTitle: 'Blog de édit: armario, looks y estilo con intención',
   blogDescription: 'Ideas prácticas para ordenar tu armario, crear looks con la ropa que ya tienes y vestirte con más intención.',
@@ -128,6 +130,15 @@ function fechaLarga(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   if (!m || +m[2] < 1 || +m[2] > 12 || +m[3] < 1 || +m[3] > 31) fail(`fecha no válida «${iso}» (usa AAAA-MM-DD)`);
   return `${+m[3]} de ${MESES[+m[2] - 1]} de ${m[1]}`;
+}
+// Fecha con hora y zona horaria para los datos estructurados, con el horario de verano de la península
+// (del último domingo de marzo al último domingo de octubre): 2026-11-10 -> 2026-11-10T09:00:00+01:00.
+export function fechaHora(iso) {
+  fechaLarga(iso);
+  const [y, m, d] = iso.split('-').map(Number);
+  const ultimoDomingo = (mes) => { const fin = new Date(Date.UTC(y, mes, 0)); return fin.getUTCDate() - fin.getUTCDay(); };
+  const verano = (m > 3 && m < 10) || (m === 3 && d >= ultimoDomingo(3)) || (m === 10 && d < ultimoDomingo(10));
+  return `${iso}T${SITE.publishTime}:00${verano ? '+02:00' : '+01:00'}`;
 }
 function slugify(s) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -429,23 +440,26 @@ function renderPost(p, posts) {
     {
       '@type': 'BlogPosting',
       '@id': abs(p.path) + '#articulo',
+      url: abs(p.path),
       headline: p.title,
       description: p.description,
       inLanguage: 'es',
-      datePublished: p.date,
-      dateModified: p.updated,
+      datePublished: fechaHora(p.date),
+      dateModified: fechaHora(p.updated),
       wordCount: p.words,
       image: abs(p.image),
-      mainEntityOfPage: abs(p.path),
-      author: { '@type': 'Organization', '@id': ORG_ID, name: p.author === SITE.author ? SITE.name : p.author },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': abs(p.path) },
+      // El nombre es el mismo que se ve bajo el titular.
+      author: p.author === SITE.author
+        ? { '@type': 'Organization', name: p.author, parentOrganization: { '@id': ORG_ID } }
+        : { '@type': 'Person', name: p.author },
       publisher: { '@id': ORG_ID },
       isPartOf: { '@type': 'Blog', '@id': abs('/blog/') + '#blog', name: SITE.blogTitle },
     },
     crumbs([['Inicio', '/'], ['Blog', '/blog/'], [p.title, p.path]]),
     orgNode(),
   ];
-  if (p.author !== SITE.author) ld[0].author = { '@type': 'Person', name: p.author };
-  const extra = `<meta property="article:published_time" content="${p.date}">\n<meta property="article:modified_time" content="${p.updated}">\n`;
+  const extra = `<meta property="article:published_time" content="${fechaHora(p.date)}">\n<meta property="article:modified_time" content="${fechaHora(p.updated)}">\n`;
   const others = posts.filter((o) => o.slug !== p.slug).slice(0, 3);
   const upd = p.updated !== p.date ? ` · Actualizado el <time datetime="${p.updated}">${fechaLarga(p.updated)}</time>` : '';
   return head({ title, description: p.description, path: p.path, type: 'article', image: p.image, imageAlt: p.image !== SITE.ogImage ? p.imageAlt || p.title : '', extra, ld }) + `
@@ -482,7 +496,7 @@ function renderIndex(posts) {
       description: SITE.blogDescription,
       inLanguage: 'es',
       publisher: { '@id': ORG_ID },
-      blogPost: posts.map((p) => ({ '@type': 'BlogPosting', '@id': abs(p.path) + '#articulo', headline: p.title, url: abs(p.path), datePublished: p.date, dateModified: p.updated })),
+      blogPost: posts.map((p) => ({ '@type': 'BlogPosting', '@id': abs(p.path) + '#articulo', headline: p.title, url: abs(p.path), datePublished: fechaHora(p.date), dateModified: fechaHora(p.updated) })),
     },
     crumbs([['Inicio', '/'], ['Blog', '/blog/']]),
     orgNode(),
