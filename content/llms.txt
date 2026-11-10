@@ -4,11 +4,12 @@
 
 Datos básicos:
 
-- Nombre en las tiendas: «édit: armario y estilo».
+- Nombre en las tiendas: «édit: armario y estilo» en el App Store y «édit: armario, estilo y looks» en Google Play.
 - Descargar la app es gratis. Algunas funciones forman parte de la suscripción Premium, que se contrata desde la propia app.
 - Idiomas de la app: español, inglés, francés, italiano y portugués.
 - Empresa: WITME ADVERTISING S.L.
 - Web oficial: https://editstudio.app
+- Soporte: https://dashboard.editstudio.app/soporte
 
 ## Producto
 
@@ -29,7 +30,7 @@ Datos básicos:
 
 - [App Store (iPhone)](https://apps.apple.com/es/app/id6796045067)
 - [Google Play (Android)](https://play.google.com/store/apps/details?id=edit.studio.app)
-- [Página de descarga](https://dashboard.editstudio.app/descargar)
+- [Página de descarga](https://editstudio.app/#descargar)
 
 ## Blog
 
