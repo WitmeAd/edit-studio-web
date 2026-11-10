@@ -1,72 +1,68 @@
-# édit — El ecosistema de estilismo digital
+# édit — La app de armario digital y estilismo
 
-Landing estática de [édit](https://editstudio.app): une tecnología, criterio personal y acompañamiento profesional para vestir con más intención.
+Landing estática de [édit](https://editstudio.app), la app de estilismo personal para iPhone y Android, y de édit profesionales, el estudio digital para asesoras de imagen.
 
 > No va de ropa. Va de vestirse con intención.
 
-La portada es `index.html`, con estilos y scripts en línea. El blog se escribe en Markdown y se convierte en páginas con un script de Node sin dependencias (`tools/build.mjs`). Las páginas generadas se guardan en el repositorio: el alojamiento publica la carpeta tal cual, sin paso de build.
+La portada es `index.html`, con sus estilos y scripts en línea. El blog se escribe en Markdown y se convierte en páginas con un script de Node sin dependencias (`tools/build.mjs`). Las páginas generadas se guardan en el repositorio: el alojamiento publica la carpeta tal cual, sin paso de build.
 
 > Subir a `main` publica el sitio. Antes de subir: `node tools/build.mjs` y `node tools/check.mjs`.
 
-## Dos productos, una plataforma
+## Estructura de la portada
 
-| | édit · para ti | édit profesionales |
-| --- | --- | --- |
-| Para quién | Mujeres que quieren vestir con más intención y sacar más partido a su armario | Asesoras, estilistas y personal shoppers |
-| Promesa | Tu armario, por fin con sentido | Tu estudio digital de estilismo |
-| Sección | `#app` | `#pro` |
+Una sola página. Cada función de édit y cada vídeo aparecen una vez.
 
-**édit · para ti**
+| # | Bloque | Ancla | Qué lleva |
+| --- | --- | --- | --- |
+| 0 | Barra | — | Marca, anclas, Blog, «Iniciar sesión» y «Descargar». Cambia a umber sobre el bloque de profesionales |
+| 1 | Portada | `#top` | Rótulo «La app de armario digital y estilismo» y titular «Una foto tuya. Tres looks.» en el único `<h1>`, y la película `hero.mp4` |
+| 2 | Índice | `#indice` | «Lo que hace édit.», la frase que define la app y siete filas (N.º 01-07) que enlazan a cada bloque |
+| 3 | Recorrido | `#armario`, `#probador` | Tres capítulos con escenario fijo y cinta métrica: una foto, en orden y probador |
+| 4 | Tira de looks | `#looks` | «Un pantalón negro. Ocho looks.»: ocho imágenes enteras, sin recortar |
+| 5 | Respiro | — | «Tu armario no necesita estar lleno. Necesita tener sentido.» |
+| 6 | Carrusel | `#a-tu-medida` | Tu semana, Tu color y Tu estilo: sello con icono, vídeo a la derecha desde 700 px y avance automático |
+| 7 | Láminas | `#planes` | Planes y maleta, buscador del armario y compras con criterio |
+| 8 | Asesora | `#asesora` | Tres pasos para trabajar con una asesora de imagen |
+| 9 | Manifiesto | — | «La tecnología no sustituye el criterio. Lo amplifica.» |
+| 10 | Profesionales | `#profesionales` | édit Pro: el estudio en vídeo y tres frases que lo siguen |
+| 11 | Preguntas | `#preguntas` | Nueve preguntas con `<details>` nativo |
+| 12 | Del blog | `#blog` | Los tres últimos artículos (lista generada) |
+| 13 | Descarga | `#descargar` | «Vístete sin dudas.» y las dos insignias de tienda |
+| 14 | Colofón | — | Enlaces de la página, blog, redes, acceso y textos legales |
 
-- Digitaliza el armario: las prendas se reconocen y se organizan al subirlas.
-- Propone looks según la agenda, el clima y cómo quieres sentirte.
-- Recupera prendas olvidadas y combinaciones nuevas.
-- Ayuda a comprar con criterio: qué falta de verdad y qué ya no encaja.
+Las anclas de la tabla son estables: las usan la barra, el índice, el blog, `llms.txt` y enlaces de fuera. `tools/check.mjs` falla si falta alguna.
 
-**édit profesionales**
+Comportamiento que hay que conservar al tocar la página:
 
-- Ficha y armario de clienta: tallas, preferencias, prendas y notas en un solo lugar.
-- Lookbooks editables en minutos.
-- Cápsulas coherentes que se comparten al instante.
-- Escala la metodología sin perder el sello de la profesional.
-
-## Cómo funciona
-
-1. **Entiende tu armario.** Digitaliza, organiza y visualiza las prendas.
-2. **Crea combinaciones con intención.** Looks adaptados al estilo, los planes y las necesidades.
-3. **Toma mejores decisiones.** Compra con más criterio y construye un estilo más coherente.
-
-El mismo sistema se aplica a las clientas de una profesional: una experiencia más visual, organizada y escalable.
-
-## Estructura de la página
-
-1. Navegación fija: édit, édit profesionales, Cómo funciona e inicio de sesión.
-2. Hero con dos caminos: usuaria y profesional.
-3. Bifurcación de producto.
-4. Puente: la tecnología amplifica el criterio, no lo sustituye.
-5. Mundo édit (`#app`) y mundo profesionales (`#pro`).
-6. Visión.
-7. Cómo funciona (`#como-funciona`).
-8. Ecosistema.
-9. Preguntas frecuentes (`#preguntas`).
-10. Descarga (`#descargar`): App Store y Google Play.
-11. Pie: redes, enlaces del ecosistema, blog, preguntas, acceso a la cuenta y textos legales.
+- **Vídeo.** Un solo motor para todos: se reproduce una película a la vez y solo si está en pantalla, cada una con su botón de pausa. Nada se descarga por adelantado salvo la película de la portada; el resto lleva `preload="none"` y viaja dentro de `<noscript>` hasta que le toca.
+- **Sin JavaScript** todo el contenido está a la vista, con los controles nativos de vídeo. Si un script falla, la página vuelve sola a ese modo.
+- **`prefers-reduced-motion`**, ahorro de datos o red lenta: sin reproducción ni avance automáticos; se ve el último fotograma de cada vídeo (`*-fin.jpg`) y un botón para reproducir.
+- **Textura de sastre**: papel de patronaje solo entre bloques, nunca detrás de texto ni de vídeo; cinta métrica en el recorrido y pespunte en el colofón.
 
 ## Archivos
 
 | Ruta | Qué es | Se edita a mano |
 | --- | --- | --- |
-| `index.html` | Portada | Sí (salvo el bloque de datos estructurados) |
-| `assets/img/` | Imágenes de la portada, iconos e imagen para compartir | Sí |
-| `assets/css/blog.css` | Estilos del blog | Sí |
+| `index.html` | Portada | Sí (salvo los dos tramos generados: datos estructurados y lista «Del blog») |
+| `assets/video/` | Vídeos de la portada. Cada `nombre.mp4` tiene su fotograma inicial `nombre.jpg` y el final `nombre-fin.jpg` | Sí |
+| `assets/img/` | Looks de la tira, capturas de la app, insignias de tienda, icono e imagen para compartir | Sí |
 | `content/blog/*.md` | Artículos del blog | Sí |
+| `content/blog.css` | Estilos propios del blog y de `404.html` | Sí |
 | `content/llms.txt` | Plantilla de `llms.txt` | Sí |
 | `robots.txt` | Reglas para robots y dirección del sitemap | Sí |
+| `assets/css/blog.css` | Hoja de estilos del blog y de `404.html` | No, la genera `tools/build.mjs` |
 | `blog/` | Páginas del blog | No, las genera `tools/build.mjs` |
 | `sitemap.xml`, `llms.txt` | Mapa del sitio y resumen para asistentes | No, los genera `tools/build.mjs` |
 | `404.html` | Página de «no encontrada» | No, la genera `tools/build.mjs` |
 | `tools/build.mjs` | Generador | |
 | `tools/check.mjs` | Comprobaciones antes de publicar | |
+| `new/` | Prototipos de las propuestas de diseño, con `noindex` | No se toca |
+
+### Por qué los estilos de la portada van en línea
+
+La portada se pinta con una sola petición: sus estilos van dentro de `index.html` y el fotograma de la cabecera se precarga con prioridad alta. El blog y `404.html` usan el mismo lenguaje visual sin copiar nada a mano: en la hoja de la portada hay tramos marcados con `/* común:inicio … */` y `/* común:fin */` (variables, tipografía, barra, botones, filas de artículos, insignias y colofón), y `tools/build.mjs` los junta con `content/blog.css` en `assets/css/blog.css`. Lo que cambies dentro de un tramo «común» cambia en todo el sitio al generar.
+
+El generador también copia de la portada al blog y a `404.html` la barra, el colofón, las insignias de tienda, la hoja de fuentes y el script de «Descargar». Se cambian en `index.html`.
 
 ## Generar y comprobar
 
@@ -78,19 +74,38 @@ node tools/build.mjs --check  # no escribe nada; falla si falta generar algo
 node tools/check.mjs          # revisa todas las páginas; falla si hay errores
 ```
 
-`tools/build.mjs` hace cinco cosas:
+`tools/build.mjs` hace seis cosas:
 
-1. Escribe los datos estructurados (JSON-LD) de la portada entre los comentarios `datos-estructurados:inicio` y `datos-estructurados:fin`. Las preguntas frecuentes del marcado salen del texto visible de `#preguntas`, así que siempre coinciden.
-2. Genera `blog/index.html` y una página por artículo en `blog/<slug>/index.html`.
-3. Genera `sitemap.xml`. La fecha de la portada sale de la constante `homeUpdated` de `tools/build.mjs`: actualízala a mano cuando cambies el contenido de `index.html`.
-4. Genera `llms.txt` a partir de `content/llms.txt` (sustituye `{{blog}}` por la lista de artículos).
-5. Genera `404.html`, con la barra y el pie del blog. Lleva `noindex` y no entra en el sitemap.
+1. En la portada, escribe la lista «Del blog» (entre los comentarios `blog:inicio` y `blog:fin`) y los datos estructurados (entre `datos-estructurados:inicio` y `datos-estructurados:fin`). Todo sale de lo que se ve en la página: las preguntas del marcado son las de `#preguntas`, las funciones de la app son las filas del índice, la captura es la pantalla «Mi armario» con su texto alternativo y la descripción de la película es el `aria-label` de su vídeo.
+2. Genera `assets/css/blog.css`.
+3. Genera `blog/index.html` y una página por artículo en `blog/<slug>/index.html`.
+4. Genera `sitemap.xml`. La fecha de la portada sale de la constante `homeUpdated` de `tools/build.mjs`: actualízala a mano cuando cambies el contenido de `index.html`.
+5. Genera `llms.txt` a partir de `content/llms.txt` (sustituye `{{blog}}` por la lista de artículos y `{{actualizado}}` por esa misma fecha).
+6. Genera `404.html`. Lleva `noindex` y no entra en el sitemap.
 
-`tools/check.mjs` comprueba, entre otras cosas: título (único) y descripción de cada página, dirección canónica única, un solo `<h1>`, datos estructurados válidos, sin valoraciones y con fechas que llevan zona horaria, que las preguntas del marcado sean las visibles, enlaces internos y anclas, textos alternativos de las imágenes, tamaño y texto alternativo de la imagen para compartir, que `sitemap.xml`, `llms.txt` y `404.html` estén al día, que `404.html` no aparezca en el sitemap y que en los textos no haya dominios ajenos ni términos que no usamos.
+`tools/check.mjs` comprueba, entre otras cosas:
 
-## Cambiar las preguntas frecuentes
+- En todas las páginas: título (único) y descripción, dirección canónica única, un solo `<h1>`, titulares sin saltos de nivel, datos estructurados válidos, sin valoraciones y con fechas con zona horaria, enlaces internos y anclas, archivos que existen (también pósters y vídeos), textos alternativos y medidas de las imágenes, tamaño y texto alternativo de la imagen para compartir, enlaces a las tiendas en pestaña nueva, y que no haya dominios ajenos ni términos que no usamos, ni en el texto ni en los atributos ni en los datos estructurados.
+- En la portada: las anclas estables, que las preguntas del marcado sean las visibles, que cada vídeo tenga su fotograma con medidas, su descripción y `preload="none"`, la precarga del póster de la cabecera, los botones «Descargar» y que `offers` siga con precio 0.
+- Que `sitemap.xml`, `llms.txt`, `assets/css/blog.css` y `404.html` estén al día, que las páginas públicas no lleven `noindex`, que `404.html` sí lo lleve y no aparezca en el sitemap, y que en `assets/` no quede ningún archivo sin usar (aviso).
 
-Edita la sección `#preguntas` de `index.html` y ejecuta `node tools/build.mjs`: el marcado se actualiza solo.
+## Cambiar la portada
+
+- **Textos.** Se editan en `index.html`. Si cambias el título, la descripción, una fila del índice, una pregunta o el texto alternativo de la captura «Mi armario», ejecuta `node tools/build.mjs`: los datos estructurados se actualizan solos. El título no debería pasar de 60 caracteres ni la descripción de 160.
+- **Preguntas frecuentes.** Cada una es un `<details>` con este formato exacto, dentro de `#preguntas`:
+
+  ```html
+  <details>
+    <summary><h3>¿Pregunta?</h3></summary>
+    <p class="faq-a">Respuesta.</p>
+  </details>
+  ```
+
+  Después, `node tools/build.mjs`. El generador falla si alguna no sigue el formato.
+- **Vídeos.** Para cambiar una película sustituye en `assets/video/` sus tres archivos con el mismo nombre: `nombre.mp4` (sin audio), `nombre.jpg` (primer fotograma) y `nombre-fin.jpg` (el último, que se ve con movimiento reducido). Si cambia el tamaño, corrige `width` y `height` en la imagen y en el `<video>`. Actualiza el `aria-label` del vídeo con lo que se ve: es la descripción para lectores de pantalla y buscadores, y todo lo que diga el vídeo tiene que estar ahí o en el texto de al lado. El vídeo de profesionales tiene dos cortes (`pro-estudio.mp4` y `pro-estudio-m.mp4`, para móvil); sus tres frases llevan el segundo en que empieza y acaba cada parte (`data-t` y `data-fin`).
+- **Película de la portada.** Además está descrita en los datos estructurados (`VideoObject`): si la sustituyes, cambia `heroVideo` en `tools/build.mjs` (nombre, duración y fecha de publicación). No esperamos resultados enriquecidos de vídeo: Google solo los da a páginas cuyo contenido principal es el vídeo. El marcado sirve para que buscadores y asistentes sepan qué enseña.
+- **Looks de la tira.** `assets/img/look-01.jpg` a `look-08.jpg`, cuadradas, con la prenda entera. Cada una lleva su texto alternativo y su pie en `index.html`.
+- **Botones «Descargar».** Llevan `href="#descargar"` y el atributo `data-tienda`. Sin JavaScript van al ancla con las dos insignias; con JavaScript, en iPhone y iPad van al App Store y en Android a Google Play (script entre `tienda:inicio` y `tienda:fin`). No uses `dashboard.editstudio.app/descargar`: en un ordenador acaba en el inicio de sesión.
 
 ## Publicar un artículo
 
@@ -110,28 +125,32 @@ Edita la sección `#preguntas` de `index.html` y ejecuta `node tools/build.mjs`:
 3. Ejecuta `node tools/build.mjs` y `node tools/check.mjs`.
 4. Sube juntos el `.md` y los archivos generados.
 
+Los tres artículos más recientes salen solos en el bloque «Del blog» de la portada (constante `homePosts`), con su título y su descripción.
+
 Para retirar un artículo, borra su `.md` y su carpeta en `blog/` (el generador avisa de las carpetas que sobran).
 
 ## Buscadores y asistentes
 
 - `robots.txt` permite todo salvo `content/`, `tools/` y `README.md`, y declara el sitemap. Cloudflare añade delante sus propias reglas: el bloqueo de los robots de entrenamiento se gestiona en su panel, no aquí.
-- `llms.txt` resume el producto y enlaza las páginas principales. Es una convención todavía poco adoptada: cuesta poco mantenerla, pero no sustituye a un buen contenido.
-- Los datos estructurados describen la organización, la web, la app, las preguntas frecuentes y cada artículo. No incluyen valoraciones. La app declara precio 0 porque la descarga es gratuita.
+- `llms.txt` resume el producto y enlaza cada bloque de la portada, el blog, la descarga y los textos legales. Es una convención todavía poco adoptada: cuesta poco mantenerla, pero no sustituye a un buen contenido.
+- Los datos estructurados describen la organización, la web, la página, la app (con sus funciones, una captura y las dos tiendas), la película de la portada, las preguntas frecuentes y cada artículo. No incluyen valoraciones. La app declara precio 0 porque la descarga es gratuita. Las preguntas frecuentes ya no dan resultados enriquecidos en Google; el marcado se mantiene porque describe lo que se ve.
+- En el texto de la portada conviven «armario digital» y «armario virtual», «looks» y «outfits», «probador virtual», «qué me pongo», «asesora de imagen», «personal shopper», «colorimetría» y «hacer la maleta»: son las palabras con las que se busca. Una o dos veces cada una, sin relleno.
 - `404.html` solo se sirve en las direcciones que no existen si está activado en la configuración del alojamiento.
 
 ## Enlaces
 
 | Destino | URL |
 | --- | --- |
-| Descargar | https://dashboard.editstudio.app/descargar |
+| Descargar (web) | https://editstudio.app/#descargar |
 | Iniciar sesión | https://dashboard.editstudio.app/login |
 | Soporte | https://dashboard.editstudio.app/soporte |
 | App Store | https://apps.apple.com/es/app/id6796045067 |
 | Google Play | https://play.google.com/store/apps/details?id=edit.studio.app |
-| Web | https://editstudio.app |
+| Privacidad | https://dashboard.editstudio.app/legal/privacidad |
+| Términos | https://dashboard.editstudio.app/legal/terminos |
 | Instagram | https://www.instagram.com/editstudio.app/ |
 | LinkedIn | https://www.linkedin.com/company/146595565/ |
 
 ## Ver en local
 
-Sirve la carpeta con cualquier servidor estático (por ejemplo `python3 -m http.server 8000`), o ábrela en MAMP y visita la raíz del sitio. El blog usa rutas desde la raíz (`/assets/…`), así que hay que verlo con servidor, no abriendo el archivo. El idioma de la página es español.
+Sirve la carpeta con cualquier servidor estático (por ejemplo `python3 -m http.server 8000`) y visita la raíz. El blog y `404.html` usan rutas desde la raíz (`/assets/…`), así que hay que verlos con servidor, no abriendo el archivo. El idioma de la página es español.
