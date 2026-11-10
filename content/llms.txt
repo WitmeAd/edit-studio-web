@@ -1,39 +1,44 @@
 # édit
 
-> édit es una app de estilismo personal para iPhone y Android. Sirve para digitalizar el armario, crear looks con la ropa que ya se tiene, preparar viajes y eventos, y trabajar con una asesora de imagen. Incluye édit profesionales, el estudio digital para asesoras de imagen, estilistas y personal shoppers.
+> édit es una app de estilismo personal para iPhone y Android. Digitaliza el armario con fotos, crea looks con la ropa que ya se tiene, los prueba sobre una foto de la persona y la conecta con una asesora de imagen. Incluye édit profesionales, el estudio digital para asesoras de imagen, estilistas y personal shoppers.
 
 Datos básicos:
 
+- Qué es: una app de armario digital y estilismo personal.
 - Nombre en las tiendas: «édit: armario y estilo» en el App Store y «édit: armario, estilo y looks» en Google Play.
 - Descargar la app es gratis. Algunas funciones forman parte de la suscripción Premium, que se contrata desde la propia app.
 - Idiomas de la app: español, inglés, francés, italiano y portugués.
 - Empresa: WITME ADVERTISING S.L.
 - Web oficial: https://editstudio.app
 - Soporte: https://dashboard.editstudio.app/soporte
-
-## Producto
-
-- [édit, para ti](https://editstudio.app/#app): la app para quien quiere vestirse con más intención con la ropa que ya tiene.
-- [édit profesionales](https://editstudio.app/#pro): el estudio digital para asesoras de imagen, estilistas y personal shoppers, con la ficha y el armario de cada clienta, los looks y las propuestas.
-- [Cómo funciona](https://editstudio.app/#como-funciona): los pasos para empezar.
-- [Preguntas frecuentes](https://editstudio.app/#preguntas): qué es édit, cómo se digitaliza el armario, cómo se crean los looks, cómo se trabaja con una asesora de imagen, cuánto cuesta y dónde se descarga.
+- Página actualizada el {{actualizado}}.
 
 ## Qué se puede hacer con édit
 
-- Armario digital: una foto de cada prenda basta; édit la reconoce y la organiza por tipo, color y temporada, y la persona revisa la ficha antes de guardarla.
-- Looks: propuestas de combinaciones con las prendas propias, pensadas para la semana, el clima y cómo quiere sentirse cada persona. También se pueden montar, guardar y repetir looks.
-- Planes: organizar un viaje, un evento o una temporada, con los looks de cada día y la lista de lo que ya está en la maleta.
-- Asesora de imagen: explorar asesoras profesionales, ver sus looks y trabajar con la que encaja. La asesora trabaja sobre el armario real de la clienta y envía sus propuestas dentro de la app.
-- Compras con criterio: ver qué falta de verdad en el armario antes de comprar.
+- [Armario digital](https://editstudio.app/#armario): se sube una foto de cuerpo entero y édit saca las prendas que lleva la persona, o se fotografía la ropa prenda a prenda. édit reconoce cada prenda, le quita el fondo y la ordena por tipo, color y temporada.
+- [Probador](https://editstudio.app/#probador): se elige un look del armario y se ve sobre una foto propia.
+- [Looks](https://editstudio.app/#looks): édit propone looks (outfits) con la ropa que ya se tiene. Cada persona puede crear, guardar y repetir los suyos.
+- [A tu medida](https://editstudio.app/#a-tu-medida): cada semana, un look para cada día, pensado para los planes, el clima y el estilo. Incluye la colorimetría, entre 12 estaciones, y el arquetipo de estilo, con un test de ocho preguntas.
+- [Planes](https://editstudio.app/#planes): un viaje, un evento o una temporada, con los looks de cada día y la maleta. Antes de comprar, édit ayuda a ver qué falta de verdad en el armario.
+- [Asesora de imagen](https://editstudio.app/#asesora): se exploran asesoras de imagen profesionales, se ven sus looks y se elige una. La asesora trabaja sobre el armario real de la clienta y envía sus propuestas dentro de la app.
+
+## Para profesionales
+
+- [édit profesionales](https://editstudio.app/#profesionales): el estudio digital, en web y en app, para asesoras de imagen, estilistas y personal shoppers. Reúne a las clientas y su seguimiento, la ficha de cada una con su colorimetría, su estilo y su armario, los looks y un dossier de estilismo en PDF para entregar.
+
+## Preguntas frecuentes
+
+- [Preguntas frecuentes](https://editstudio.app/#preguntas): qué es édit, cómo se digitaliza el armario, si hace falta comprar ropa, cómo se crean los looks, cómo se prepara un viaje o un evento, cómo se trabaja con una asesora de imagen, qué es édit profesionales, cuánto cuesta y dónde se descarga.
 
 ## Descarga
 
 - [App Store (iPhone)](https://apps.apple.com/es/app/id6796045067)
 - [Google Play (Android)](https://play.google.com/store/apps/details?id=edit.studio.app)
-- [Página de descarga](https://editstudio.app/#descargar)
+- [Descarga en la web](https://editstudio.app/#descargar): los dos enlaces de tienda.
 
 ## Blog
 
+- [Blog de édit](https://editstudio.app/blog/): ideas prácticas para ordenar el armario, crear looks y vestirse con más intención.
 {{blog}}
 
 ## Legal
