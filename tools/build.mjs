@@ -28,12 +28,15 @@ const CHECK = process.argv.includes('--check');
 const SITE = {
   url: 'https://editstudio.app',
   name: 'édit',
-  // Fecha del último cambio de contenido de la portada (AAAA-MM-DD). Se actualiza a mano; sale en sitemap.xml.
+  // Fecha del último cambio de contenido de la portada (AAAA-MM-DD). Se actualiza a mano el día en que se publica; sale en
+  // sitemap.xml, en llms.txt y en los datos estructurados. tools/check.mjs avisa si index.html ha cambiado después.
   homeUpdated: '2026-11-10',
   // Otros nombres del sitio, por si el buscador no elige «édit» como nombre: el descriptivo y el dominio.
   alternateNames: ['édit studio', 'editstudio.app'],
   legalName: 'WITME ADVERTISING S.L.',
-  appName: 'édit: armario y estilo',
+  // Nombre de la app en cada tienda (App Store y Google Play, comprobados el 10/11/2026). En los datos estructurados la app
+  // se llama «édit» y estos dos van como nombres alternativos.
+  appStoreNames: ['édit: armario y estilo', 'édit: armario, estilo y looks'],
   appLanguages: ['es', 'en', 'fr', 'it', 'pt'],
   appStore: 'https://apps.apple.com/es/app/id6796045067',
   googlePlay: 'https://play.google.com/store/apps/details?id=edit.studio.app',
@@ -56,6 +59,7 @@ const SITE = {
   blogTitle: 'Blog de édit: armario, looks y estilo con intención',
   blogDescription: 'Ideas prácticas para ordenar tu armario, crear looks con la ropa que ya tienes y vestirte con más intención.',
 };
+export const homeUpdated = SITE.homeUpdated;
 const ORG_ID = SITE.url + '/#organization';
 const WEB_ID = SITE.url + '/#website';
 const APP_ID = SITE.url + '/#app';
@@ -77,9 +81,10 @@ const unesc = (s) => s.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&g
 const plain = (html) => unesc(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
 const abs = (path) => (path.startsWith('https://') ? path : SITE.url + path);
 function fail(msg) { console.error('ERROR: ' + msg); process.exit(1); }
+// Un nodo por línea y sin sangría: pesa menos y, cuando cambia algo, cambia solo la línea de su nodo.
 function jsonLd(graph) {
-  const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }, null, 1).replace(/</g, '\\u003c');
-  return '<script type="application/ld+json">\n' + json + '\n</script>';
+  const json = '{"@context":"https://schema.org","@graph":[\n' + graph.map((n) => JSON.stringify(n)).join(',\n') + '\n]}';
+  return '<script type="application/ld+json">\n' + json.replace(/</g, '\\u003c') + '\n</script>';
 }
 const orgNode = () => ({
   '@type': 'Organization',
@@ -159,6 +164,8 @@ const BLOG_INI = '<!-- blog:inicio (generado por tools/build.mjs a partir de con
 const BLOG_FIN = '<!-- blog:fin -->';
 const GO = '<svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>';
 const dos = (n) => String(n).padStart(2, '0');
+// Las tres últimas palabras de un párrafo corto no se separan: no queda media cita sola en la última línea.
+const sinViuda = (html) => html.replace(/ (\S+) (\S+)$/, '&nbsp;$1&nbsp;$2');
 
 // Trozo de un texto entre dos marcas, sin ellas. Falla con un mensaje claro si no están.
 function between(s, a, b, where) {
@@ -221,7 +228,7 @@ function homeParts() {
 // Filas de artículos (las mismas en la portada, en el índice del blog y en «Sigue leyendo»).
 function notas(posts, { tag, meta, indent, cls = 'notas' }) {
   return `${indent}<ol class="${cls}">\n` +
-    posts.map((p, i) => `${indent}  <li class="nota"><a href="${p.path}"><span class="sc">${meta(p, i)}</span><${tag} class="h4">${inline(p.title, p.where)}</${tag}><p>${esc(p.description)}</p>${GO}</a></li>`).join('\n') +
+    posts.map((p, i) => `${indent}  <li class="nota"><a href="${p.path}"><span class="sc">${meta(p, i)}</span><${tag} class="h4">${inline(p.title, p.where)}</${tag}><p>${sinViuda(esc(p.description))}</p>${GO}</a></li>`).join('\n') +
     `\n${indent}</ol>`;
 }
 
@@ -254,6 +261,9 @@ function buildHome(posts) {
   const filmLabel = unesc((/id="film-hero"[\s\S]*?<video\s[^>]*\saria-label="([^"]*)"/.exec(html) || [])[1] || '').replace(/^Vídeo sin sonido\.\s*/, '');
   if (!filmLabel) fail('index.html: el vídeo de la portada (#film-hero) necesita un aria-label que cuente lo que se ve');
   for (const f of [film.file, film.poster]) if (!existsSync(join(ROOT, f))) fail(`no existe ${f} (SITE.heroVideo)`);
+  // Imagen principal de la página: el fotograma de la película de la portada, que es lo primero que se ve.
+  const posterSize = imageSize(join(ROOT, film.poster));
+  if (!posterSize) fail(`no puedo leer el tamaño de ${film.poster}`);
   const FILM_ID = SITE.url + '/#pelicula';
 
   const graph = [
@@ -270,14 +280,14 @@ function buildHome(posts) {
       isPartOf: { '@id': WEB_ID },
       about: { '@id': APP_ID },
       mainEntity: { '@id': APP_ID },
-      primaryImageOfPage: { '@type': 'ImageObject', url: abs(SITE.ogImage), width: 1200, height: 630 },
+      primaryImageOfPage: { '@type': 'ImageObject', url: abs(film.poster), width: posterSize.width, height: posterSize.height },
       video: { '@id': FILM_ID },
     },
     {
       '@type': 'MobileApplication',
       '@id': APP_ID,
-      name: SITE.appName,
-      alternateName: SITE.name,
+      name: SITE.name,
+      alternateName: SITE.appStoreNames,
       description,
       url: SITE.url + '/',
       image: abs(SITE.logo),
