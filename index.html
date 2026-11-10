@@ -215,16 +215,26 @@ p { text-wrap: pretty; }
   text-align: center; overflow: clip; transform-origin: 50% 100%;
 }
 .hero__sub { margin-top: clamp(14px, 1.6vw, 18px); max-width: 34rem; text-wrap: balance; font-size: clamp(1.0625rem, 1.45vw, 1.25rem); line-height: 1.45; color: var(--texto-2); }
-/* Rótulo sobre el titular (dentro del h1): dice qué es édit */
-.hero__rotulo { display: block; margin-bottom: clamp(10px, 1.1vw, 14px); font-variation-settings: normal; text-wrap: balance; }
+/* Rótulo sobre un titular (dentro del h1 o del h2): dice con las palabras de siempre de qué va el bloque */
+.rotulo { display: block; margin-bottom: clamp(10px, 1.1vw, 14px); font-variation-settings: normal; }
+/* El de la portada, en una sola línea y a 12 px también en móvil */
+.hero__rotulo { font-size: .75rem; white-space: nowrap; }
+@media (max-width: 349.98px) { .hero__rotulo { letter-spacing: .08em; } }
 .hero__cta { margin: clamp(16px, 1.9vw, 24px) 0 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 26px; }
 /* La película llena lo que queda de vitrina y se sale un poco por abajo: el producto asoma, no flota */
 .hero__film { --ft: 6%; --fb: 6%; --fl: 8%; --fr: 8%; --fw: min(100% + 2 * var(--pad), 520px); flex: none; width: var(--fw); max-width: none; margin: auto 0 calc(var(--fw) * -.07); }
+/* En móvil el rótulo no le quita sitio a la película: lo que ocupa se descuenta de los márgenes */
+@media (max-width: 699.98px) {
+  .escaparate { padding-top: 20px; }
+  .hero__rotulo { margin-bottom: 8px; }
+  .hero__sub { margin-top: 12px; }
+  .hero__cta { margin: 14px 0 2px; }
+}
 @media (min-width: 700px) {
   .hero__title .ln { display: inline-block; vertical-align: top; }
   .hero__sub { max-width: 54rem; }
   .hero__cta { margin-bottom: 4px; }
-  .hero__film { --fh: clamp(480px, calc(100 * var(--svh)) - 338px, 800px); --fw: min(100%, var(--fh) * .8); }
+  .hero__film { --fh: clamp(447px, calc(100 * var(--svh)) - 338px, 800px); --fw: min(100%, var(--fh) * .8); }
 }
 
 /* ───────── 2 · Índice ───────── */
@@ -700,7 +710,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
   <div class="escena">
   <section class="escaparate" aria-labelledby="titulo">
     <h1 class="display hero__title" id="titulo">
-      <span class="sc hero__rotulo">La app de armario digital y estilismo</span>
+      <span class="sc rotulo hero__rotulo">App de armario digital y estilismo</span>
       <span class="ln" style="--i:0"><span>Una foto tuya.</span></span>
       <span class="ln" style="--i:1"><span>Tres <em>looks</em>.</span></span>
     </h1>
@@ -711,7 +721,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
     </div>
     <div class="film fundido hero__film" id="film-hero" data-film data-nombre="una foto tuya, tres looks" data-espera="620">
       <picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/video/hero-fin.jpg"><img class="film__poster" src="assets/video/hero.jpg" alt="" width="720" height="900" fetchpriority="high"></picture>
-      <video class="film__video" src="assets/video/hero.mp4" width="720" height="900" muted playsinline preload="none" controls
+      <video class="film__video" src="assets/video/hero.mp4" poster="assets/video/hero.jpg" width="720" height="900" muted playsinline preload="none" controls
         aria-label="Vídeo sin sonido. Una foto tuya de cuerpo entero, subida en el móvil: «Súbela una vez». En un momento aparecen tus looks: «Tres looks. Sobre ti». «Así te queda»: la misma persona con dos looks distintos, guardados en Mis looks."></video>
       <script>/* La película se empieza a traer cuando ya están las fuentes: no compite con ellas */
       (function (v) { var c = navigator.connection, f = document.fonts; if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !(c && c.saveData)) (f && f.ready ? f.ready : Promise.resolve()).then(function () { v.preload = 'auto'; }); })(document.currentScript.previousElementSibling);</script>
@@ -1240,7 +1250,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
       el.appendChild(video);
     }
     const f = { root: el, video, poster: $('.film__poster', el), inView: false, allowed: true, userPaused: false, userStarted: false, want: false, now: false, held: null, timer: 0, wait: 0, onstate: null, onprogress: null, onended: null };
-    video.removeAttribute('controls');
+    video.removeAttribute('controls'); video.removeAttribute('poster');   // el fotograma fijo es la imagen de debajo
     dress(f);
     video.addEventListener('playing', () => el.classList.add('is-live'));
     video.addEventListener('timeupdate', () => f.onprogress && f.onprogress(video.currentTime, video.duration || 1));
