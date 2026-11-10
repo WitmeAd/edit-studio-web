@@ -36,6 +36,8 @@ Hazte tres preguntas antes de salir:
 
 Vestirse con intención es justo eso: elegir pensando en cómo quieres sentirte, no solo en lo que está limpio.
 
+Si quieres verlo puesto antes de vestirte, el [probador virtual de édit](/#probador) te enseña el look sobre una foto tuya.
+
 ## ¿Qué hago con los looks que me gustan?
 
 Guardarlos. Es el paso que casi nadie da y el que más tiempo ahorra.
@@ -48,7 +50,7 @@ Repetir no es falta de imaginación. Las personas con más estilo suelen tener u
 
 Decídelo la noche anterior. Mira qué plan tienes y qué tiempo va a hacer, elige uno de tus looks guardados y déjalo preparado. Por la mañana solo queda vestirse.
 
-En édit lo tienes todo en el mismo sitio: la app te propone combinaciones con tus propias prendas, pensadas para tu semana, el clima y cómo quieres sentirte. También puedes montar tus looks, guardarlos y repetirlos cuando quieras.
+En édit lo tienes todo en el mismo sitio: la app te propone [looks con tu propia ropa](/#looks), pensados para tu semana, el clima y cómo quieres sentirte. También puedes montar tus looks, guardarlos y repetirlos cuando quieras.
 
 ## ¿Y si de verdad me falta algo?
 

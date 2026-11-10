@@ -51,7 +51,7 @@ Ve marcando cada cosa cuando la metes. Parece un detalle menor, pero es lo que e
 
 ## ¿Cómo lo hago en édit?
 
-Con los planes. Creas uno para tu viaje, lo organizas por días, eliges los looks de cada uno con las prendas de tu armario y marcas lo que ya has metido en la maleta. Sirve igual para un evento o para preparar una temporada.
+Con [los planes de édit](/#planes). Creas uno para tu viaje, lo organizas por días, eliges los looks de cada uno con las prendas de tu armario y marcas lo que ya has metido en la maleta. Sirve igual para un evento o para preparar una temporada.
 
 Si todavía no tienes tu ropa en la app, empieza por [digitalizar tu armario](/blog/como-digitalizar-tu-armario/). Y si te cuesta decidir las combinaciones, te ayudará [cómo crear looks con la ropa que ya tienes](/blog/crear-looks-con-la-ropa-que-ya-tienes/).
 

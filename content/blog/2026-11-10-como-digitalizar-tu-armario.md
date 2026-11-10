@@ -2,7 +2,7 @@
 titulo: Cómo digitalizar tu armario paso a paso
 descripcion: Guía práctica para pasar tu ropa al móvil sin agobios: por dónde empezar, cómo hacer las fotos y qué hacer con cada prenda para sacarle partido.
 fecha: 2026-11-10
-resumen: No hace falta fotografiar todo el armario en una tarde. Empieza por las prendas que más te pones, haz una foto clara de cada una, revisa su ficha y ve sumando el resto poco a poco. Con unas pocas prendas ya puedes empezar a combinar.
+resumen: No hace falta fotografiar todo el armario en una tarde. Empieza por las prendas que más te pones, haz una foto clara de cada una, revisa su ficha y ve sumando el resto poco a poco. Para ir más rápido, en édit puedes subir una foto tuya de cuerpo entero y la app saca las prendas que llevas. Con unas pocas prendas ya puedes empezar a combinar.
 ---
 
 Tener el armario en el móvil cambia la forma de vestirse. Ves todo lo que tienes de un vistazo, recuerdas prendas que llevaban meses al fondo de un cajón y puedes probar combinaciones sin sacar nada de la percha. El único requisito es dar el primer paso, y es más corto de lo que parece.
@@ -26,6 +26,12 @@ Por lo que más te pones. No por el altillo ni por la ropa de otra temporada.
 3. Deja para más adelante lo que no es de esta temporada.
 
 Con esa primera tanda ya tienes base para crear looks. El resto puede ir entrando a ratos: un cajón hoy, las chaquetas el domingo.
+
+## ¿Hay una forma más rápida de digitalizar el armario?
+
+Sí: empezar por una foto tuya. En édit puedes subir una foto de cuerpo entero y la app saca las prendas que llevas y crea la ficha de cada una. Con unas pocas fotos de días distintos tienes dentro buena parte de lo que más te pones, sin vaciar el armario.
+
+Luego puedes seguir prenda a prenda, a tu ritmo. Así funciona [el armario digital de édit](/#armario).
 
 ## ¿Cómo hago buenas fotos de mis prendas?
 
@@ -53,6 +59,7 @@ Y si tienes un viaje cerca, el armario digital te ahorra la mitad del trabajo: p
 ## En resumen
 
 - Empieza por lo que más te pones.
+- Para ir más rápido, sube una foto tuya de cuerpo entero.
 - Una foto clara por prenda, con luz natural y fondo liso.
 - Revisa la ficha antes de guardar.
 - Suma el resto poco a poco.
