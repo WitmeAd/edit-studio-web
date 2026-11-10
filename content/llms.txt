@@ -16,7 +16,7 @@ Datos básicos:
 ## Qué se puede hacer con édit
 
 - [Armario digital](https://editstudio.app/#armario): se sube una foto de cuerpo entero y édit saca las prendas que lleva la persona, o se fotografía la ropa prenda a prenda. édit reconoce cada prenda, le quita el fondo y la ordena por tipo, color y temporada.
-- [Probador](https://editstudio.app/#probador): se elige un look del armario y se ve sobre una foto propia.
+- [Probador virtual](https://editstudio.app/#probador): se elige un look del armario y se ve sobre una foto propia.
 - [Looks](https://editstudio.app/#looks): édit propone looks (outfits) con la ropa que ya se tiene. Cada persona puede crear, guardar y repetir los suyos.
 - [A tu medida](https://editstudio.app/#a-tu-medida): cada semana, un look para cada día, pensado para los planes, el clima y el estilo. Incluye la colorimetría, entre 12 estaciones, y el arquetipo de estilo, con un test de ocho preguntas.
 - [Planes](https://editstudio.app/#planes): un viaje, un evento o una temporada, con los looks de cada día y la maleta. Antes de comprar, édit ayuda a ver qué falta de verdad en el armario.
