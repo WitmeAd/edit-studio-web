@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>édit — Vestirse con intención</title>
+<meta name="description" content="édit es la app de estilismo personal para iPhone y Android: digitaliza tu armario, crea looks con la ropa que ya tienes, pruébatelos sobre una foto tuya y conecta con tu asesora de imagen.">
+<meta name="theme-color" content="#F2EBE0">
+<link rel="icon" href="../assets/img/icon-512.png">
+<script>document.documentElement.classList.add('js');addEventListener('error',function(e){if(!e.target||e.target===window)document.documentElement.classList.remove('js')});</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="image" href="../assets/video/looks.jpg" fetchpriority="high">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..600;1,9..144,100..600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ───────── Base ───────── */
+:root{
+  --hueso:#F2EBE0; --avena:#E8DECC; --piedra:#DDD1BC; --tinta:#2B2118; --umber:#3D2F24;
+  --terra:#C77B5C; --terra-osc:#B56849; --terra-clara:#E0A58E; --oliva-osc:#565538;
+  --texto:#4A3B2E; --line:rgba(43,33,24,.17);
+  --lam-a:#F2E9E0; --lam-b:#EEE8DC;
+  --m:clamp(20px,3.4vw,64px);
+  --gap:clamp(14px,1.8vw,28px);
+  --sp:clamp(96px,12.5vw,190px);
+  --nav:60px;
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --serif:"Fraunces","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  /* tamaños de lámina (9:16): nunca más altas que la pantalla */
+  --L:min(86%,calc((100svh - var(--nav) - 96px) * 9 / 16));
+  --M:min(72%,calc((100svh - var(--nav) - 140px) * 9 / 16));
+  --S:100%;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:calc(var(--nav) + 16px);scrollbar-color:var(--piedra) var(--hueso)}
+body{margin:0;background:var(--hueso);color:var(--tinta);font:400 17px/1.55 var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:clip}
+img,video{display:block;max-width:100%}
+h1,h2,h3,p,figure,ol,ul,blockquote{margin:0;padding:0}
+ol,ul{list-style:none}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+::selection{background:var(--terra);color:var(--tinta)}
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip{position:absolute;left:var(--m);top:-80px;z-index:20;background:var(--tinta);color:var(--hueso);padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:500;font-size:15px}
+.skip:focus{top:10px}
+.wrap{max-width:1680px;margin-inline:auto;padding-inline:var(--m)}
+
+/* ───────── Tipografía ───────── */
+/* El eje óptico y el tracking se fijan por tamaño: cuanto más pequeño el titular, más cuerpo y más aire */
+.serif,.t-xxl,.t-xl,.t-l,.t-m,.t-s{font-family:var(--serif);font-weight:var(--w,350);font-optical-sizing:auto;font-kerning:normal}
+.t-xxl{--w:330;--wi:330;line-height:.9;letter-spacing:-.026em;font-variation-settings:"opsz" 144}
+.t-xl{--w:340;--wi:340;font-size:clamp(44px,13vw,56px);line-height:.96;letter-spacing:-.02em;font-variation-settings:"opsz" 96}
+.t-l{--w:350;--wi:345;font-size:clamp(36px,11.2vw,52px);line-height:.99;letter-spacing:-.016em;font-variation-settings:"opsz" 84}
+.t-m{--w:360;--wi:350;font-size:clamp(34px,3.9vw,58px);line-height:1.03;letter-spacing:-.012em;font-variation-settings:"opsz" 72}
+.t-s{--w:360;font-size:clamp(25px,2.2vw,32px);line-height:1.1;letter-spacing:-.01em}
+em{font-style:italic;font-weight:var(--wi,inherit)}
+.t-xxl em,.t-xl em,.t-l em,.t-m em{color:var(--terra-osc)}
+.sc{font:500 11.5px/1.35 var(--sans);letter-spacing:.16em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.body{color:var(--texto);max-width:36ch;text-wrap:pretty}
+/* Líneas con máscara. El titular es una columna flex: así los márgenes negativos de cada línea no se funden
+   y el paso entre líneas es exactamente cuerpo × line-height */
+.rv{display:flex;flex-direction:column;align-items:flex-start}
+.ln{display:block;overflow:clip;padding:.14em .07em .17em;margin:-.14em -.07em -.17em}
+.ln>span{display:inline-block}
+
+/* ───────── Botones y enlaces ───────── */
+.pill{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:999px;background:var(--tinta);color:var(--hueso);font:500 15px/1 var(--sans);letter-spacing:.005em;text-decoration:none;white-space:nowrap;transition:background-color .2s ease,transform .16s var(--ease-out)}
+.pill:active{transform:scale(.97)}
+.pill:focus-visible{outline-color:var(--tinta)}
+.pill--s{min-height:40px;padding:0 18px;font-size:14px}
+.pill--inv{background:var(--hueso);color:var(--tinta)}
+.pro .pill--inv:focus-visible{outline-color:var(--hueso)}
+.lnk{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.3em;text-decoration-color:color-mix(in srgb,currentColor 38%,transparent);transition:text-decoration-color .2s ease}
+@media (hover:hover){
+  .pill:hover{background:var(--umber)}
+  .pill--inv:hover{background:#fff}
+  .lnk:hover{text-decoration-color:currentColor}
+}
+
+/* ───────── Cabecera: material translúcido, filete solo al desplazar ───────── */
+.nav{position:sticky;top:0;z-index:10;background:rgba(242,235,224,.78);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid transparent;transition:border-color .3s ease}
+.nav.is-stuck{border-bottom-color:var(--line)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.nav{background:var(--hueso)}}
+@media (prefers-reduced-transparency:reduce){.nav{background:var(--hueso);-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media (prefers-contrast:more){.nav{background:var(--hueso);border-bottom-color:var(--tinta)}}
+.nav__in{display:flex;align-items:center;justify-content:space-between;gap:16px;height:var(--nav)}
+.brand{font-family:var(--serif);font-weight:500;font-size:29px;line-height:1;letter-spacing:-.025em;text-decoration:none;font-optical-sizing:auto;padding-bottom:3px}
+.brand i{font-style:normal;color:var(--terra)}
+.nav__links{display:none}
+.nav__cta{display:flex;align-items:center;gap:16px}
+.nav__cta .lnk{display:none;font-size:14px;font-weight:500;text-decoration-color:transparent;white-space:nowrap}
+@media (min-width:380px){.nav__cta .lnk{display:inline}}
+
+/* ───────── Lámina ───────── */
+.lamina{position:relative}
+.lam-frame{position:relative;aspect-ratio:9/16;background:var(--lam-bg,var(--lam-b));overflow:hidden}
+.lam-frame::after{content:"";position:absolute;inset:0;border:1px solid rgba(43,33,24,.13);pointer-events:none;z-index:3}
+.lam-frame>img,.lam-frame>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lam-frame>video{z-index:2;transition:opacity .28s ease}
+.lam-frame.is-dip>img{opacity:0}
+.js .lam-frame>video{opacity:0}
+.js .lam-frame.is-live>video,.js .lam-frame>video.is-live{opacity:1}
+.lamina figcaption{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding-top:8px;color:var(--tinta)}
+.lamina figcaption .sc b{font-weight:500;color:var(--texto)}
+.ctl{flex:none;width:44px;height:44px;margin-right:-8px;display:grid;place-items:center;border-radius:50%}
+.ctl span{width:30px;height:30px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;transition:border-color .2s ease,background-color .2s ease}
+.ctl svg{width:10px;height:10px;fill:currentColor}
+.ctl .i-pause{display:none}
+.ctl[data-state="on"] .i-pause{display:block}
+.ctl[data-state="on"] .i-play{display:none}
+@media (hover:hover){.ctl:hover span{border-color:currentColor}}
+html:not(.js) .no-js-hide{display:none}
+
+/* ───────── Portada ───────── */
+/* Móvil: titular → qué es → lámina entera (limitada por alto) → botones. El pie corre en vertical junto a la lámina */
+.hero{padding-block:clamp(14px,2vw,26px) clamp(56px,7vw,96px)}
+.hero__grid{display:flex;flex-direction:column}
+.hero__copy{display:contents}
+.hero h1{order:1;font-size:calc((100vw - 2 * var(--m)) * .212);margin:6px 0 0 -.035em}
+.hero__lead{order:2;margin-top:14px;font-size:clamp(15px,4.1vw,16px);line-height:1.5;color:var(--texto);text-wrap:pretty}
+.hero__lead b{font-weight:500;color:var(--tinta)}
+.hero .lamina{order:3;--lam-bg:var(--lam-a);margin-top:16px}
+.hero__foot{order:4;margin-top:28px;display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px}
+.hero__foot .lnk{font-size:15px;font-weight:500}
+.hero__meta{flex:1 0 100%;color:var(--texto);text-wrap:balance}
+.hero .lamina figcaption .n i{font-style:normal}
+@media (max-width:599.98px){
+  .hero .lamina{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:4px}
+  .hero .lam-frame{grid-column:2;grid-row:1;width:clamp(200px,calc((100svh - var(--nav) - (100vw - 2 * var(--m)) * .382 - 142px) * 9 / 16),calc(100vw - 2 * var(--m) - 50px))}
+  .hero .lamina figcaption{grid-column:1;grid-row:1;justify-self:end;align-self:stretch;width:44px;min-height:0;padding:0;flex-direction:column;justify-content:flex-end;align-items:center;gap:10px}
+  .hero .lamina figcaption .sc{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;letter-spacing:.14em}
+  .hero .lamina .ctl{margin:0 0 -7px}
+}
+
+/* ───────── Índice ───────── */
+.indice{padding-top:clamp(28px,4.5vw,72px)}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 40px;margin-bottom:clamp(18px,3vw,44px)}
+.sec-head__side{display:flex;flex-direction:column;align-items:flex-start;gap:6px;color:var(--texto);font-size:15px;max-width:34ch}
+.tog{display:none;align-items:center;gap:10px;min-height:44px;color:var(--tinta)}
+.tog i{width:30px;height:30px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center}
+.tog svg{width:10px;height:10px;fill:currentColor}
+.tog .i-pause{display:none}
+.tog[data-state="on"] .i-pause{display:block}
+.tog[data-state="on"] .i-play{display:none}
+.indice__list{border-top:1px solid var(--tinta)}
+/* Móvil: sumario de una línea por fila, sin miniaturas ni vídeo */
+.irow a{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;align-items:baseline;padding-block:13px 14px;border-bottom:1px solid var(--line);text-decoration:none}
+.irow .num{color:var(--texto)}
+.irow .num i{font-style:normal}
+.irow .tit{--wi:340;font-family:var(--serif);font-weight:370;font-variation-settings:"opsz" 60;font-size:clamp(19.5px,5.85vw,26px);line-height:1.15;letter-spacing:-.008em;transition:transform .5s var(--ease-out)}
+.irow .tit em{transition:color .3s ease}
+.irow a.is-on .tit em,.irow a:active .tit em{color:var(--terra-osc)}
+.irow .go{display:none}
+.indice__stage{display:none}
+.indice__stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;opacity:0;transition:opacity .28s ease}
+.indice__stage video.is-live{opacity:1}
+@media (max-width:599.98px){.irow .num i{display:none}}
+
+/* ───────── Láminas ───────── */
+.laminas{padding-top:1px}
+.spread{margin-top:var(--sp)}
+.spread .lamina{width:var(--w,var(--L))}
+.lam--M{--w:var(--M)}
+.spread__txt .body,.spread>.body{margin-top:20px}
+.spread__txt{margin-bottom:30px}
+.spread--a{display:flex;flex-direction:column}
+.spread--a .spread__txt{order:-1}
+/* dúo: en móvil, nota a todo el ancho y debajo la lámina pequeña a la derecha */
+.duo{display:grid;row-gap:22px;margin-top:48px}
+.duo .lamina{--w:58%;--lam-bg:var(--lam-a);margin-left:auto}
+.duo__note h3{font-size:clamp(25px,2.2vw,32px);text-wrap:balance}
+.duo__note p{margin-top:10px;font-size:15px;color:var(--texto);max-width:36ch;text-wrap:pretty}
+.spread--b .lamina{--lam-bg:var(--lam-a);margin:28px 0 0 auto}
+.spread--c .lamina{margin-top:0}
+.spread--d .half+.half{margin-top:calc(var(--sp) * .8)}
+.spread--d .half--2 .lamina{margin-left:auto}
+.half h2{margin-top:18px}
+.half .body{margin-top:14px}
+.apuntes{margin-top:var(--sp);display:grid;gap:0}
+.apuntes li{border-top:1px solid var(--line);padding-block:20px 26px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:18px;align-items:baseline}
+.apuntes p{font-size:15px;color:var(--texto);text-wrap:pretty}
+
+/* ───────── Manifiesto ───────── */
+.manifiesto{margin-top:var(--sp);background:var(--terra);color:var(--tinta)}
+.manifiesto__in{min-height:84svh;display:flex;flex-direction:column;justify-content:space-between;gap:56px;padding-block:clamp(40px,6vw,72px)}
+.quote{--wi:520;display:block;font-family:var(--serif);font-style:italic;font-weight:320;font-variation-settings:"opsz" 120;font-size:calc((100vw - 2 * var(--m)) / 4.9);line-height:1;letter-spacing:-.02em;margin-top:auto}
+.quote p{display:flex;flex-direction:column;align-items:flex-start}
+.quote br.d{display:none}
+.manifiesto__foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:10px 40px;border-top:1px solid rgba(43,33,24,.35);padding-top:16px;font-size:15px}
+.manifiesto__foot .brand{font-size:24px}
+.manifiesto__foot .brand i{color:inherit}
+
+/* ───────── Tira ───────── */
+.tira{padding-top:var(--sp)}
+.tira__head{display:grid;grid-template-columns:minmax(0,1fr);gap:26px}
+.tira__head .body{margin-top:18px}
+.tira__meta{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.tira__count{display:flex;align-items:flex-end;gap:14px}
+.tira__num{font-family:var(--serif);font-weight:320;font-variation-settings:"opsz" 144;font-size:clamp(64px,7vw,104px);line-height:.8;letter-spacing:-.03em;height:.8em;overflow:clip;font-variant-numeric:tabular-nums lining-nums;padding-inline:.04em}
+.tira__roll{display:flex;flex-direction:column;transition:transform .7s var(--ease-out)}
+.tira__roll span{height:.8em;flex:none}
+.tira__of{display:flex;flex-direction:column;gap:5px;padding-bottom:2px;color:var(--texto)}
+.tira__name{font-family:var(--serif);font-style:italic;font-weight:350;font-size:22px;line-height:1;letter-spacing:-.01em;color:var(--tinta);text-transform:none;white-space:nowrap}
+.tira__btns{display:flex;gap:8px}
+.arrow{width:44px;height:44px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;transition:border-color .2s ease,opacity .2s ease,transform .16s var(--ease-out)}
+.arrow svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.4}
+.arrow:active{transform:scale(.95)}
+.arrow:disabled{opacity:.35;cursor:default}
+@media (hover:hover){.arrow:not(:disabled):hover{border-color:currentColor}}
+.tira__rail{margin-top:clamp(26px,3vw,44px);overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-inline:max(var(--m),calc((100vw - 1680px) / 2 + var(--m)));scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tira__rail::-webkit-scrollbar{display:none}
+.tira__rail ul{display:flex;gap:var(--gap);width:max-content;padding-inline:max(var(--m),calc((100vw - 1680px) / 2 + var(--m)))}
+.tira__rail li{flex:none;width:min(70vw,300px);scroll-snap-align:start;position:relative;padding-top:14px}
+.tira__rail li::before,.tira__rail li::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line)}
+.tira__rail li::after{background:var(--tinta);transform:scaleX(0);transform-origin:left;transition:transform .6s var(--ease-out)}
+.tira__rail li.is-cur::after{transform:scaleX(1)}
+.tira__rail figure{display:block}
+.tira__rail img{width:100%;height:auto;aspect-ratio:1 / 1;object-fit:contain;background:#F6F1E8;border-radius:2px}
+.tira__rail figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-top:12px}
+.tira__rail figcaption .sc{color:var(--texto)}
+.tira__rail figcaption .serif{font-size:22px;line-height:1.1;letter-spacing:-.015em}
+
+/* ───────── Profesionales ───────── */
+.pro{margin-top:var(--sp);background:var(--umber);color:var(--hueso);padding-block:clamp(56px,7vw,110px) clamp(64px,8vw,128px)}
+.pro ::selection{background:var(--terra-clara)}
+.pro__top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:10px 30px;padding-bottom:16px;border-bottom:1px solid rgba(242,235,224,.24)}
+.pro__top .brand{font-size:34px;padding:0}
+.pro__top .brand i{color:var(--terra-clara)}
+.pro__top .brand em{font-weight:400;letter-spacing:-.01em}
+.pro__top .sc{color:var(--terra-clara)}
+.pro h2{margin-top:clamp(36px,5vw,72px)}
+.pro h2 em{color:var(--terra-clara)}
+.pro__lead{margin-top:26px;font-size:18px;line-height:1.5;max-width:40ch;color:rgba(242,235,224,.86);text-wrap:pretty}
+.pro__grid{margin-top:clamp(36px,5vw,72px);display:grid;gap:34px}
+.pro .lamina{max-width:calc((100svh - var(--nav) - 90px) * 1.25)}
+.pro .lam-frame{aspect-ratio:5/4;background:var(--lam-b)}
+.pro .lam-frame::after{display:none}
+.pro .lamina figcaption{color:var(--hueso)}
+.pro .lamina figcaption .sc b{color:rgba(242,235,224,.72)}
+.pro .ctl span{border-color:rgba(242,235,224,.32)}
+.pro__notes li{border-top:1px solid rgba(242,235,224,.24);padding-block:18px 22px;display:grid;grid-template-columns:2.6rem minmax(0,1fr);column-gap:8px;position:relative}
+.pro__notes li::before{content:"";position:absolute;left:0;top:-1px;width:100%;height:1px;background:var(--terra-clara);transform:scaleX(0);transform-origin:left;transition:transform .8s var(--ease-out)}
+.pro__notes li.is-on::before{transform:scaleX(1)}
+.pro__notes .n{font-family:var(--serif);font-style:italic;font-weight:350;font-size:19px;line-height:1.5;color:var(--terra-clara)}
+.pro__notes h3{font-size:clamp(24px,2.1vw,30px)}
+.pro__notes p{grid-column:2;margin-top:8px;font-size:15px;color:rgba(242,235,224,.78);text-wrap:pretty}
+.pro__end{margin-top:30px;display:grid;gap:22px;justify-items:start}
+.pro__end p{font-family:var(--serif);font-style:italic;font-weight:300;font-size:22px;line-height:1.25;letter-spacing:-.01em;max-width:22ch}
+
+/* ───────── Descarga y colofón ───────── */
+.descarga{padding-block:var(--sp) clamp(72px,9vw,130px)}
+.descarga h2{font-size:calc((100vw - 2 * var(--m)) * .29);margin-left:-.035em}
+.descarga__row{margin-top:clamp(36px,5vw,72px);display:grid;gap:30px;border-top:1px solid var(--line);padding-top:24px}
+.descarga__row .t-s{font-style:italic;max-width:19ch}
+.descarga__row small{display:block;margin-top:16px;font-size:14px;line-height:1.5;color:var(--texto);max-width:44ch}
+.descarga__cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.descarga__cta .pill{flex:1 0 100%}
+.badge{display:block;border-radius:8px}
+.badge img{height:48px;width:auto}
+.colofon{background:var(--oliva-osc);color:var(--hueso);padding-block:clamp(44px,5vw,72px) 30px;font-size:15px}
+.colofon ::selection{background:var(--terra-clara)}
+.colofon__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px var(--gap)}
+.colofon__brand{grid-column:1 / -1}
+.colofon .brand{font-size:44px;display:inline-block}
+.colofon .brand i{color:var(--terra-clara)}
+.colofon__brand p{margin-top:10px;max-width:26ch;color:rgba(242,235,224,.86)}
+.colofon h2{margin-bottom:12px;color:rgba(242,235,224,.78)}
+.colofon li{padding-block:5px}
+.colofon li a{text-decoration:none;display:inline-block;padding-block:3px}
+.colofon__base{margin-top:44px;padding-top:16px;border-top:1px solid rgba(242,235,224,.26);color:rgba(242,235,224,.82)}
+@media (hover:hover){.colofon li a:hover{text-decoration:underline;text-underline-offset:.3em;text-decoration-thickness:1px}}
+
+/* ───────── Desde 600 px: portada a dos columnas ───────── */
+@media (min-width:600px){
+  .hero{--h:clamp(440px,min(100svh - 200px,62vw),860px);--hgap:clamp(32px,4.4vw,80px);--col:calc(min(100vw,1680px) - 2 * var(--m) - var(--h) * 9 / 16 - var(--hgap))}
+  .hero__grid{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--hgap)}
+  .hero__copy{display:flex;flex-direction:column;min-width:0}
+  .hero h1{font-size:min(216px,calc(var(--col) * .212));margin-top:.02em}
+  .hero__lead{margin-block:clamp(20px,2.3vw,34px) 28px;font-size:clamp(17px,1.5vw,22px);line-height:1.45;max-width:33ch}
+  .hero__foot{margin:auto 0 52px;padding-top:22px;border-top:1px solid var(--line)}
+  .hero__meta{flex:0 1 auto}
+  .hero .lamina{width:calc(var(--h) * 9 / 16);margin:0;container-type:inline-size}
+  .hero .lamina figcaption .sc{letter-spacing:.12em}
+  .hero .lamina figcaption b{white-space:nowrap}
+  @container (max-width:332px){
+    .hero .lamina figcaption .n{display:block}
+    .hero .lamina figcaption .n i{display:none}
+  }
+  @container (max-width:290px){.hero .lamina figcaption b{white-space:normal}}
+
+  .irow a{grid-template-columns:4.4rem minmax(0,1fr);column-gap:0;padding-block:16px}
+  .irow .tit{font-size:clamp(26px,4.2vw,36px)}
+
+  .duo{grid-template-columns:minmax(0,1fr) 46%;column-gap:var(--gap);align-items:end}
+  .duo .lamina{--w:100%}
+  .duo__note{padding-bottom:52px}
+
+  .apuntes{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:var(--gap)}
+  .apuntes li{grid-template-columns:1fr;row-gap:12px}
+  .colofon__grid{grid-template-columns:repeat(12,minmax(0,1fr))}
+  .colofon__brand{grid-column:1 / span 5}
+  .colofon__grid nav{grid-column:span 2}
+  .colofon__grid nav:first-of-type{grid-column:7 / span 2}
+  .descarga__row{grid-template-columns:minmax(0,1fr) auto;align-items:end}
+  .descarga__cta .pill{flex:none}
+}
+
+/* ───────── Desde 700 px: dobles páginas ───────── */
+@media (min-width:700px){
+  :root{--L:min(38vw,52svh);--M:min(30vw,44svh);--S:min(22vw,30svh)}
+  .t-l{font-size:clamp(40px,6vw,52px)}
+  .g12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+  .indice__list{grid-column:1 / -1}
+  .spread .lamina{width:var(--w)}
+  .lam--L{--w:var(--L)}.lam--M{--w:var(--M)}.lam--S{--w:var(--S)}
+  .spread__txt{margin:0}
+  /* N.º 02: las dos láminas comparten línea de pie */
+  .spread--a{display:grid;grid-template-rows:auto 1fr}
+  .spread--a .spread__txt{order:0;grid-column:7 / -1;grid-row:1}
+  .spread--a .lam--L{grid-column:1 / span 5;grid-row:1 / span 2;align-self:end}
+  .spread--a .duo{grid-column:7 / -1;grid-row:2;align-self:end;grid-template-columns:repeat(6,minmax(0,1fr));margin-top:40px}
+  .duo__note{grid-column:1 / span 3}
+  .duo .lamina{grid-column:4 / span 3;justify-self:end;--w:var(--S);margin:0}
+  .spread--b{align-items:center}
+  .spread--b h2{grid-column:1 / -1;grid-row:1;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);align-items:baseline}
+  .spread--b h2 .a{grid-column:1 / span 4;justify-self:end}
+  .spread--b h2 .b{grid-column:9 / span 4;justify-self:start}
+  .spread--b .lamina{grid-column:5 / span 4;grid-row:1;justify-self:center;margin:0;z-index:1}
+  .spread--b>.body{grid-column:1 / span 4;grid-row:1;align-self:end;margin:0 0 52px;max-width:24ch}
+  .spread--c{align-items:end}
+  .spread--c .spread__txt{grid-column:1 / span 6;padding-bottom:10vh}
+  .spread--c .lamina{grid-column:8 / -1;justify-self:end}
+  .spread--d{align-items:start}
+  .spread--d .half--1{grid-column:1 / span 5}
+  .spread--d .half--2{grid-column:8 / span 5;margin-top:18vh}
+  .spread--d .half--2 .lamina{margin-left:0}
+  .half h2{margin-top:26px}
+}
+
+/* ───────── Ordenador ───────── */
+@media (min-width:900px){
+  :root{--nav:64px;--L:min(32vw,46svh);--M:min(25vw,38svh);--S:min(15vw,22svh)}
+  .t-xl{font-size:clamp(72px,8vw,120px);font-variation-settings:"opsz" 120}
+  .t-l{font-size:clamp(52px,6vw,92px);font-variation-settings:"opsz" 104}
+  .nav__links{display:flex;gap:34px;font-size:14px;font-weight:500}
+  .nav__links a{text-decoration:none;padding-block:10px;color:var(--tinta);position:relative}
+  .nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease-out)}
+  .nav__links a:hover::after,.nav__links a:focus-visible::after{transform:scaleX(1)}
+  .nav__cta{gap:22px}
+  @media (min-width:1200px){.hero__meta{margin-left:auto}}
+
+  .tog{display:inline-flex}
+  .indice__grid{align-items:start}
+  .indice__list{grid-column:1 / span 8}
+  .irow a{grid-template-columns:4.8rem minmax(0,1fr) auto;padding-block:clamp(18px,2.2vw,34px)}
+  .irow .tit{--wi:330;font-weight:360;font-variation-settings:"opsz" 72;font-size:clamp(32px,3.4vw,56px);line-height:1.1;letter-spacing:-.01em}
+  .irow .go{display:block;align-self:center;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.1;opacity:0;transform:translateX(-10px);transition:opacity .3s ease,transform .5s var(--ease-out)}
+  .irow a.is-on .tit,.irow a:focus-visible .tit{transform:translateX(.22em)}
+  .irow a.is-on .go,.irow a:focus-visible .go{opacity:1;transform:none}
+  .indice__stage{--sh:min(64svh,620px);display:block;grid-column:10 / span 3;position:sticky;top:calc(var(--nav) + max(20px,(100svh - var(--nav) - var(--sh)) / 2 - 30px))}
+  .indice__stage .lam-frame{width:min(100%,calc(var(--sh) * 9 / 16));margin-left:auto}
+  .indice__stage .lam-frame img{visibility:hidden}
+  .indice__stage .lam-frame img.was-on{visibility:visible;z-index:0}
+  .indice__stage .lam-frame img.is-on{visibility:visible;z-index:1}
+  .indice__stage .cap{display:flex;justify-content:flex-end;gap:.6em;padding-top:12px;color:var(--tinta)}
+  .indice__stage .cap b{font-weight:500;color:var(--texto)}
+
+  .spread--a .duo{margin-top:48px}
+  .spread--b>.body{grid-column:1 / span 3}
+  .spread--d .half--1{grid-column:2 / span 4}
+  .spread--d .half--2{grid-column:8 / span 4;margin-top:26vh}
+
+  .manifiesto__in{min-height:88svh}
+  .quote{font-size:min(150px,calc((100vw - 2 * var(--m)) / 9.1))}
+  .quote p{display:block}
+  .quote .ln{display:inline-block;vertical-align:bottom}
+  .quote br.d{display:inline}
+
+  .pro__grid{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);align-items:end}
+  .pro .lamina{grid-column:1 / span 8;max-width:calc((100svh - 150px) * 1.25)}
+  .pro__side{grid-column:10 / -1}
+  .pro__intro{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);align-items:end}
+  .pro__intro h2{grid-column:1 / span 9}
+  .pro__intro .pro__lead{grid-column:10 / -1;margin:0 0 .6em}
+
+  .tira__head{grid-template-columns:minmax(0,1fr) auto;align-items:end;column-gap:40px}
+  .tira__meta{gap:clamp(24px,3vw,48px);padding-bottom:2px}
+  .tira__rail li{width:clamp(250px,22vw,360px)}
+  .descarga h2{display:block;font-size:min(232px,calc((100vw - 2 * var(--m)) * .168))}
+  .descarga h2 .ln{display:inline-block;vertical-align:bottom}
+}
+
+/* ───────── Movimiento (solo si no se ha pedido reducirlo) ───────── */
+@media (prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth}
+  /* 1 · titulares por líneas */
+  .js .rv .ln>span{transform:translateY(125%)}
+  .js .rv.is-in .ln>span{transform:none;transition:transform .9s var(--ease-out);transition-delay:calc(var(--i,0) * 90ms)}
+  .js .hero .rv.is-in .ln>span{transition-duration:.8s;transition-delay:calc(var(--i,0) * 80ms)}
+  .ln:nth-child(2){--i:1}.ln:nth-child(3){--i:2}.ln:nth-child(4){--i:3}
+  .quote .ln:nth-of-type(3){--i:2}.quote .ln:nth-of-type(4){--i:3}
+  /* 2 · letra viva (solo portada, manifiesto y descarga): la cursiva llega fina y se entinta cuando la línea ya ha asentado */
+  .js .viva em{font-weight:100}
+  .js .viva.is-in em{font-weight:var(--wi,350);transition:font-weight .9s var(--ease-out) .65s}
+  .js .quote.rv em{font-weight:320}
+  .js .quote.rv.is-in em{font-weight:520;transition:font-weight 1.9s var(--ease-out) .75s}
+  /* 3 · cortina de las láminas. La de portada se destapa desde el primer fotograma, sin esperar a nada */
+  .js .lamina:not([data-hero]) .lam-frame{clip-path:inset(100% 0 0 0)}
+  .js .lamina:not([data-hero]) .lam-frame>img{transform:scale(1.06)}
+  .js .lamina:not([data-hero]).is-in .lam-frame{clip-path:inset(0 0 0 0);transition:clip-path .9s var(--ease-out)}
+  .js .lamina:not([data-hero]).is-in .lam-frame>img{transform:none;transition:transform 1.3s var(--ease-out)}
+  .js .hero .lam-frame{animation:destapar .7s var(--ease-out) both}
+  .js .hero .lam-frame>img{animation:asentar 1.1s var(--ease-out) both}
+  .indice__stage .lam-frame img.is-on{animation:destapar .6s var(--ease-out) both}
+  @keyframes destapar{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+  @keyframes asentar{from{transform:scale(1.06)}to{transform:none}}
+}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){
+  @supports (animation-timeline:view()){
+    /* la página de color se abre al entrar (solo en ordenador: en móvil 9vw parece un margen mal puesto) */
+    .manifiesto{animation:abrir linear both;animation-timeline:view();animation-range:entry 0% entry 85%}
+    @keyframes abrir{from{clip-path:inset(0 9vw 0 9vw)}to{clip-path:inset(0 0 0 0)}}
+    /* N.º 03: las dos mitades del titular se acercan a la lámina mientras cruza la pantalla */
+    .spread--b h2 .a{animation:deriva-a linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
+    .spread--b h2 .b{animation:deriva-b linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
+    @keyframes deriva-a{from{transform:translateX(-9%)}to{transform:translateX(5%)}}
+    @keyframes deriva-b{from{transform:translateX(9%)}to{transform:translateX(-5%)}}
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .tira__roll,.irow .tit,.irow .go,.pro__notes li::before,.tira__rail li::after{transition:none}
+  .lam-frame>video{transition-duration:.2s}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<header class="nav">
+  <div class="wrap nav__in">
+    <a class="brand" href="#portada" aria-label="édit, inicio"><i>é</i>dit</a>
+    <nav class="nav__links" aria-label="Secciones">
+      <a href="#indice">Qué hace édit</a>
+      <a href="#pro">Profesionales</a>
+    </nav>
+    <div class="nav__cta">
+      <a class="lnk" href="https://dashboard.editstudio.app/login">Iniciar sesión</a>
+      <a class="pill pill--s" href="https://dashboard.editstudio.app/descargar">Descargar édit</a>
+    </div>
+  </div>
+</header>
+
+<main id="contenido">
+
+<!-- ═════ 1 · Portada ═════ -->
+<section class="hero wrap" id="portada">
+  <div class="hero__grid">
+    <div class="hero__copy">
+      <h1 class="t-xxl rv viva" data-hero>
+        <span class="ln"><span>Vestirse</span></span>
+        <span class="ln"><span>con <em>intención.</em></span></span>
+      </h1>
+      <p class="hero__lead"><b>La app de estilismo personal.</b> Digitaliza tu armario, crea looks con la ropa que ya tienes y conecta con tu asesora de imagen.</p>
+      <div class="hero__foot">
+        <a class="pill" href="https://dashboard.editstudio.app/descargar">Descargar édit</a>
+        <a class="lnk" href="#pro">Descubre édit Pro</a>
+        <p class="hero__meta sc">Descarga gratuita · iPhone y Android</p>
+      </div>
+    </div>
+    <figure class="lamina" data-hero data-name="una foto tuya, tres looks">
+      <div class="lam-frame">
+        <img src="../assets/video/looks.jpg" alt="" width="720" height="1280" fetchpriority="high">
+        <video src="../assets/video/looks.mp4" poster="../assets/video/looks.jpg" muted playsinline preload="metadata" controls width="720" height="1280"
+          aria-label="Animación: una foto tuya. Súbela una vez y édit hace el resto: tres looks con tu ropa. Así te queda."></video>
+      </div>
+      <figcaption>
+        <span class="sc"><span class="n">N.º 01 <i>— </i></span><b>Una&nbsp;foto&nbsp;tuya, tres&nbsp;looks</b></span>
+        <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: una foto tuya, tres looks"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ═════ 2 · Índice ═════ -->
+<section class="indice wrap" id="indice" aria-labelledby="indice-t">
+  <header class="sec-head">
+    <h2 class="t-xl rv" id="indice-t"><span class="ln"><span>Índice</span></span></h2>
+    <div class="sec-head__side">
+      <p>Lo que hace édit, lámina a lámina.</p>
+      <button class="tog sc no-js-hide" type="button" data-state="off"><i><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></i><span data-tog-t>Reproducir vista previa</span></button>
+    </div>
+  </header>
+  <div class="indice__grid g12">
+    <ol class="indice__list">
+      <li class="irow"><a href="#portada" data-src="../assets/video/looks.mp4" data-num="N.º 01" data-tag="Looks" data-a>
+        <span class="num sc"><i>N.º </i>01</span>
+        <span class="tit">Una foto tuya, tres <em>looks</em></span>
+        <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
+      </a></li>
+      <li class="irow"><a href="#l02" data-src="../assets/video/armario.mp4" data-num="N.º 02" data-tag="Armario">
+        <span class="num sc"><i>N.º </i>02</span>
+        <span class="tit">Tu armario, por fin en <em>orden</em></span>
+        <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
+      </a></li>
+      <li class="irow"><a href="#l03" data-src="../assets/video/probador.mp4" data-num="N.º 03" data-tag="Probador" data-a>
+        <span class="num sc"><i>N.º </i>03</span>
+        <span class="tit">Pruébatelo: así te <em>queda</em></span>
+        <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
+      </a></li>
+      <li class="irow"><a href="#l04" data-src="../assets/video/semana.mp4" data-num="N.º 04" data-tag="Semana">
+        <span class="num sc"><i>N.º </i>04</span>
+        <span class="tit">Looks para tu <em>semana</em></span>
+        <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
+      </a></li>
+      <li class="irow"><a href="#l05" data-src="../assets/video/color.mp4" data-num="N.º 05" data-tag="Colorimetría">
+        <span class="num sc"><i>N.º </i>05</span>
+        <span class="tit">Tu color, <em>primero</em></span>
+        <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
+      </a></li>
+      <li class="irow"><a href="#l06" data-src="../assets/video/arquetipo.mp4" data-num="N.º 06" data-tag="Arquetipo">
+        <span class="num sc"><i>N.º </i>06</span>
+        <span class="tit">Ocho preguntas, un <em>estilo</em></span>
+        <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
+      </a></li>
+    </ol>
+    <div class="indice__stage" aria-hidden="true">
+      <div class="lam-frame">
+        <img class="is-on" src="../assets/video/looks.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <img src="media/armario.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <img src="../assets/video/probador.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <img src="../assets/video/semana.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <img src="../assets/video/color.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <img src="../assets/video/arquetipo.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+      </div>
+      <p class="cap sc"><span data-s-num>N.º 01</span> <b>— <span data-s-tag>Looks</span></b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ 3 · Láminas ═════ -->
+<section class="laminas wrap" id="laminas" aria-label="Qué hace édit, lámina a lámina">
+
+  <article class="spread spread--a g12" id="l02">
+    <figure class="lamina lam--L" data-name="tu armario, por fin en orden">
+      <div class="lam-frame">
+        <img src="media/armario.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <video src="../assets/video/armario.mp4" poster="media/armario.jpg" muted playsinline preload="none" controls width="720" height="1280"
+          aria-label="Animación: tu armario, por fin en orden. Decenas de prendas caen desordenadas y se ordenan solas, por tipo y por color, hasta sumar 192 prendas en «Mi armario». Encuentra cualquier prenda en un segundo."></video>
+      </div>
+      <figcaption>
+        <span class="sc">N.º 02 <b>— El armario</b></span>
+        <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: tu armario, por fin en orden"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+      </figcaption>
+    </figure>
+    <div class="spread__txt">
+      <h2 class="t-l rv"><span class="ln"><span>Todo,</span></span><span class="ln"><span>en su <em>sitio.</em></span></span></h2>
+      <p class="body">Haz fotos a tu ropa. édit reconoce cada prenda, le quita el fondo y la ordena por tipo, color y temporada. Encuentra cualquier prenda en un segundo.</p>
+    </div>
+    <div class="duo">
+      <div class="duo__note">
+        <h3 class="t-s">Lo que llevas, ya es tuyo.</h3>
+        <p>Sube una foto tuya de cuerpo entero y édit saca las prendas que llevas.</p>
+      </div>
+      <figure class="lamina lam--S" data-name="tu armario, en una foto">
+        <div class="lam-frame">
+          <img src="../assets/video/armario-foto.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+          <video src="../assets/video/armario-foto.mp4" poster="../assets/video/armario-foto.jpg" muted playsinline preload="none" controls width="720" height="1280"
+            aria-label="Animación: ¿tu armario, en una foto? Una foto de cuerpo entero se separa en prendas: camiseta, gabardina, vaquero recto y botín. Todo, en su sitio. Y te proponemos looks con tu ropa."></video>
+        </div>
+        <figcaption>
+          <span class="sc">En una foto</span>
+          <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: tu armario, en una foto"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+        </figcaption>
+      </figure>
+    </div>
+  </article>
+
+  <article class="spread spread--b g12" id="l03">
+    <h2 class="t-l rv"><span class="ln a"><span>Antes de</span></span> <span class="ln b"><span><em>ponértelo.</em></span></span></h2>
+    <figure class="lamina lam--M" data-name="pruébatelo en un toque">
+      <div class="lam-frame">
+        <img src="../assets/video/probador.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <video src="../assets/video/probador.mp4" poster="../assets/video/probador.jpg" muted playsinline preload="none" controls width="720" height="1280"
+          aria-label="Animación: ¿te queda bien? Un look de tu armario en el móvil. Pruébatelo en un toque: tu ropa, sobre ti, con cada prenda etiquetada. Antes de ponértelo."></video>
+      </div>
+      <figcaption>
+        <span class="sc">N.º 03 <b>— El probador</b></span>
+        <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: pruébatelo en un toque"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+      </figcaption>
+    </figure>
+    <p class="body">¿Te queda bien? Pruébatelo en un toque: tu ropa, sobre una foto tuya. Así te queda.</p>
+  </article>
+
+  <article class="spread spread--c g12" id="l04">
+    <div class="spread__txt">
+      <h2 class="t-l rv"><span class="ln"><span>Cada semana,</span></span><span class="ln"><span>sin <em>pedirlo.</em></span></span></h2>
+      <p class="body">Looks hechos con tu propia ropa, pensados para tu semana, el clima y tu estilo. Y cada semana te conoce mejor.</p>
+    </div>
+    <figure class="lamina lam--L" data-name="tu semana, resuelta">
+      <div class="lam-frame">
+        <img src="../assets/video/semana.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+        <video src="../assets/video/semana.mp4" poster="../assets/video/semana.jpg" muted playsinline preload="none" controls width="720" height="1280"
+          aria-label="Animación: un aviso en el móvil. Cada semana, sin pedirlo: tu semana, resuelta, con un look para cada día según tu colorimetría, tu arquetipo y el tiempo. Y cada semana te conoce mejor."></video>
+      </div>
+      <figcaption>
+        <span class="sc">N.º 04 <b>— La semana</b></span>
+        <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: tu semana, resuelta"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+      </figcaption>
+    </figure>
+  </article>
+
+  <div class="spread spread--d g12">
+    <article class="half half--1" id="l05">
+      <figure class="lamina lam--M" data-name="tu color, primero">
+        <div class="lam-frame">
+          <img src="../assets/video/color.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+          <video src="../assets/video/color.mp4" poster="../assets/video/color.jpg" muted playsinline preload="none" controls width="720" height="1280"
+            aria-label="Animación: no todo te sienta igual. Las paletas de las doce estaciones de colorimetría, hasta dar con «Invierno Profundo». Cada look, pensado con tu paleta."></video>
+        </div>
+        <figcaption>
+          <span class="sc">N.º 05 <b>— El color</b></span>
+          <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: tu color, primero"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+        </figcaption>
+      </figure>
+      <h2 class="t-m rv"><span class="ln"><span>Tu color,</span></span><span class="ln"><span><em>primero.</em></span></span></h2>
+      <p class="body">No todo te sienta igual. Descubre tu colorimetría entre las 12 estaciones: cada look, pensado con tu paleta.</p>
+    </article>
+    <article class="half half--2" id="l06">
+      <figure class="lamina lam--M" data-name="ocho preguntas, un estilo">
+        <div class="lam-frame">
+          <img src="../assets/video/arquetipo.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+          <video src="../assets/video/arquetipo.mp4" poster="../assets/video/arquetipo.jpg" muted playsinline preload="none" controls width="720" height="1280"
+            aria-label="Animación: ocho preguntas, un estilo. Un test, una rueda de arquetipos y un resultado: natural y clásico, con su mezcla. Y tus looks salen de ahí."></video>
+        </div>
+        <figcaption>
+          <span class="sc">N.º 06 <b>— El estilo</b></span>
+          <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: ocho preguntas, un estilo"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+        </figcaption>
+      </figure>
+      <h2 class="t-m rv"><span class="ln"><span>Tu estilo,</span></span><span class="ln"><span><em>redefinido.</em></span></span></h2>
+      <p class="body">Un test de ocho preguntas descubre tu arquetipo de estilo. Y tus looks salen de ahí.</p>
+    </article>
+  </div>
+
+  <h2 class="vh" id="ademas-t">Y además</h2>
+  <ul class="apuntes" aria-labelledby="ademas-t">
+    <li><h3 class="t-s">Tus looks</h3><p>Los que édit te propone y los que montas tú, siempre con tu propia ropa.</p></li>
+    <li><h3 class="t-s">Planes</h3><p>Un viaje, un evento, una temporada: los looks de cada día y la maleta.</p></li>
+    <li><h3 class="t-s">Tu asesora</h3><p>Trabaja con una asesora de imagen profesional: ve tu armario real y te envía propuestas dentro de la app.</p></li>
+  </ul>
+</section>
+
+<!-- ═════ 4 · Manifiesto ═════ -->
+<section class="manifiesto" aria-label="Manifiesto">
+  <div class="wrap manifiesto__in">
+    <blockquote class="quote rv">
+      <p><span class="ln"><span>La tecnología</span></span> <span class="ln"><span>no sustituye</span></span><br class="d"> <span class="ln"><span>el criterio.</span></span> <span class="ln"><span>Lo <em>amplifica.</em></span></span></p>
+    </blockquote>
+    <p class="manifiesto__foot"><span class="brand" aria-hidden="true"><i>é</i>dit</span><span>No va de ropa. Va de vestirse con intención.</span></p>
+  </div>
+</section>
+
+<!-- ═════ 5 · Tira ═════ -->
+<section class="tira" id="prenda" aria-labelledby="tira-t">
+  <div class="wrap tira__head">
+    <div>
+      <h2 class="t-l rv" id="tira-t"><span class="ln"><span>Un pantalón negro.</span></span><span class="ln"><span><em>Ocho</em> looks.</span></span></h2>
+      <p class="body">Sácale más a lo que ya tienes. Menos impulso, más intención.</p>
+    </div>
+    <div class="tira__meta">
+      <div class="tira__count" aria-hidden="true">
+        <div class="tira__num"><div class="tira__roll"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span><span>08</span></div></div>
+        <div class="tira__of sc"><span class="tira__name">Oficina</span><span>de 08 looks</span></div>
+      </div>
+      <div class="tira__btns no-js-hide">
+        <button class="arrow" type="button" data-dir="-1" aria-label="Look anterior" disabled><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M8.5 2.5 4 7l4.5 4.5"/></svg></button>
+        <button class="arrow" type="button" data-dir="1" aria-label="Look siguiente"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5.5 2.5 10 7l-4.5 4.5"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="tira__rail" tabindex="0" role="region" aria-label="Ocho looks con el mismo pantalón negro; desplázate en horizontal">
+    <ul>
+      <li data-name="Oficina" class="is-cur"><figure><img src="media/look-01.jpg" alt="Blusa rosa de flores, pantalón ancho negro, sandalias plateadas y bolso negro." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Oficina</span><span class="sc">Look 01</span></figcaption></figure></li>
+      <li data-name="Cena"><figure><img src="media/look-02.jpg" alt="Jersey azul, pantalón ancho negro, sandalias de plataforma azul marino y bolso negro." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Cena</span><span class="sc">Look 02</span></figcaption></figure></li>
+      <li data-name="Fin de semana"><figure><img src="media/look-03.jpg" alt="Polo gris de punto, pantalón ancho negro, sandalias rosa de tiras y bolso negro acolchado." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Fin de semana</span><span class="sc">Look 03</span></figcaption></figure></li>
+      <li data-name="Formal"><figure><img src="media/look-04.jpg" alt="Blusa blanca de lunares, pantalón ancho negro, sandalias beige y bolso negro." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Formal</span><span class="sc">Look 04</span></figcaption></figure></li>
+      <li data-name="Ciudad"><figure><img src="media/look-05.jpg" alt="Top granate, pantalón ancho negro, sandalias de plataforma azul marino y sombrero gris." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Ciudad</span><span class="sc">Look 05</span></figcaption></figure></li>
+      <li data-name="Oficina"><figure><img src="media/look-06.jpg" alt="Top estampado azul y rosa, pantalón ancho negro, sandalias beige y collar fino." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Oficina</span><span class="sc">Look 06</span></figcaption></figure></li>
+      <li data-name="Formal"><figure><img src="media/look-07.jpg" alt="Camisa blanca, pantalón ancho negro, sandalias de plataforma azul marino y collar con colgante." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Formal</span><span class="sc">Look 07</span></figcaption></figure></li>
+      <li data-name="Ciudad"><figure><img src="media/look-08.jpg" alt="Blusa negra plisada, pantalón ancho negro, bailarinas burdeos y bolso burdeos." width="636" height="636" loading="lazy" decoding="async"><figcaption><span class="serif">Ciudad</span><span class="sc">Look 08</span></figcaption></figure></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═════ 6 · Profesionales ═════ -->
+<section class="pro" id="pro" aria-labelledby="pro-t">
+  <div class="wrap">
+    <div class="pro__top">
+      <p class="brand"><i>é</i>dit<em>Pro</em></p>
+      <p class="sc">¿Eres asesora de imagen?</p>
+    </div>
+    <div class="pro__intro">
+      <h2 class="t-xl rv" id="pro-t"><span class="ln"><span>Tu estudio digital</span></span><span class="ln"><span>de <em>estilismo.</em></span></span></h2>
+      <p class="pro__lead">Para asesoras de imagen, estilistas y personal shoppers. Tus clientas, sus armarios y tus looks, en un sitio. En web y en app.</p>
+    </div>
+    <div class="pro__grid">
+      <figure class="lamina" data-name="el estudio de édit Pro">
+        <div class="lam-frame">
+          <img src="media/estudio.jpg" alt="" width="1080" height="864" loading="lazy" decoding="async">
+          <video src="media/estudio.mp4" poster="media/estudio.jpg" muted playsinline preload="none" controls width="1080" height="864"
+            aria-label="Animación: el estudio de édit Pro en una tableta. Todas tus clientas, de un vistazo; la ficha de una clienta con su colorimetría, su estilo y su armario, juntos; y un dossier de estilismo en PDF para entregarle."></video>
+        </div>
+        <figcaption>
+          <span class="sc">N.º 07 <b>— El estudio</b></span>
+          <button class="ctl no-js-hide" type="button" data-state="off" aria-label="Reproducir vídeo: el estudio de édit Pro"><span><svg viewBox="0 0 12 12" aria-hidden="true"><path class="i-play" d="M3 1.5 10.5 6 3 10.5z"/><path class="i-pause" d="M2.5 1.5h2.4v9H2.5zM7.1 1.5h2.4v9H7.1z"/></svg></span></button>
+        </figcaption>
+      </figure>
+      <div class="pro__side">
+        <ol class="pro__notes">
+          <li><span class="n" aria-hidden="true">i.</span><h3 class="t-s">Todas tus clientas, de un vistazo.</h3><p>La ficha y el armario de cada clienta.</p></li>
+          <li><span class="n" aria-hidden="true">ii.</span><h3 class="t-s">Colorimetría, estilo y armario, juntos.</h3><p>Looks y lookbooks, cápsulas, planes y chat.</p></li>
+          <li><span class="n" aria-hidden="true">iii.</span><h3 class="t-s">Entrégale un dossier de estilismo.</h3><p>En PDF, para tu clienta.</p></li>
+        </ol>
+        <div class="pro__end">
+          <p>Más clientas, mismo criterio. Sin perder tu sello.</p>
+          <a class="pill pill--inv" href="https://dashboard.editstudio.app/login">Iniciar sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ 7 · Descarga ═════ -->
+<section class="descarga wrap" id="descargar" aria-labelledby="desc-t">
+  <h2 class="t-xxl rv viva" id="desc-t"><span class="ln"><span>Vístete</span></span> <span class="ln"><span>sin <em>dudas.</em></span></span></h2>
+  <div class="descarga__row">
+    <div>
+      <p class="t-s">Tu armario no necesita estar lleno. Necesita tener sentido.</p>
+      <small>Descargar édit es gratis. Algunas funciones son de la suscripción Premium, que se contrata en la app.</small>
+    </div>
+    <div class="descarga__cta">
+      <a class="pill" href="https://dashboard.editstudio.app/descargar">Empieza gratis</a>
+      <a class="badge" href="https://apps.apple.com/es/app/id6796045067"><img src="../assets/img/badge-app-store.png" alt="Descargar en el App Store" width="431" height="144" loading="lazy"></a>
+      <a class="badge" href="https://play.google.com/store/apps/details?id=edit.studio.app"><img src="../assets/img/badge-google-play.png" alt="Disponible en Google Play" width="486" height="144" loading="lazy"></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="colofon">
+  <div class="wrap">
+    <div class="colofon__grid">
+      <div class="colofon__brand">
+        <span class="brand" aria-hidden="true"><i>é</i>dit</span>
+        <p>Estilismo personal para iPhone y Android.</p>
+      </div>
+      <nav aria-labelledby="col-1">
+        <h2 class="sc" id="col-1">En este número</h2>
+        <ul>
+          <li><a href="#indice">Qué hace édit</a></li>
+          <li><a href="#pro">Profesionales</a></li>
+          <li><a href="#descargar">Descargar</a></li>
+        </ul>
+      </nav>
+      <nav aria-labelledby="col-2">
+        <h2 class="sc" id="col-2">Fuera de página</h2>
+        <ul>
+          <li><a href="https://www.instagram.com/editstudio.app/">Instagram</a></li>
+          <li><a href="https://www.linkedin.com/company/146595565/">LinkedIn</a></li>
+          <li><a href="https://dashboard.editstudio.app/login">Iniciar sesión</a></li>
+        </ul>
+      </nav>
+      <nav aria-labelledby="col-3">
+        <h2 class="sc" id="col-3">Letra pequeña</h2>
+        <ul>
+          <li><a href="https://dashboard.editstudio.app/legal/privacidad">Privacidad</a></li>
+          <li><a href="https://dashboard.editstudio.app/legal/terminos">Términos</a></li>
+        </ul>
+      </nav>
+    </div>
+    <p class="colofon__base sc">© 2026 édit</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const d = document;
+  const $ = (s, c = d) => c.querySelector(s), $$ = (s, c = d) => Array.from(c.querySelectorAll(s));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const wide = matchMedia('(min-width: 900px)');
+  const now = () => performance.now();
+  const tryPlay = v => { const r = v.play(); if (r && r.catch) r.catch(() => {}); };
+
+  /* 0 · Barra: el filete solo aparece al desplazar */
+  const nav = $('.nav'); let stuck = false;
+  const onScroll = () => { const s = scrollY > 6; if (s !== stuck) { stuck = s; nav.classList.toggle('is-stuck', s); } };
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  /* 1 · Revelados: titulares por líneas y cortina de las láminas */
+  const reveal = el => { if (!el.classList.contains('is-in')) { el.classList.add('is-in'); el._inAt = now(); } };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); } }), { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
+    $$('.rv:not([data-hero]), .lamina:not([data-hero])').forEach(el => io.observe(el));
+  } else $$('.rv, .lamina').forEach(reveal);
+  /* Portada: la lámina se destapa por CSS desde el primer fotograma; solo el titular espera a su tipografía (tope 700 ms) */
+  const heroFig = $('.lamina[data-hero]'), heroH = $('h1[data-hero]');
+  if (heroFig) reveal(heroFig);
+  const start = () => requestAnimationFrame(() => { if (heroH) reveal(heroH); });
+  Promise.race([d.fonts && d.fonts.ready ? d.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 700))]).then(start, start);
+
+  /* 2 · Un solo vídeo en marcha: el más centrado. Al terminar, cede el turno o vuelve a empezar */
+  const arb = {
+    list: [], current: null,
+    vis(p) { const r = p.el.getBoundingClientRect(), vh = innerHeight, h = Math.min(r.height, vh) || 1; return Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0)) / h; },
+    dist(p) { const r = p.el.getBoundingClientRect(); return Math.abs((r.top + r.bottom) / 2 - innerHeight / 2); },
+    ok(p) { return !p.userPaused && !p.off && arb.vis(p) >= 0.55; },
+    update() {
+      if (d.hidden) return;
+      const c = arb.current;
+      if (c && !c.off && arb.vis(c) >= 0.4) return;
+      const best = arb.list.filter(arb.ok).sort((a, b) => arb.dist(a) - arb.dist(b))[0] || null;
+      if (best !== c) arb.activate(best);
+    },
+    activate(p) { if (arb.current && arb.current !== p) arb.current.pause(); arb.current = p; if (p) p.play(); },
+    next(p) { const c = arb.list.filter(q => q !== p && arb.ok(q)), i = arb.list.indexOf(p); return c.find(q => arb.list.indexOf(q) > i) || c[0] || null; }
+  };
+
+  /* Arranque en dos tiempos, sin doble exposición: el vídeo se detiene en su primer fotograma, sube sobre el póster
+     en 0,28 s y solo entonces echa a andar. o = { live(on), isLive(), dip(on), wait(), ready(), say(on), sync() } */
+  const player = (el, v, o) => {
+    const p = {
+      el, userPaused: reduce.matches, timer: 0, phase: 'idle',
+      play() { if (p.userPaused || p.off) return; clearTimeout(p.timer); p.timer = setTimeout(p.show, reduce.matches ? 0 : o.wait()); },
+      show() {
+        if (o.ready) o.ready();
+        p.phase = reduce.matches || o.isLive() ? 'run' : 'prime';
+        tryPlay(v);
+      },
+      pause(byUser) {
+        clearTimeout(p.timer); p.phase = 'idle'; v.pause(); o.dip(false);
+        /* si apenas había empezado, vuelve el póster: nunca queda un marco vacío */
+        if (v.currentTime < (byUser ? 0.4 : 1.5)) { o.live(false); if (v.currentTime) v.currentTime = 0; }
+        if (byUser || reduce.matches) p.userPaused = true;
+        if (o.sync) o.sync();
+      }
+    };
+    v.addEventListener('playing', () => {
+      if (p.phase === 'prime') {
+        p.phase = 'fade'; v.pause(); o.live(true);
+        p.timer = setTimeout(() => { if (p.phase !== 'fade') return; p.phase = 'run'; if (arb.current === p && !p.userPaused) tryPlay(v); }, 300);
+        return;
+      }
+      o.live(true); o.dip(false);
+      if (o.say) o.say(true);
+    });
+    v.addEventListener('pause', () => { if (p.phase !== 'fade' && o.say) o.say(false); });
+    v.addEventListener('ended', () => {
+      if (o.say) o.say(false);
+      p.phase = 'idle';
+      if (reduce.matches) { p.userPaused = true; if (o.sync) o.sync(); return; }
+      const nx = arb.next(p);
+      if (!nx) o.dip(true);          /* va a repetir: funde al color de fondo, sin pasar por el póster */
+      o.live(false);
+      clearTimeout(p.timer);
+      p.timer = setTimeout(() => {
+        v.currentTime = 0;
+        if (nx) arb.activate(nx); else if (arb.current === p) p.show();
+      }, 300);
+    });
+    return p;
+  };
+
+  $$('.lamina').forEach(fig => {
+    const v = $('video', fig), frame = $('.lam-frame', fig), btn = $('.ctl', fig), name = fig.dataset.name || '', hero = fig.hasAttribute('data-hero');
+    v.controls = false; v.muted = true;
+    v.removeAttribute('poster');                 /* con JS el póster es la imagen hermana; el atributo queda para quien no lo tenga */
+    if (hero && !reduce.matches) v.preload = 'auto';
+    const lead = hero ? 360 : 600;
+    const p = player(frame, v, {
+      live: on => frame.classList.toggle('is-live', on),
+      isLive: () => frame.classList.contains('is-live'),
+      dip: on => frame.classList.toggle('is-dip', on),
+      wait: () => fig.classList.contains('is-in') ? Math.max(0, lead - (now() - fig._inAt)) : lead,
+      say: on => { btn.dataset.state = on ? 'on' : 'off'; btn.setAttribute('aria-label', (on ? 'Pausar' : 'Reproducir') + ' vídeo: ' + name); }
+    });
+    btn.addEventListener('click', () => {
+      if (v.paused) { p.userPaused = false; arb.activate(p); }
+      else p.pause(true);
+    });
+    arb.list.push(p);
+  });
+
+  /* 3 · Índice (solo ordenador): una vista previa que cambia con la línea activa */
+  const list = $('.indice__list');
+  if (list) {
+    const rows = $$('a', list), sFrame = $('.indice__stage .lam-frame'), posters = $$('img', sFrame);
+    const sNum = $('[data-s-num]'), sTag = $('[data-s-tag]'), tog = $('.tog'), togT = $('[data-tog-t]');
+    const v = d.createElement('video');
+    v.muted = true; v.playsInline = true; v.preload = 'none'; v.tabIndex = -1;
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('aria-hidden', 'true');
+    sFrame.appendChild(v);
+    let cur = null;
+    const same = () => !!cur && v.getAttribute('src') === cur.dataset.src;
+    const ip = player(list, v, {
+      live: on => v.classList.toggle('is-live', on),
+      isLive: () => v.classList.contains('is-live'),
+      dip: on => sFrame.classList.toggle('is-dip', on),
+      wait: () => same() ? 0 : 120,               /* 120 ms: barrer la lista con el cursor no lanza seis descargas */
+      ready: () => { if (cur && !same()) { v.classList.remove('is-live'); v.src = cur.dataset.src; } },
+      sync: () => sync()
+    });
+    Object.defineProperty(ip, 'off', { get: () => !wide.matches });
+    const sync = () => { const on = !ip.userPaused; tog.dataset.state = on ? 'on' : 'off'; togT.textContent = on ? 'Pausar vista previa' : 'Reproducir vista previa'; };
+    const setRow = a => {
+      if (!a || a === cur) return;
+      const i = rows.indexOf(a);
+      rows.forEach(r => r.classList.toggle('is-on', r === a));
+      posters.forEach((im, k) => { im.classList.toggle('was-on', im.classList.contains('is-on') && k !== i); im.classList.toggle('is-on', k === i); });
+      sNum.textContent = a.dataset.num; sTag.textContent = a.dataset.tag;
+      sFrame.style.setProperty('--lam-bg', a.hasAttribute('data-a') ? 'var(--lam-a)' : 'var(--lam-b)');
+      cur = a;
+      clearTimeout(ip.timer); ip.phase = 'idle';
+      if (v.getAttribute('src')) v.pause();
+      v.classList.remove('is-live'); sFrame.classList.remove('is-dip');
+      if (arb.current === ip) ip.play();
+    };
+    if ('IntersectionObserver' in window) {
+      const cio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setRow(e.target); }), { rootMargin: '-46% 0px -46% 0px' });
+      rows.forEach(a => cio.observe(a));
+    }
+    rows.forEach(a => {
+      a.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') setRow(a); });
+      a.addEventListener('focus', () => setRow(a));
+    });
+    wide.addEventListener('change', () => { if (arb.current === ip && ip.off) { ip.pause(); arb.current = null; } arb.update(); });
+    tog.addEventListener('click', () => {
+      if (ip.userPaused) { ip.userPaused = false; sync(); arb.activate(ip); }
+      else ip.pause(true);
+    });
+    setRow(rows[0]); sync();
+    arb.list.splice(1, 0, ip);
+  }
+
+  if ('IntersectionObserver' in window) {
+    const th = Array.from({ length: 21 }, (_, i) => i / 20);
+    const vio = new IntersectionObserver(() => arb.update(), { threshold: th });
+    arb.list.forEach(p => vio.observe(p.el));
+  }
+  addEventListener('resize', () => arb.update(), { passive: true });
+  d.addEventListener('visibilitychange', () => { const c = arb.current; if (d.hidden) { if (c) c.pause(); } else if (c && !c.off && arb.vis(c) >= 0.4) c.play(); else { arb.current = null; arb.update(); } });
+
+  /* 4 · Tira: numeración que avanza con el desplazamiento horizontal */
+  const rail = $('.tira__rail');
+  if (rail) {
+    const items = $$('li', rail), roll = $('.tira__roll'), nameEl = $('.tira__name');
+    const prev = $('.arrow[data-dir="-1"]'), next = $('.arrow[data-dir="1"]');
+    let idx = 0, raf = 0;
+    const paint = () => {
+      raf = 0;
+      const max = rail.scrollWidth - rail.clientWidth, x = rail.scrollLeft;
+      const i = max > 0 ? Math.round(x / max * (items.length - 1)) : 0;
+      prev.disabled = x < 2; next.disabled = x > max - 2;
+      if (i === idx) return;
+      idx = i;
+      roll.style.transform = 'translateY(' + (-i * 100 / items.length) + '%)';
+      nameEl.textContent = items[i].dataset.name;
+      items.forEach((li, k) => li.classList.toggle('is-cur', k === i));
+    };
+    rail.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(paint); }, { passive: true });
+    const go = dir => rail.scrollBy({ left: dir * (items[1].offsetLeft - items[0].offsetLeft), behavior: reduce.matches ? 'auto' : 'smooth' });
+    prev.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
+  }
+
+  /* 5 · Profesionales: las notas siguen al clip */
+  const pv = $('.pro video'), notes = $$('.pro__notes li');
+  if (pv && notes.length) {
+    const cuts = [0, 4.1, 8.6];
+    pv.addEventListener('timeupdate', () => { let k = 0; cuts.forEach((c, j) => { if (pv.currentTime >= c) k = j; }); notes.forEach((n, j) => n.classList.toggle('is-on', j === k)); });
+  }
+})();
+</script>
+</body>
+</html>

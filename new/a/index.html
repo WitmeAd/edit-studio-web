@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="es" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>édit — Una foto tuya. Tres looks.</title>
+<meta name="description" content="édit es tu app de estilismo personal: digitaliza tu armario, recibe looks hechos con la ropa que ya tienes y pruébatelos sobre una foto tuya. Para iPhone y Android.">
+<meta name="theme-color" content="#FBF8F3">
+<link rel="icon" href="../assets/img/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="media/hero.jpg" fetchpriority="high">
+<script>document.documentElement.className = 'js';</script>
+<style>
+/* ───────── Base ───────── */
+:root {
+  --lienzo: #FBF8F3;
+  --v1: #F3EBE2;          /* looks / probador / armario-foto: punto medio entre el beige nominal del vídeo y el que pinta Chrome */
+  --v2: #F0E9DE;          /* resto de vídeos y fotogramas, mismo criterio */
+  --tinta: #2B2118;
+  --umber: #3D2F24;
+  --texto-2: #5E4E40;
+  --terra: #C77B5C;
+  --terra-osc: #B56849;
+  --terra-clara: #E0A58E;
+  --hueso: #F2EBE0;
+  --linea: rgba(43, 33, 24, .14);
+  --sobre-lienzo: #ECE9E4;   /* tinta al 7 % sobre el lienzo, opaco: tapa la retícula bajo los controles */
+  --serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --gutter: clamp(20px, 5vw, 72px);
+  --page: clamp(1080px, 70vw, 1320px);
+  --r: 28px;
+  --nav: 60px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Escala serif: cinco pasos */
+  --t-display: clamp(2.6rem, 12vw, 4.4rem);
+  --t-h2: clamp(2.25rem, 4.6vw, 3.5rem);
+  --t-h3: clamp(1.9rem, 3.4vw, 2.75rem);
+  --t-h4: 1.75rem;
+  --t-h5: 1.5rem;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: calc(var(--nav) + 16px); }
+body {
+  margin: 0;
+  /* Mesa de corte: papel de patronaje, punto y cruz. Solo se ve en el lienzo; las vitrinas son opacas. */
+  background: var(--lienzo) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath d='M24 28.5h9M28.5 24v9' fill='none' stroke='%232B2118' stroke-opacity='.11' shape-rendering='crispEdges'/%3E%3Cpath d='M0 0h1v1H0zM28 0h1v1h-1zM0 28h1v1H0z' fill='%232B2118' fill-opacity='.2'/%3E%3C/svg%3E") 14px 14px / 56px 56px;
+  color: var(--tinta);
+  font: 400 1.0625rem/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+h1, h2, h3, p, ul, ol, figure, blockquote { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+img, video { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+main:focus { outline: none; }
+::selection { background: var(--terra-clara); color: var(--tinta); }
+:focus-visible { outline: 2px solid var(--terra-osc); outline-offset: 3px; border-radius: 6px; }
+.pro :focus-visible, .nav.is-osc :focus-visible { outline-color: var(--terra-clara); }
+.salto { position: absolute; left: 16px; top: 10px; z-index: 60; padding: 10px 16px; border-radius: 999px; background: var(--tinta); color: var(--lienzo); font-size: .875rem; font-weight: 500; transform: translateY(-64px); }
+.salto:focus { transform: none; }
+
+h1, h2, h3, .manifesto p {
+  font-family: var(--serif);
+  font-optical-sizing: auto;
+  font-weight: 340;
+  text-wrap: balance;
+}
+em { font-style: italic; color: var(--terra-osc); }
+p { text-wrap: pretty; }
+
+.wrap { width: min(var(--page), 100% - 2 * var(--gutter)); margin-inline: auto; }
+.section { padding-block: clamp(88px, 11vw, 168px); }
+.h2 { font-size: var(--t-h2); line-height: 1.04; letter-spacing: -.03em; }
+
+/* ───────── Botones ───────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 28px; border-radius: 999px;
+  background: var(--tinta); color: var(--lienzo);
+  font-weight: 500; font-size: 1.0625rem; letter-spacing: -.005em;
+  transition: background-color .2s ease, color .2s ease, transform .14s var(--ease-out);
+}
+.btn:active { transform: scale(.97); }
+.btn--sm { min-height: 36px; padding: 0 16px; font-size: .875rem; }
+.btn--claro { background: var(--hueso); color: var(--tinta); }
+.link {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
+  font-weight: 500; text-decoration: underline; text-decoration-color: transparent;
+  text-underline-offset: 5px; text-decoration-thickness: 1px;
+  transition: text-decoration-color .2s ease;
+}
+.link svg { width: 14px; height: 14px; transition: transform .25s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: var(--umber); }
+  .btn--claro:hover { background: #fff; }
+  .link:hover { text-decoration-color: currentColor; }
+  .link:hover svg { transform: translateX(3px); }
+}
+
+/* ───────── Barra ───────── */
+.nav {
+  position: sticky; top: 0; z-index: 50; height: var(--nav);
+  background: rgba(251, 248, 243, .84);
+  -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px);
+  transition: background-color .35s ease, color .35s ease;
+}
+.nav__in { height: 100%; width: min(1400px, 100% - 2 * clamp(16px, 3vw, 32px)); margin-inline: auto; display: flex; align-items: center; gap: 28px; }
+.marca { font-family: var(--serif); font-weight: 500; font-size: 1.625rem; letter-spacing: -.02em; line-height: 1; padding-block: 8px; }
+.marca span { color: var(--terra); transition: color .35s ease; }
+.marca i { font-style: italic; font-weight: 400; }
+.nav__links { display: none; gap: 28px; margin-inline: auto; font-size: .875rem; font-weight: 500; color: var(--texto-2); }
+.nav__links a { padding-block: 12px; transition: color .2s ease; }
+.nav__fin { margin-left: auto; display: flex; align-items: center; gap: clamp(12px, 2vw, 22px); font-size: .875rem; font-weight: 500; }
+.nav__fin > a:first-child { padding-block: 12px; color: var(--texto-2); transition: color .2s ease; }
+@media (hover: hover) and (pointer: fine) { .nav__links a:hover, .nav__fin > a:first-child:hover { color: var(--tinta); } }
+@media (min-width: 900px) { .nav__links { display: flex; } .nav__fin { margin-left: 0; } }
+/* Sobre el mundo Pro la barra cambia de material: umber translúcido en vez de claro sobre oscuro */
+.nav.is-osc { background: rgba(61, 47, 36, .82); color: var(--hueso); }
+.nav.is-osc .marca span { color: var(--terra-clara); }
+.nav.is-osc .nav__links, .nav.is-osc .nav__fin > a:first-child { color: #D9CBB8; }
+.nav.is-osc .btn { background: var(--hueso); color: var(--tinta); }
+@media (hover: hover) and (pointer: fine) {
+  .nav.is-osc .nav__links a:hover, .nav.is-osc .nav__fin > a:first-child:hover { color: #fff; }
+  .nav.is-osc .btn:hover { background: #fff; }
+}
+
+/* ───────── Película (vídeo dentro de una vitrina) ───────── */
+.film {
+  --fx: 8%; --fy: 9%;
+  position: relative; aspect-ratio: var(--ar, 9 / 16);
+  -webkit-mask-image: linear-gradient(#0000, #000 var(--fy), #000 calc(100% - var(--fy)), #0000), linear-gradient(90deg, #0000, #000 var(--fx), #000 calc(100% - var(--fx)), #0000);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(#0000, #000 var(--fy), #000 calc(100% - var(--fy)), #0000), linear-gradient(90deg, #0000, #000 var(--fx), #000 calc(100% - var(--fx)), #0000);
+  mask-composite: intersect;
+}
+.film__video, .film__poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* El fotograma fijo va debajo; el vídeo aparece encima cuando ya tiene imagen y el fijo se retira */
+.film__poster { transition: opacity .5s ease; }
+.js .film.is-live .film__poster { opacity: 0; }
+.js .film__video { opacity: 0; transition: opacity .45s ease; }
+.js .film.is-live .film__video { opacity: 1; }
+.js .film.is-dip .film__video { opacity: 0; }
+
+.toggle {
+  position: absolute; right: 16px; bottom: 16px; z-index: 3;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(43, 33, 24, .08); color: var(--tinta);
+  transition: background-color .2s ease, transform .14s var(--ease-out);
+}
+.toggle:active { transform: scale(.94); }
+.toggle svg { width: 14px; height: 14px; grid-area: 1 / 1; }
+.toggle .i-play { display: none; }
+.toggle[data-state="paused"] .i-play { display: block; }
+.toggle[data-state="paused"] .i-pause { display: none; }
+@media (hover: hover) and (pointer: fine) { .toggle:hover { background: rgba(43, 33, 24, .16); } }
+.no-js .toggle { display: none; }
+
+/* ───────── Hero ───────── */
+.escena { background: var(--lienzo); padding-bottom: 12px; }
+.stage {
+  --pad: clamp(16px, 4vw, 40px);
+  position: relative; margin: 0 clamp(8px, 1vw, 12px);
+  min-height: calc(100svh - var(--nav) - 12px);
+  border-radius: clamp(24px, 2.6vw, 36px);
+  background: var(--bg, var(--v1));
+  display: flex; flex-direction: column; align-items: center;
+  padding: clamp(28px, 4.4vw, 48px) var(--pad) 0;
+  text-align: center;
+  overflow: clip;
+  transform-origin: 50% 100%;
+}
+.hero__title { font-size: var(--t-display); line-height: 1; letter-spacing: -.035em; }
+.hero__title .ln { display: block; overflow: clip; padding: .06em .08em .14em; margin: -.06em -.08em -.14em; }
+.hero__title .ln > span { display: block; }
+.hero__sub { margin-top: clamp(14px, 1.6vw, 18px); max-width: 34rem; text-wrap: balance; font-size: clamp(1.0625rem, 1.45vw, 1.25rem); line-height: 1.45; color: var(--texto-2); }
+.hero__cta { margin: clamp(16px, 1.9vw, 24px) 0 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 26px; }
+/* La película llena lo que queda de vitrina y se sale un poco por abajo: el producto asoma, no flota */
+.hero__film {
+  --fy: 6%; --ar: 4 / 5;
+  --fw: min(100% + 2 * var(--pad), 520px);
+  flex: none; width: var(--fw); max-width: none;
+  margin: auto 0 calc(var(--fw) * -.07);
+}
+@media (min-width: 700px) {
+  .hero__title { font-size: clamp(3.2rem, 6.4vw, 6rem); }
+  .hero__title .ln { display: inline-block; vertical-align: top; }
+  .hero__sub { max-width: 54rem; }
+  .hero__cta { margin-bottom: 4px; }
+  .hero__film { --fh: clamp(480px, 100svh - 304px, 800px); --fw: min(100%, var(--fh) * .8); }
+}
+
+/* ───────── Lo esencial ───────── */
+.esencial { padding-bottom: 48px; }
+.esencial__cab { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: clamp(28px, 3.6vw, 48px); }
+.flechas { display: none; gap: 10px; }
+.flecha { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--sobre-lienzo); transition: background-color .2s ease, opacity .2s ease, transform .14s var(--ease-out); }
+.flecha svg { width: 16px; height: 16px; }
+.flecha:active { transform: scale(.94); }
+.flecha:disabled { opacity: .4; cursor: default; }
+@media (hover: hover) and (pointer: fine) { .flecha:not(:disabled):hover { background: #DFDBD5; } }
+@media (min-width: 900px) { .js .flechas { display: flex; } }
+
+.carrusel { container-type: inline-size; }
+.rail {
+  --card: min(var(--page), 100cqw - 2 * var(--gutter));
+  position: relative; display: flex; gap: clamp(8px, 1.6vw, 20px);
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+  padding-inline: calc((100cqw - var(--card)) / 2);
+  transition: opacity .2s ease;
+}
+.rail::-webkit-scrollbar { display: none; }
+.rail.is-jump { opacity: 0; }
+.slide {
+  position: relative; flex: 0 0 var(--card); scroll-snap-align: center;
+  border-radius: var(--r); background: var(--bg, var(--v2)); overflow: hidden;
+  display: flex; flex-direction: column; padding: 26px 24px 0;
+}
+/* Sello: icono de línea del tema + «édit | TEMA» */
+.sello { --s: 34px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: var(--terra-osc); }
+.sello__icono { width: var(--s); height: var(--s); flex: none; margin-left: calc(var(--s) * -.03); overflow: visible; stroke-width: 1.9; }
+.sello__icono .tapa { fill: var(--bg, var(--v2)); stroke: none; }
+.sello__icono .velo { fill: currentColor; fill-opacity: .13; }
+.sello__rotulo { display: flex; align-items: center; gap: 10px; color: var(--tinta); }
+.sello__marca { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; letter-spacing: -.02em; line-height: 1; }
+.sello__marca b { font-weight: inherit; color: var(--terra); }
+.sello__tema { padding-left: 10px; border-left: 1px solid var(--linea); font-size: .6875rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); line-height: 1.6; }
+.slide h3 { font-size: var(--t-h3); line-height: 1.06; letter-spacing: -.028em; }
+.slide p { margin-top: 10px; max-width: 30rem; color: var(--texto-2); }
+.slide__txt { margin-bottom: 12px; }
+.slide .film { height: min(54svh, 480px); margin: auto auto 0; }
+.js .slide { cursor: pointer; }
+.js .slide.is-active { cursor: default; }
+/* Las vecinas se atenúan con un velo del color del lienzo: la tarjeta sigue opaca y la retícula no la atraviesa */
+.js .slide::after { content: ""; position: absolute; inset: 0; z-index: 2; background: var(--lienzo); opacity: .62; pointer-events: none; transition: opacity .6s var(--ease-out); }
+.js .slide.is-active::after { opacity: 0; }
+
+@media (min-width: 700px) {
+  /* Texto a la izquierda, vídeo a la derecha: desde 700 px */
+  .slide { flex-direction: row; align-items: stretch; height: clamp(430px, min(60svh, 64cqw), 520px); padding: 0 24px 0 36px; gap: 16px; }
+  .slide__txt { flex: 1; min-width: 0; margin: 0; display: flex; flex-direction: column; justify-content: space-between; padding-block: 36px; }
+  .sello { --s: 72px; flex-direction: column; align-items: flex-start; gap: 18px; margin: 0; }
+  .sello__icono { stroke-width: 1; }
+  .sello__marca { font-size: var(--t-h5); }
+  .sello__tema { font-size: .75rem; }
+  .slide h3 { font-size: clamp(1.75rem, 4.3cqw, 2.25rem); }
+  .slide p { font-size: 1rem; line-height: 1.5; max-width: 22rem; margin-top: 12px; }
+  .slide .film { height: 100%; margin: 0; }
+}
+@media (min-width: 900px) {
+  .slide { height: clamp(480px, 66svh, 620px); padding: 0 clamp(40px, 8cqw, 120px) 0 clamp(40px, 5.4cqw, 72px); gap: 32px; }
+  .slide__txt { padding-block: clamp(40px, 5.4cqw, 64px); }
+  .sello { --s: clamp(76px, 10.5svh, 92px); gap: 20px; }
+  .sello__icono { stroke-width: .9; }
+  .slide h3 { font-size: var(--t-h3); }
+  .slide p { font-size: 1.1875rem; max-width: 25rem; margin-top: 16px; }
+}
+@media (min-width: 1600px) { .slide { height: clamp(480px, 66svh, 700px); } }
+
+.dotnav { margin: clamp(20px, 2.4vw, 28px) auto 0; width: fit-content; display: flex; align-items: center; gap: 12px; }
+.dots { display: flex; align-items: center; gap: 2px; height: 44px; padding-inline: 14px; border-radius: 999px; background: var(--sobre-lienzo); contain: layout; }
+.dot { width: 24px; height: 44px; display: grid; place-items: center; transition: width .45s var(--ease-out); }
+.dot i { display: block; width: 8px; height: 8px; border-radius: 999px; background: rgba(43, 33, 24, .55); overflow: hidden; transition: width .45s var(--ease-out), background-color .3s ease; }
+.dot i b { display: block; width: 100%; height: 100%; background: var(--tinta); border-radius: inherit; transform: scaleX(0); transform-origin: 0 50%; transition: transform .28s linear; }
+.dot[aria-current="true"] { width: 56px; }
+.dot[aria-current="true"] i { width: 40px; background: rgba(43, 33, 24, .2); }
+.dotnav .toggle { position: static; background: var(--sobre-lienzo); }
+@media (hover: hover) and (pointer: fine) { .dotnav .toggle:hover { background: #DFDBD5; } }
+.no-js .dotnav { display: none; }
+
+/* ───────── Respiro ───────── */
+.manifesto {
+  min-height: clamp(300px, 46svh, 720px); display: grid; place-items: center;
+  padding: clamp(40px, 6vw, 96px) var(--gutter) clamp(72px, 10vw, 150px); text-align: center;
+  /* la retícula se apaga detrás de la frase */
+  background: radial-gradient(ellipse 60% 50% at 50% 44%, var(--lienzo) 58%, rgba(251, 248, 243, 0));
+}
+.manifesto p { font-size: clamp(2rem, 5.6vw, 6rem); line-height: 1.04; letter-spacing: -.034em; max-width: 15em; }
+.manifesto .w { display: inline-block; }
+@media (min-width: 700px) {
+  .esencial { padding-bottom: clamp(72px, 9vw, 128px); }
+  .manifesto { min-height: clamp(340px, 62svh, 720px); }
+}
+
+/* ───────── Regla de sastre (único acento) ───────── */
+.regla {
+  --tick: rgba(43, 33, 24, .38);
+  display: flex; height: 27px; overflow: hidden; margin-bottom: clamp(28px, 3.4vw, 44px);
+  background-color: var(--lienzo);
+  background-image:
+    linear-gradient(var(--tick), var(--tick)),
+    repeating-linear-gradient(90deg, var(--tick) 0 1px, #0000 1px 80px),
+    repeating-linear-gradient(90deg, var(--tick) 0 1px, #0000 1px 40px),
+    repeating-linear-gradient(90deg, var(--tick) 0 1px, #0000 1px 8px);
+  background-size: 100% 1px, 100% 13px, 100% 9px, 100% 5px;
+  background-repeat: no-repeat;
+}
+.regla i { flex: 0 0 80px; padding: 16px 0 0 5px; font: 500 .625rem/1 var(--sans); letter-spacing: .06em; font-variant-numeric: tabular-nums; color: var(--texto-2); }
+
+/* ───────── Bento ───────── */
+.bento { display: grid; gap: 14px; margin-top: clamp(28px, 4vw, 56px); }
+.cell { position: relative; overflow: hidden; isolation: isolate; border-radius: var(--r); background: var(--bg, var(--v2)); padding: 28px 24px 0; display: flex; flex-direction: column; }
+.cell__txt { position: relative; z-index: 1; margin-bottom: 24px; }
+.cell h3 { font-size: var(--t-h4); line-height: 1.08; letter-spacing: -.022em; font-weight: 360; }
+.cell p { margin-top: 10px; font-size: 1rem; line-height: 1.5; color: var(--texto-2); max-width: 26rem; }
+.cell__img { height: auto; margin: auto auto 0; }
+.cell--arq .cell__img { width: min(74%, 280px); margin-bottom: 18px; }
+.cell--find .cell__img { width: min(64%, 240px); height: 0; flex: 1 1 0; min-height: 190px; object-fit: cover; object-position: 50% 0; filter: drop-shadow(0 14px 22px rgba(43, 33, 24, .12)); }
+.cell--plan .cell__img { width: 100%; margin-bottom: 26px; }
+.cell--ases .cell__img { width: 100%; margin-bottom: 22px; }
+.cell--color h3 { font-size: var(--t-h3); line-height: 1.04; letter-spacing: -.03em; font-weight: 340; }
+.cell--color .film { --fx: 14%; height: min(60svh, 500px); margin: 0 auto; }
+@media (min-width: 640px) {
+  .bento { grid-template-columns: 1fr 1fr; }
+  .cell { padding: 30px 28px 0; }
+  .cell--color { grid-column: span 2; flex-direction: row; align-items: end; justify-content: space-between; height: 480px; padding-right: clamp(28px, 7vw, 88px); }
+  .cell--color .cell__txt { width: min(17rem, 44%); margin-bottom: 34px; }
+  .cell--color .film { height: 100%; margin: 0; }
+}
+@media (min-width: 1200px) {
+  .bento { --R: min(380px, var(--page) * .5185 - 226px); grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-rows: minmax(var(--R), auto); gap: 20px; }
+  .cell { padding: 34px 34px 0; }
+  /* La celda grande: película a toda la altura a la derecha; el texto ocupa justo lo que deja libre */
+  .cell--color { grid-column: span 7; grid-row: span 2; height: auto; flex-direction: column; align-items: stretch; justify-content: flex-end; padding-right: 0; }
+  .cell--color .cell__txt { width: calc(100% - (2 * var(--R) + 20px) * .5625 - 6px); margin: 0 0 34px; }
+  .cell--color .film { position: absolute; top: 0; bottom: 0; right: 0; height: 100%; }
+  .cell--arq, .cell--find, .cell--plan { grid-column: span 5; }
+  .cell--ases { grid-column: span 7; }
+  .cell--ases .cell__txt { width: 14rem; }
+  /* La captura arranca junto al texto y, si no cabe, se sale por la derecha */
+  .cell--ases .cell__img { position: absolute; left: calc(34px + 14rem + 30px); top: 12%; height: 76%; width: auto; max-width: none; margin: 0; }
+  /* La rueda asoma grande por la esquina; las etiquetas quedan siempre dentro */
+  .cell--arq p { max-width: 11rem; }
+  .cell--arq .cell__img { position: absolute; right: -10px; bottom: -8%; height: 84%; width: auto; max-width: none; margin: 0; }
+  .cell--find .cell__img { width: 214px; min-height: 0; margin: 0 14px 0 auto; }
+  .cell--plan .cell__img { margin-bottom: 34px; }
+}
+@media (min-width: 1600px) { .cell--find .cell__img { width: 250px; } }
+
+/* ───────── édit Pro ───────── */
+.pro { position: relative; color: var(--hueso); padding-block: clamp(88px, 11vw, 160px); }
+.pro__bg { position: absolute; inset: 0; z-index: -1; background: var(--umber); border-radius: 0 0 clamp(24px, 3vw, 40px) clamp(24px, 3vw, 40px); }
+.pro__marca { position: absolute; inset: -30px 0 30px; pointer-events: none; visibility: hidden; }
+.pro em { color: var(--terra-clara); }
+.pro .marca { font-size: 1.75rem; }
+.pro .marca span { color: var(--terra-clara); }
+.pro__grid { display: grid; gap: 28px; }
+.pro__txt p { margin-top: 18px; max-width: 28rem; font-size: 1.1875rem; line-height: 1.5; color: #D9CBB8; }
+.pro__txt .h2 { margin-top: clamp(20px, 2.4vw, 32px); }
+.vitrina { position: relative; border-radius: var(--r); background: var(--bg, var(--v2)); display: grid; place-items: center; overflow: hidden; }
+.pro .film { --fx: 2.5%; --fy: 0%; width: min(100%, min(76svh, 700px) * .9); height: auto; }
+.caps { display: grid; gap: 2px; }
+.cap { position: relative; display: block; width: 100%; text-align: left; padding: 15px 0 13px; font-family: var(--serif); font-optical-sizing: auto; font-weight: 340; font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.15; letter-spacing: -.018em; text-wrap: balance; color: var(--hueso); opacity: .62; transition: opacity .4s ease; }
+.cap::before, .cap i { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 1px; background: rgba(242, 235, 224, .22); }
+.cap i { background: var(--terra-clara); transform: scaleX(0); transform-origin: 0 50%; transition: transform .28s linear; }
+.cap.is-on { opacity: 1; }
+.no-js .cap { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .cap:hover { opacity: 1; } }
+.pro__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 24px; margin-top: 8px; }
+.pro__cta span { font-size: .9375rem; color: #D9CBB8; }
+@media (min-width: 900px) {
+  .pro__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: clamp(40px, 5vw, 80px); row-gap: 32px; align-content: center; }
+  .pro .vitrina { grid-column: 2; grid-row: 1 / span 3; align-self: center; }
+  .pro__txt { align-self: end; }
+  .pro__cta { align-self: start; }
+}
+
+/* ───────── Cierre y pie ───────── */
+.cierre { text-align: center; padding-block: clamp(96px, 13vw, 200px) clamp(80px, 10vw, 150px); background: radial-gradient(ellipse 62% 50% at 50% 52%, var(--lienzo) 60%, rgba(251, 248, 243, 0)); }
+.cierre h2 { font-size: clamp(2.9rem, 9vw, 6rem); line-height: 1; letter-spacing: -.035em; }
+.cierre p { margin: 20px auto 0; max-width: 30rem; font-size: 1.1875rem; line-height: 1.5; color: var(--texto-2); }
+.tiendas { margin-top: 32px; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+.tiendas a { display: block; border-radius: 10px; transition: transform .14s var(--ease-out), opacity .2s ease; }
+.tiendas a:active { transform: scale(.97); }
+.tiendas img { height: 52px; width: auto; }
+.cierre small { display: block; margin: 26px auto 0; max-width: 26rem; font-size: .875rem; line-height: 1.5; color: var(--texto-2); }
+/* El pie es el canto de la mesa: liso, con un pespunte en vez de una línea */
+.pie { padding-block: 28px 36px; font-size: .875rem; color: var(--texto-2); background: repeating-linear-gradient(90deg, rgba(43, 33, 24, .42) 0 7px, #0000 7px 12px) 0 0 / 100% 1px no-repeat var(--lienzo); }
+.pie__in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 32px; }
+.pie nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.pie nav a { padding-block: 10px; transition: color .2s ease; }
+.pie .marca { font-size: 1.375rem; color: var(--tinta); }
+@media (hover: hover) and (pointer: fine) { .pie nav a:hover { color: var(--tinta); } .tiendas a:hover { opacity: .82; } }
+
+/* ───────── Movimiento ───────── */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .salto { transition: transform .2s var(--ease-out); }
+
+  /* 1 · El titular entra por frases; apoyo y botones lo siguen; la película llega con ellos y arranca al terminar */
+  @keyframes frase { from { transform: translateY(108%); } }
+  @keyframes apoyo { from { opacity: 0; transform: translateY(10px); } }
+  @keyframes pelicula { from { opacity: 0; transform: translateY(3%) scale(.97); } }
+  .hero__title .ln > span { animation: frase .9s var(--ease-out) both; animation-delay: calc(var(--i) * 140ms + 40ms); }
+  .hero__sub { animation: apoyo .7s var(--ease-out) .34s both; }
+  .hero__cta { animation: apoyo .7s var(--ease-out) .42s both; }
+  .hero__film { animation: pelicula 1s var(--ease-out) .18s both; transform-origin: 50% 100%; }
+
+  /* 2 · El sello se dibuja cuando su tarjeta pasa a primer plano */
+  .js .sello__icono .tr { stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; transition: stroke-dashoffset .5s ease, opacity .2s ease; }
+  .js .sello__icono .pt, .js .sello__icono .velo { opacity: 0; transition: opacity .3s ease; }
+  .js .slide.is-active .sello__icono .tr { stroke-dashoffset: 0; opacity: 1; transition: stroke-dashoffset 1.1s var(--ease-out) calc(var(--d, 0) * 110ms + 120ms), opacity .25s ease calc(var(--d, 0) * 110ms + 120ms); }
+  .js .slide.is-active .sello__icono .pt, .js .slide.is-active .sello__icono .velo { opacity: 1; transition: opacity .5s ease .75s; }
+
+  @supports (animation-timeline: view()) {
+    /* 3 · La vitrina del hero se retira al bajar */
+    @keyframes retirada { to { transform: scale(.93); opacity: .45; } }
+    .stage { animation: retirada linear both; animation-timeline: view(); animation-range: exit 8% exit 100%; }
+
+    /* 4 · El manifiesto se lee con el scroll: termina de encenderse antes del centro */
+    @keyframes palabra { from { opacity: .14; } }
+    .manifesto p { view-timeline: --manifesto block; }
+    .manifesto .w { animation: palabra linear both; animation-timeline: --manifesto; animation-range: cover calc(10% + var(--i) * 3.2%) cover calc(20% + var(--i) * 3.2%); }
+
+    /* 5 · La regla de sastre se desenrolla */
+    @keyframes medir { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+    .regla { animation: medir linear both; animation-timeline: view(); animation-range: entry 40% cover 36%; }
+
+    /* 6 · Cambio de mundo: el umber se abre hasta ocupar el ancho */
+    @keyframes mundo { from { clip-path: inset(0 min(7%, var(--gutter) - 6px) round 56px); } to { clip-path: inset(0 0 round 0); } }
+    .pro__bg { animation: mundo linear both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .slide::after { transition: opacity .2s ease; }
+  .rail, .film__video, .film__poster, .dot, .dot i, .dot i b, .cap i, .nav { transition-duration: .01s !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nav { background: var(--lienzo); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .nav.is-osc { background: var(--umber); }
+}
+</style>
+</head>
+<body id="top">
+
+<a class="salto" href="#contenido">Saltar al contenido</a>
+
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a class="marca" href="#top" aria-label="édit, inicio"><span>é</span>dit</a>
+    <nav class="nav__links" aria-label="Secciones">
+      <a href="#esencial">Lo esencial</a>
+      <a href="#mas">A fondo</a>
+      <a href="#pro">Profesionales</a>
+    </nav>
+    <div class="nav__fin">
+      <a href="https://dashboard.editstudio.app/login">Iniciar sesión</a>
+      <a class="btn btn--sm" href="https://dashboard.editstudio.app/descargar">Descargar</a>
+    </div>
+  </div>
+</header>
+
+<main id="contenido" tabindex="-1">
+
+  <!-- ══ Hero ══ -->
+  <div class="escena">
+  <section class="stage" aria-labelledby="titulo">
+    <h1 class="hero__title" id="titulo">
+      <span class="ln" style="--i:0"><span>Una foto tuya.</span></span>
+      <span class="ln" style="--i:1"><span>Tres <em>looks</em>.</span></span>
+    </h1>
+    <p class="hero__sub">Sube una foto y édit te prueba looks hechos con tu propia ropa. Antes de ponértelos.</p>
+    <div class="hero__cta">
+      <a class="btn" href="https://dashboard.editstudio.app/descargar">Descargar édit</a>
+      <a class="link" href="#pro">¿Eres asesora de imagen? <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5 9.5 7 5 11.5"/></svg></a>
+    </div>
+    <div class="film hero__film" id="film-hero" data-film data-nombre="una foto tuya, tres looks" data-espera="620" data-fin="media/hero-fin.jpg">
+      <img class="film__poster" src="media/hero.jpg" alt="" width="720" height="900" fetchpriority="high">
+      <video class="film__video" src="media/hero.mp4" poster="media/hero.jpg" width="720" height="900" muted playsinline preload="none" controls
+        aria-label="Vídeo sin sonido. Una foto tuya de cuerpo entero, subida en el móvil: «Súbela una vez». En un momento aparecen tus looks: «Tres looks. Sobre ti». «Así te queda»: la misma persona con dos looks distintos, guardados en Mis looks."></video>
+      <script>(function (v) { var c = navigator.connection; if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !(c && c.saveData)) v.preload = 'auto'; })(document.currentScript.previousElementSibling);</script>
+    </div>
+    <button class="toggle" type="button" data-toggle="#film-hero" data-state="playing">
+      <svg class="i-pause" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2.5" y="1.5" width="3" height="11" rx="1"/><rect x="8.5" y="1.5" width="3" height="11" rx="1"/></svg>
+      <svg class="i-play" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M3.5 1.9v10.2a.6.6 0 0 0 .92.5l8-5.1a.6.6 0 0 0 0-1L4.42 1.4a.6.6 0 0 0-.92.5Z"/></svg>
+    </button>
+  </section>
+  </div>
+
+  <!-- ══ Lo esencial ══ -->
+  <section class="section esencial" id="esencial" aria-labelledby="t-esencial">
+    <div class="wrap esencial__cab">
+      <h2 class="h2" id="t-esencial">Lo esencial.</h2>
+      <div class="flechas">
+        <button class="flecha" type="button" data-ir="-1" aria-label="Anterior"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg></button>
+        <button class="flecha" type="button" data-ir="1" aria-label="Siguiente"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+      </div>
+    </div>
+
+    <div class="carrusel">
+      <ul class="rail" id="rail" tabindex="-1">
+
+        <li class="slide" data-slide style="--bg: var(--v1)">
+          <div class="slide__txt">
+            <div class="sello" aria-hidden="true">
+              <!-- espejo de pie -->
+              <svg class="sello__icono" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path class="tr" pathLength="1" d="M1.5 46.5V17a14.5 14.5 0 0 1 29 0v29.5Z"/>
+                <path class="tr" pathLength="1" style="--d:1" d="M6.5 41.5V17a9.5 9.5 0 0 1 19 0v24.5Z"/>
+                <path class="tr" pathLength="1" style="--d:3" d="m11.5 23 6-6M11.5 31l9.5-9.5" stroke-opacity=".6"/>
+              </svg>
+              <span class="sello__rotulo"><span class="sello__marca"><b>é</b>dit</span><span class="sello__tema">Probador</span></span>
+            </div>
+            <div class="slide__copy">
+              <h3>Tu ropa, sobre <em>ti</em>.</h3>
+              <p>Elige cualquier look de tu armario y míralo puesto en una foto tuya, en un toque.</p>
+            </div>
+          </div>
+          <div class="film" data-film data-nombre="pruébatelo">
+            <img class="film__poster" src="media/probador.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+            <noscript><video class="film__video" src="../assets/video/probador.mp4" poster="media/probador.jpg" width="720" height="1280" muted playsinline preload="none" controls
+              aria-label="Vídeo sin sonido. «¿Te queda bien?». Un look de tu armario en el móvil. «Pruébatelo en un toque». «Tu ropa, sobre ti»: una modelo lleva el jersey de punto, el pantalón ancho y el bolso burdeos del look. «Antes de ponértelo»."></video></noscript>
+          </div>
+        </li>
+
+        <li class="slide" data-slide style="--bg: var(--v2)">
+          <div class="slide__txt">
+            <div class="sello" aria-hidden="true">
+              <!-- percha -->
+              <svg class="sello__icono" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path class="tr" pathLength="1" d="M19 20.3a5 5 0 1 1 5 5v3.2"/>
+                <path class="tr" pathLength="1" style="--d:1" d="M24 28.5 3.4 41.4c-2.4 1.5-1.3 5.1 1.5 5.1h38.2c2.8 0 3.9-3.6 1.5-5.1L24 28.5Z"/>
+              </svg>
+              <span class="sello__rotulo"><span class="sello__marca"><b>é</b>dit</span><span class="sello__tema">Armario</span></span>
+            </div>
+            <div class="slide__copy">
+              <h3>Tu armario, <em>por&nbsp;fin</em> en&nbsp;orden.</h3>
+              <p>Haz fotos a tu ropa. édit reconoce cada prenda, le quita el fondo y la ordena por tipo, color y&nbsp;temporada.</p>
+            </div>
+          </div>
+          <div class="film" data-film data-nombre="tu armario en orden">
+            <img class="film__poster" src="media/armario.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+            <noscript><video class="film__video" src="media/armario.mp4" poster="media/armario.jpg" width="720" height="1280" muted playsinline preload="none" controls
+              aria-label="Vídeo sin sonido. Decenas de prendas desordenadas se colocan solas en una cuadrícula, ordenadas por tipo y por color. En el móvil, la pantalla Mi armario: «Encuentra cualquier prenda en un segundo»."></video></noscript>
+          </div>
+        </li>
+
+        <li class="slide" data-slide style="--bg: var(--v1)">
+          <div class="slide__txt">
+            <div class="sello" aria-hidden="true">
+              <!-- cámara -->
+              <svg class="sello__icono" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path class="tr" pathLength="1" d="M15.6 14.5 18.4 9h11.2l2.8 5.5h8.1a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6h-33a6 6 0 0 1-6-6v-20a6 6 0 0 1 6-6Z"/>
+                <circle class="tr" pathLength="1" style="--d:2" cx="24" cy="30" r="8.5"/>
+                <path class="pt" d="M38.6 21.6h.01" stroke-width="2.6"/>
+              </svg>
+              <span class="sello__rotulo"><span class="sello__marca"><b>é</b>dit</span><span class="sello__tema">Una foto</span></span>
+            </div>
+            <div class="slide__copy">
+              <h3>Lo que llevas, ya&nbsp;es <em>tuyo</em>.</h3>
+              <p>Sube una foto tuya de cuerpo entero: édit saca las prendas que llevas y las guarda en tu&nbsp;armario.</p>
+            </div>
+          </div>
+          <div class="film" data-film data-nombre="tu armario en una foto">
+            <img class="film__poster" src="media/armario-foto.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+            <noscript><video class="film__video" src="media/armario-foto.mp4" poster="media/armario-foto.jpg" width="720" height="1280" muted playsinline preload="none" controls
+              aria-label="Vídeo sin sonido. «¿Tu armario, en una foto?». Una foto de cuerpo entero se separa en camiseta, gabardina, vaquero y botas. «Lo que llevas, ya es tuyo». «Todo, en su sitio»: las prendas aparecen en Mi armario. «Y te proponemos looks con tu ropa»: dos looks para hoy."></video></noscript>
+          </div>
+        </li>
+
+        <li class="slide" data-slide style="--bg: var(--v2)">
+          <div class="slide__txt">
+            <div class="sello" aria-hidden="true">
+              <!-- looks: tarjetas en abanico, como en la app -->
+              <svg class="sello__icono" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect class="tr" pathLength="1" style="--d:1" x="14" y="13" width="20" height="30" rx="3.6" transform="rotate(-16 24 62)"/>
+                <rect class="tr" pathLength="1" style="--d:2" x="14" y="13" width="20" height="30" rx="3.6" transform="rotate(16 24 62)"/>
+                <rect class="tapa" x="14" y="13" width="20" height="30" rx="3.6"/>
+                <rect class="velo" x="14" y="13" width="20" height="30" rx="3.6" stroke="none"/>
+                <rect class="tr" pathLength="1" x="14" y="13" width="20" height="30" rx="3.6"/>
+              </svg>
+              <span class="sello__rotulo"><span class="sello__marca"><b>é</b>dit</span><span class="sello__tema">Looks</span></span>
+            </div>
+            <div class="slide__copy">
+              <h3>Una prenda. <em>Ocho</em> looks.</h3>
+              <p>Looks hechos con la ropa que ya tienes: la misma prenda, de la oficina al fin de semana. O&nbsp;móntalos tú.</p>
+            </div>
+          </div>
+          <div class="film" data-film data-nombre="una prenda, ocho looks">
+            <img class="film__poster" src="media/prenda.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+            <noscript><video class="film__video" src="media/prenda.mp4" poster="media/prenda.jpg" width="720" height="1280" muted playsinline preload="none" controls
+              aria-label="Vídeo sin sonido. Un pantalón ancho negro y ocho looks distintos con esa misma prenda: oficina, fin de semana, ciudad, formal. «Sácale más a lo que ya tienes»."></video></noscript>
+          </div>
+        </li>
+
+        <li class="slide" data-slide style="--bg: var(--v2)">
+          <div class="slide__txt">
+            <div class="sello" aria-hidden="true">
+              <!-- calendario -->
+              <svg class="sello__icono" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect class="tr" pathLength="1" x="1.5" y="8.5" width="45" height="38" rx="6"/>
+                <path class="tr" pathLength="1" style="--d:1" d="M1.5 19.5h45"/>
+                <path class="tr" pathLength="1" style="--d:2" d="M13.5 4v8.5M34.5 4v8.5"/>
+                <path class="pt" d="M13.5 28.5h.01M24 28.5h.01M34.5 28.5h.01M13.5 38h.01M24 38h.01" stroke-width="2.6"/>
+                <circle class="pt" cx="34.5" cy="38" r="2.9" fill="currentColor" stroke="none"/>
+              </svg>
+              <span class="sello__rotulo"><span class="sello__marca"><b>é</b>dit</span><span class="sello__tema">Tu semana</span></span>
+            </div>
+            <div class="slide__copy">
+              <h3>Tu semana, <em>resuelta</em>.</h3>
+              <p>Un look para cada día, con tu ropa, pensado para tus planes, el clima y tu&nbsp;estilo.</p>
+            </div>
+          </div>
+          <div class="film" data-film data-nombre="tu semana, resuelta">
+            <img class="film__poster" src="media/semana.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+            <noscript><video class="film__video" src="../assets/video/semana.mp4" poster="media/semana.jpg" width="720" height="1280" muted playsinline preload="none" controls
+              aria-label="Vídeo sin sonido. Una notificación en el móvil: «Cada semana, sin pedirlo». «Tu semana, resuelta»: un look para cada día, según tu colorimetría, tu arquetipo y el tiempo. «Y cada semana te conoce mejor»."></video></noscript>
+          </div>
+        </li>
+
+      </ul>
+
+      <div class="dotnav" role="group" aria-label="Vídeos de Lo esencial">
+        <div class="dots">
+          <button class="dot" type="button" aria-label="Ver: Tu ropa, sobre ti"><i><b></b></i></button>
+          <button class="dot" type="button" aria-label="Ver: Tu armario, por fin en orden"><i><b></b></i></button>
+          <button class="dot" type="button" aria-label="Ver: Lo que llevas, ya es tuyo"><i><b></b></i></button>
+          <button class="dot" type="button" aria-label="Ver: Una prenda. Ocho looks"><i><b></b></i></button>
+          <button class="dot" type="button" aria-label="Ver: Tu semana, resuelta"><i><b></b></i></button>
+        </div>
+        <button class="toggle" type="button" data-toggle="rail" data-state="playing" aria-label="Pausar carrusel">
+          <svg class="i-pause" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2.5" y="1.5" width="3" height="11" rx="1"/><rect x="8.5" y="1.5" width="3" height="11" rx="1"/></svg>
+          <svg class="i-play" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M3.5 1.9v10.2a.6.6 0 0 0 .92.5l8-5.1a.6.6 0 0 0 0-1L4.42 1.4a.6.6 0 0 0-.92.5Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Respiro ══ -->
+  <section class="manifesto" aria-label="Manifiesto">
+    <p>
+      <span class="w" style="--i:0">Tu</span> <span class="w" style="--i:1">armario</span> <span class="w" style="--i:2">no</span> <span class="w" style="--i:3">necesita</span> <span class="w" style="--i:4">estar</span> <span class="w" style="--i:5">lleno.</span><br>
+      <span class="w" style="--i:6">Necesita</span> <span class="w" style="--i:7">tener</span> <em class="w" style="--i:8">sentido.</em>
+    </p>
+  </section>
+
+  <!-- ══ A fondo ══ -->
+  <section class="section" id="mas" aria-labelledby="t-mas" style="padding-top: 0">
+    <div class="wrap">
+      <div class="regla" aria-hidden="true"><i></i><i>10</i><i>20</i><i>30</i><i>40</i><i>50</i><i>60</i><i>70</i><i>80</i><i>90</i><i>100</i><i>110</i><i>120</i><i>130</i><i>140</i><i>150</i><i>160</i></div>
+      <h2 class="h2" id="t-mas">Menos impulso. Más <em>intención</em>.</h2>
+
+      <div class="bento">
+
+        <article class="cell cell--color">
+          <div class="cell__txt">
+            <h3>Tu color, <em>primero</em>.</h3>
+            <p>Descubre tu colorimetría entre las 12&nbsp;estaciones. Tus looks la tienen en&nbsp;cuenta.</p>
+          </div>
+          <div class="film" id="film-color" data-film data-nombre="tu color, primero">
+            <img class="film__poster" src="../assets/video/color.jpg" alt="" width="720" height="1280" loading="lazy" decoding="async">
+            <noscript><video class="film__video" src="../assets/video/color.mp4" poster="../assets/video/color.jpg" width="720" height="1280" muted playsinline preload="none" controls
+              aria-label="Vídeo sin sonido. «No todo te sienta igual». Pasan las paletas de las 12 estaciones hasta la tuya, Invierno Profundo. Después, looks elegidos con esa paleta: «Cada look, pensado con tu paleta»."></video></noscript>
+          </div>
+          <button class="toggle" type="button" data-toggle="#film-color" data-state="playing">
+            <svg class="i-pause" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2.5" y="1.5" width="3" height="11" rx="1"/><rect x="8.5" y="1.5" width="3" height="11" rx="1"/></svg>
+            <svg class="i-play" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M3.5 1.9v10.2a.6.6 0 0 0 .92.5l8-5.1a.6.6 0 0 0 0-1L4.42 1.4a.6.6 0 0 0-.92.5Z"/></svg>
+          </button>
+        </article>
+
+        <article class="cell cell--arq">
+          <div class="cell__txt">
+            <h3>Ocho preguntas. Un&nbsp;<em>estilo</em>.</h3>
+            <p>Un test corto descubre tu arquetipo. Y&nbsp;tus looks salen de ahí.</p>
+          </div>
+          <img class="cell__img" src="media/bento-arquetipo.webp" alt="Rueda de arquetipos de estilo: Natural y Clásico destacan sobre Sofisticado, Creativo, Dramático, Bohemio y Romántico." width="800" height="820" loading="lazy" decoding="async">
+        </article>
+
+        <article class="cell cell--find">
+          <div class="cell__txt">
+            <h3>Cualquier prenda, en&nbsp;un <em>segundo</em>.</h3>
+            <p>Todo tu armario en el móvil, ordenado y a&nbsp;mano.</p>
+          </div>
+          <img class="cell__img" src="media/bento-armario.webp" alt="Pantalla «Mi armario» de édit en un móvil: buscador, filtros por tipo y una cuadrícula de zapatos." width="632" height="860" loading="lazy" decoding="async">
+        </article>
+
+        <article class="cell cell--plan">
+          <div class="cell__txt">
+            <h3>Un viaje, un evento, una&nbsp;<em>temporada</em>.</h3>
+            <p>Organiza tus planes con los looks de cada día y&nbsp;la&nbsp;maleta.</p>
+          </div>
+          <img class="cell__img" src="media/bento-planes.webp" alt="Un plan en édit, «Evento Trabajo»: 3 looks, 13 piezas y 3 días." width="840" height="374" loading="lazy" decoding="async">
+        </article>
+
+        <article class="cell cell--ases">
+          <div class="cell__txt">
+            <h3>Y si quieres, con&nbsp;tu <em>asesora</em>.</h3>
+            <p>Una asesora de imagen profesional ve tu armario real y te envía propuestas dentro de la&nbsp;app.</p>
+          </div>
+          <img class="cell__img" src="media/bento-asesora.webp" alt="El seguimiento de una asesora en édit Pro: sus clientas, con las prendas de cada una." width="834" height="548" loading="lazy" decoding="async">
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ édit Pro ══ -->
+  <section class="pro" id="pro" aria-labelledby="t-pro">
+    <div class="pro__bg" aria-hidden="true"></div>
+    <div class="pro__marca" id="pro-marca" aria-hidden="true"></div>
+    <div class="wrap pro__grid">
+      <div class="pro__txt">
+        <span class="marca" role="img" aria-label="édit Pro"><span>é</span>dit<i>Pro</i></span>
+        <h2 class="h2" id="t-pro">Tu estudio digital de <em>estilismo</em>.</h2>
+        <p>Para asesoras de imagen, estilistas y personal shoppers. Tus clientas, sus armarios y tus looks, en un&nbsp;sitio.</p>
+      </div>
+
+      <div class="vitrina">
+        <div class="film" id="film-pro" data-film data-nombre="édit Pro" style="--ar: 9 / 10">
+          <img class="film__poster" src="media/pro.jpg" alt="" width="864" height="960" loading="lazy" decoding="async">
+          <noscript><video class="film__video" src="media/pro.mp4" poster="media/pro.jpg" width="864" height="960" muted playsinline preload="none" controls
+            aria-label="Vídeo sin sonido. El panel del estudio en una tableta, con todas las clientas y su seguimiento. La ficha de una clienta, con su colorimetría, su estilo y su armario. Un dossier de estilismo en PDF, «Otoño en la oficina»."></video></noscript>
+        </div>
+        <button class="toggle" type="button" data-toggle="#film-pro" data-state="playing">
+          <svg class="i-pause" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="2.5" y="1.5" width="3" height="11" rx="1"/><rect x="8.5" y="1.5" width="3" height="11" rx="1"/></svg>
+          <svg class="i-play" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M3.5 1.9v10.2a.6.6 0 0 0 .92.5l8-5.1a.6.6 0 0 0 0-1L4.42 1.4a.6.6 0 0 0-.92.5Z"/></svg>
+        </button>
+      </div>
+
+      <ol class="caps" id="caps-pro" aria-label="Lo que enseña el vídeo">
+        <li><button class="cap" type="button" data-t="0" data-fin="3.9"><i></i>Todas tus clientas, de un vistazo.</button></li>
+        <li><button class="cap" type="button" data-t="3.9" data-fin="8.4"><i></i>Colorimetría, estilo y armario, juntos.</button></li>
+        <li><button class="cap" type="button" data-t="8.4" data-fin="12"><i></i>Entrégale un dossier de estilismo.</button></li>
+      </ol>
+
+      <div class="pro__cta">
+        <a class="btn btn--claro" href="https://dashboard.editstudio.app/login">Descubre édit Pro</a>
+        <span>En web y en app.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ Cierre ══ -->
+  <section class="cierre" aria-labelledby="t-cierre">
+    <div class="wrap">
+      <h2 id="t-cierre">Vístete sin <em>dudas</em>.</h2>
+      <p>Descarga édit gratis en tu iPhone o en tu Android y empieza por una foto.</p>
+      <div class="tiendas">
+        <a href="https://apps.apple.com/es/app/id6796045067"><img src="../assets/img/badge-app-store.png" alt="Consíguelo en el App Store" width="431" height="144" loading="lazy"></a>
+        <a href="https://play.google.com/store/apps/details?id=edit.studio.app"><img src="../assets/img/badge-google-play.png" alt="Descargar en Google Play" width="486" height="144" loading="lazy"></a>
+      </div>
+      <small>Algunas funciones forman parte de la suscripción Premium, que se contrata en la app.</small>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pie">
+  <div class="wrap pie__in">
+    <a class="marca" href="#top" aria-label="édit, volver arriba"><span>é</span>dit</a>
+    <nav aria-label="Enlaces">
+      <a href="https://dashboard.editstudio.app/login">Iniciar sesión</a>
+      <a href="https://www.instagram.com/editstudio.app/">Instagram</a>
+      <a href="https://www.linkedin.com/company/146595565/">LinkedIn</a>
+      <a href="https://dashboard.editstudio.app/legal/privacidad">Privacidad</a>
+      <a href="https://dashboard.editstudio.app/legal/terminos">Términos</a>
+    </nav>
+    <span>© 2026 édit</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const mq = matchMedia('(prefers-reduced-motion: reduce)');
+  const ahorro = !!(navigator.connection && navigator.connection.saveData);
+  // «En calma»: sin reproducción ni avance automáticos (movimiento reducido o ahorro de datos)
+  const calm = () => mq.matches || ahorro;
+  const films = new Map();
+
+  /* ── Películas: una sola en marcha, solo si se ve, con pausa a mano ── */
+  function makeFilm(root) {
+    const poster = $('.film__poster', root);
+    let video = $('video', root);
+    if (!video) {
+      // Fuera del hero, el vídeo viaja dentro de <noscript> (con su póster y sus controles para quien no tenga JavaScript).
+      // Aquí se crea sin póster: el fotograma fijo es la <img> perezosa de debajo y no se descarga hasta que hace falta.
+      const tmp = document.createElement('div');
+      tmp.innerHTML = $('noscript', root).textContent.replace(/\sposter="[^"]*"/, '').replace(/\scontrols/, '');
+      video = tmp.firstElementChild; video.muted = true;
+      root.appendChild(video);
+    }
+    const f = { root, video, inView: false, near: false, allowed: true, userPaused: false, userStarted: false, want: false, timer: 0, onstate: null, onprogress: null, onended: null };
+    video.removeAttribute('controls');
+    if (mq.matches && root.dataset.fin) { poster.src = root.dataset.fin; video.poster = root.dataset.fin; }
+
+    video.addEventListener('playing', () => root.classList.add('is-live'));
+    video.addEventListener('timeupdate', () => f.onprogress && f.onprogress(video.currentTime, video.duration || 1));
+    video.addEventListener('ended', () => {
+      // No hacen bucle perfecto: se sostiene el último fotograma, funde al primero y vuelve a empezar.
+      clearTimeout(f.timer);
+      if (f.onended && f.onended()) return;   // el carrusel pasa a la tarjeta siguiente
+      f.timer = setTimeout(() => {
+        if (!f.want) return;
+        root.classList.add('is-dip');
+        f.timer = setTimeout(() => {
+          video.currentTime = 0;
+          if (f.want) video.play().catch(() => {});
+          requestAnimationFrame(() => root.classList.remove('is-dip'));
+        }, mq.matches ? 0 : 460);
+      }, 1400);
+    });
+    films.set(root, f);
+    return f;
+  }
+
+  function update(f) {
+    const want = f.inView && f.allowed && !f.userPaused && !document.hidden && (!calm() || f.userStarted);
+    f.want = want;
+    if (want) {
+      if (f.video.paused) {
+        if (f.video.ended) f.video.currentTime = 0;
+        films.forEach(o => { if (o !== f && !o.video.paused) o.video.pause(); });
+        const p = f.video.play();
+        if (p) p.catch(() => { f.want = false; f.userStarted = false; f.onstate && f.onstate(); });
+      }
+    } else {
+      clearTimeout(f.timer);
+      f.root.classList.remove('is-dip');
+      if (!f.video.paused) f.video.pause();
+    }
+    f.onstate && f.onstate();
+  }
+
+  function rewind(f) {
+    clearTimeout(f.timer);
+    f.root.classList.remove('is-live', 'is-dip');
+    if (f.video.readyState) { f.video.pause(); f.video.currentTime = 0; }
+    f.onprogress && f.onprogress(0, 1);
+  }
+
+  // Solo se empieza a descargar un vídeo cuando está a punto de verse y le toca.
+  function warm(f) { if (f.near && f.allowed && !calm() && f.video.preload !== 'auto') f.video.preload = 'auto'; }
+
+  $$('[data-film]').forEach(makeFilm);
+
+  const seen = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      const f = films.get(e.target);
+      const v = e.intersectionRatio >= .5;
+      if (v !== f.inView) { f.inView = v; update(f); }
+    });
+  }, { threshold: [0, .5, 1] });
+  const near = new IntersectionObserver(entries => {
+    entries.forEach(e => { const f = films.get(e.target); f.near = e.isIntersecting; warm(f); });
+  }, { rootMargin: '8% 0px' });
+  films.forEach(f => { seen.observe(f.root); near.observe(f.root); });
+
+  document.addEventListener('visibilitychange', () => films.forEach(update));
+  mq.addEventListener('change', () => films.forEach(f => { f.userStarted = false; update(f); }));
+
+  /* ── Botón de pausa de una película suelta ── */
+  function bindToggle(btn, getFilm, setPaused, textos) {
+    const paint = () => {
+      const f = getFilm();
+      const on = !!(f && f.want);
+      btn.dataset.state = on ? 'playing' : 'paused';
+      btn.setAttribute('aria-label', textos ? textos[on ? 0 : 1] : (on ? 'Pausar vídeo: ' : 'Reproducir vídeo: ') + (f ? f.root.dataset.nombre : ''));
+    };
+    btn.addEventListener('click', () => {
+      const f = getFilm(); if (!f) return;
+      setPaused(f.want);
+      paint();
+    });
+    return paint;
+  }
+  $$('.toggle[data-toggle^="#"]').forEach(btn => {
+    const f = films.get($(btn.dataset.toggle));
+    const paint = bindToggle(btn, () => f, pause => { f.userPaused = pause; f.userStarted = !pause; update(f); });
+    f.onstate = paint; paint();
+  });
+
+  /* ── Hero: la película arranca mientras termina de entrar el titular ── */
+  const hero = films.get($('#film-hero'));
+  if (hero) {
+    hero.allowed = false;
+    setTimeout(() => { hero.allowed = true; update(hero); }, calm() ? 0 : +hero.root.dataset.espera || 0);
+  }
+
+  /* ── Lo esencial: solo cobra vida la tarjeta centrada y, al acabar su vídeo, pasa a la siguiente ── */
+  const rail = $('#rail');
+  if (rail) {
+    const slides = $$('[data-slide]', rail);
+    const n = slides.length;
+    const sf = slides.map(s => films.get($('.film', s)));
+    const dots = $$('.dot');
+    const arrows = $$('[data-ir]');
+    const railBtn = $('.toggle[data-toggle="rail"]');
+    let active = -1, tick = false, jumping = false, jumpTimer = 0;
+
+    const paintRail = bindToggle(railBtn, () => sf[active], pause => {
+      sf.forEach(f => { f.userPaused = pause; f.userStarted = !pause; });
+      sf.forEach(update);
+    }, ['Pausar carrusel', 'Reanudar carrusel']);
+
+    function setActive(i) {
+      if (i === active) return;
+      active = i;
+      slides.forEach((s, k) => {
+        const on = k === i, f = sf[k];
+        s.classList.toggle('is-active', on);
+        dots[k].setAttribute('aria-current', on ? 'true' : 'false');
+        f.allowed = on;
+        if (!on) rewind(f);
+        update(f);
+      });
+      warm(sf[i]);
+      arrows.forEach(b => { b.disabled = +b.dataset.ir < 0 && i === 0; });
+      paintRail();
+    }
+    function measure() {
+      if (jumping) return;
+      const c = rail.scrollLeft + rail.clientWidth / 2;
+      let best = 0, bd = Infinity;
+      slides.forEach((s, i) => { const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - c); if (d < bd) { bd = d; best = i; } });
+      setActive(best);
+    }
+    const leftOf = i => slides[i].offsetLeft - (rail.clientWidth - slides[i].offsetWidth) / 2;
+    function go(i) {
+      i = ((i % n) + n) % n;
+      if (i === active) return;
+      if (Math.abs(i - active) > 1) {
+        // Salto largo (la vuelta al principio o un punto lejano): el carril funde, salta y vuelve. Sin pasar por las de en medio.
+        clearTimeout(jumpTimer);
+        jumping = true;
+        rail.classList.add('is-jump');
+        jumpTimer = setTimeout(() => {
+          rail.scrollTo({ left: leftOf(i), behavior: 'instant' });
+          setActive(i);
+          requestAnimationFrame(() => requestAnimationFrame(() => { rail.classList.remove('is-jump'); jumping = false; }));
+        }, mq.matches ? 0 : 210);
+      } else {
+        rail.scrollTo({ left: leftOf(i), behavior: mq.matches ? 'auto' : 'smooth' });
+      }
+    }
+    sf.forEach((f, k) => {
+      f.allowed = false;
+      f.onstate = () => { if (k === active) paintRail(); };
+      f.onprogress = (t, d) => {
+        const b = $('b', dots[k]); if (b) b.style.transform = 'scaleX(' + Math.min(1, t / d).toFixed(3) + ')';
+        // Con el clip avanzado, se va trayendo el siguiente para que el cambio no espere a la red.
+        if (k === active && t / d > .6 && !calm()) { const nx = sf[(k + 1) % n].video; if (nx.preload !== 'auto') nx.preload = 'auto'; }
+      };
+      // Al acabar un clip, el carrusel avanza solo (y vuelve al primero tras el último).
+      f.onended = () => {
+        if (k !== active || calm() || n < 2) return false;
+        f.timer = setTimeout(() => {
+          if (k !== active || !f.want) return;
+          go(k + 1);
+          // Si por lo que sea no se ha movido, el clip vuelve a empezar.
+          f.timer = setTimeout(() => { if (k === active && f.want) { f.video.currentTime = 0; f.video.play().catch(() => {}); } }, 1800);
+        }, 1100);
+        return true;
+      };
+    });
+    rail.addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(() => { tick = false; measure(); }); } }, { passive: true });
+    addEventListener('resize', measure, { passive: true });
+    slides.forEach((s, i) => s.addEventListener('click', () => { if (i !== active) go(i); }));
+    dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+    arrows.forEach(b => b.addEventListener('click', () => go(active + +b.dataset.ir)));
+    measure();
+  }
+
+  /* ── édit Pro: las tres frases siguen a la película y sirven para saltar a cada parte ── */
+  const pro = films.get($('#film-pro'));
+  const caps = $$('#caps-pro .cap');
+  if (pro && caps.length) {
+    pro.onprogress = t => caps.forEach(c => {
+      const a = +c.dataset.t, b = +c.dataset.fin, on = t >= a && t < b;
+      c.classList.toggle('is-on', on);
+      $('i', c).style.transform = 'scaleX(' + (on ? ((t - a) / (b - a)).toFixed(3) : t >= b ? 1 : 0) + ')';
+    });
+    caps.forEach(c => c.addEventListener('click', () => {
+      const v = pro.video, t = +c.dataset.t + .05;
+      const seek = () => { v.currentTime = t; };
+      clearTimeout(pro.timer); pro.root.classList.remove('is-dip');
+      pro.userPaused = false; pro.userStarted = true; pro.inView = true;
+      if (v.readyState >= 1) seek(); else v.addEventListener('loadedmetadata', seek, { once: true });
+      update(pro);
+    }));
+  }
+
+  /* ── La barra cambia a umber mientras pasa sobre el mundo Pro ── */
+  const nav = $('#nav'), marca = $('#pro-marca');
+  if (nav && marca) new IntersectionObserver(([e]) => nav.classList.toggle('is-osc', e.isIntersecting), { rootMargin: '0px 0px -99% 0px' }).observe(marca);
+})();
+</script>
+</body>
+</html>

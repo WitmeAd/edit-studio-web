@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>édit — Tu armario, por fin con sentido</title>
+<meta name="description" content="édit es la app de estilismo personal para iPhone y Android: digitaliza tu armario con fotos, recibe looks con la ropa que ya tienes y pruébatelos sobre una foto tuya.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F3EBE3">
+<link rel="icon" href="../assets/img/icon-512.png">
+<link rel="preload" as="image" href="media/portada.jpg" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..500&family=Inter:wght@400..600&display=swap" rel="stylesheet">
+<script>
+/* «js»: hay JavaScript. «live»: además se admite movimiento y la pantalla da para el escenario pegado. */
+(function (c) {
+  c.add('js');
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: no-preference) and (min-height: 520px)').matches) c.add('live');
+})(document.documentElement.classList);
+</script>
+<style>
+:root {
+  --bone: #F3EBE3;          /* hueso: punto medio entre el fondo real de los vídeos y cómo lo pinta Chrome */
+  --bone-2: #F0E9DE;        /* lo mismo para la segunda serie de vídeos, algo más tostada */
+  --bone-pro: #F0E9DE;      /* fondo del clip de édit Pro tal como lo pinta Chrome (medido en captura) */
+  --ink: #2B2118;
+  --umber: #3D2F24;
+  --muted: #6B5B4D;
+  --terra: #C77B5C;
+  --terra-deep: #B56849;    /* terracota con contraste suficiente para titulares sobre hueso */
+  --terra-soft: #E0A58E;
+  --line: rgba(43, 33, 24, .14);
+  --serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --nav-h: 56px;
+  --gutter: clamp(20px, 5vw, 72px);
+  --page: 1400px;                                   /* ancho único del contenido: barra, recorrido, semanal, Pro y pie */
+  --frame-h: clamp(300px, 56svh, 520px);            /* móvil: el escenario ocupa algo más de la mitad del alto */
+  --stage-block: calc(var(--frame-h) + 62px);       /* móvil: 8 de aire + escenario + fila 01–04 con la pausa */
+}
+@media (min-width: 600px) { :root { --frame-h: clamp(320px, 58svh, 600px); } }
+@media (min-width: 720px) {
+  /* dos columnas: el escenario tan alto como quepa, dejando al texto unos 300 px como mínimo */
+  :root { --nav-h: 64px; --frame-h: min(calc(100svh - var(--nav-h) - 56px), 800px, calc((100vw - 2 * var(--gutter) - 410px) * 16 / 9)); }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: var(--nav-h); scrollbar-color: #CDBFAC #F3EBE3; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0; background: var(--bone); color: var(--ink);
+  font: 400 1.0625rem/1.55 var(--sans);
+  overflow-x: clip; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+::selection { background: var(--terra-soft); color: var(--ink); }
+h1, h2, h3, p, ol, ul, figure { margin: 0; padding: 0; }
+ol, ul { list-style: none; }
+img, video { display: block; max-width: 100%; }
+a { color: inherit; text-underline-offset: .22em; text-decoration-thickness: 1px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 4px; }
+.vh { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip { position: fixed; left: 12px; top: -80px; z-index: 50; padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--bone); text-decoration: none; }
+.skip:focus { top: 10px; }
+
+/* Una sola voz para los titulares: el corte óptico más fino de Fraunces, como los rótulos de los vídeos */
+h1, h2, .breath p, .pick { font-family: var(--serif); font-weight: 320; font-variation-settings: "opsz" 144; }
+h1 em, h2 em, .breath em { font-style: italic; color: var(--terra-deep); }
+h1 { font-size: clamp(2.5rem, 10.4vw, 3.25rem); line-height: 1.02; letter-spacing: -.032em; }
+h2 { font-size: clamp(2.125rem, 8.4vw, 2.75rem); line-height: 1.06; letter-spacing: -.028em; text-wrap: balance; }
+@media (min-width: 600px) { h1 { font-size: 3.75rem; } }
+@media (min-width: 720px) {
+  h1 { font-size: clamp(3.25rem, 6.6vw, 6rem); }
+  h2 { font-size: clamp(2.75rem, 5vw, 4.75rem); }
+}
+.num { font-size: .8125rem; font-weight: 500; letter-spacing: .08em; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 28px;
+  border-radius: 999px; background: var(--ink); color: var(--bone);
+  font-weight: 550; font-size: 1rem; letter-spacing: -.005em; text-decoration: none;
+  transition: background-color .2s ease, transform .16s var(--ease-out);
+}
+.btn:active { transform: scale(.97); }
+.btn--sm { min-height: 44px; padding: 0 18px; font-size: .9375rem; }
+@media (min-width: 720px) { .btn--sm { min-height: 40px; } }
+.btn--bone { background: var(--bone); color: var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: var(--umber); }
+  .btn--bone:hover { background: #fff; }
+}
+
+/* ───── Barra ───── */
+.nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 20; height: var(--nav-h); padding-inline: var(--gutter);
+  background: rgba(243, 235, 227, .95); color: var(--ink);
+  -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px);
+  transition: background-color .35s ease, color .35s ease;
+}
+.nav__in { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 100%; max-width: var(--page); margin-inline: auto; }
+@media (prefers-reduced-transparency: reduce) { .nav { background: var(--bone); -webkit-backdrop-filter: none; backdrop-filter: none; } .nav.is-dark { background: var(--umber); } }
+.nav::after { content: ""; position: absolute; inset: auto 0 0 0; height: 1px; background: var(--line); opacity: 0; transition: opacity .3s ease; }
+.nav.is-stuck::after { opacity: 1; }
+/* sobre el mundo Pro la barra pasa a umber */
+.nav.is-dark { background: rgba(61, 47, 36, .96); color: var(--bone); }
+.nav.is-dark::after { background: rgba(242, 233, 224, .16); }
+.nav.is-dark .nav__links a, .nav.is-dark .nav__login { color: #E4D8CB; }
+.nav.is-dark .btn { background: var(--bone); color: var(--ink); }
+.nav.is-dark :focus-visible { outline-color: var(--bone); }
+.logo { font: 480 1.625rem/1 var(--serif); letter-spacing: -.025em; text-decoration: none; padding: 6px 0; justify-self: start; }
+.logo span { color: var(--terra); }
+.nav__links { display: none; gap: 34px; font-size: .9375rem; }
+.nav__links a, .nav__login { text-decoration: none; color: var(--umber); padding: 8px 0; transition: color .2s ease; }
+.nav__side { display: flex; align-items: center; gap: 22px; font-size: .9375rem; justify-self: end; }
+.nav__login { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .nav__links a:hover, .nav__login:hover { color: var(--ink); text-decoration: underline; }
+  .nav.is-dark .nav__links a:hover, .nav.is-dark .nav__login:hover { color: var(--bone); }
+}
+@media (min-width: 560px) { .nav__login { display: inline; } }
+@media (min-width: 900px) {
+  .nav__in { display: grid; grid-template-columns: 1fr auto 1fr; }   /* los enlaces, centrados de verdad */
+  .nav__links { display: flex; }
+}
+.sentinel { position: absolute; top: 0; left: 0; width: 1px; height: 24px; pointer-events: none; }
+
+/* ───── Marco del escenario (9:16, sin teléfono: los vídeos ya traen el suyo) ───── */
+.frame { position: relative; height: var(--frame-h); aspect-ratio: 9 / 16; margin-inline: auto; flex: none; }
+.frame__screen, .pro__screen {
+  /* bordes difuminados: el vídeo se funde con la página aunque su beige no sea idéntico */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 5%, #000 95%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 5%, #000 95%, transparent 100%);
+  mask-composite: intersect;
+}
+.frame__screen { position: absolute; inset: 0; overflow: hidden; }
+.still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Cambio de clip en dos tiempos: el que sale se va rápido; el que entra llega un instante después y se asienta */
+.clip {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transform: scale(1.03);
+  transition: opacity .18s ease-out, transform 0s linear .18s;
+}
+.clip.is-on { opacity: 1; transform: none; transition: opacity .32s var(--ease-out) .12s, transform .6s var(--ease-out) .12s; }
+.clip.is-on.is-dim { opacity: 0; transition: opacity .28s ease-out; }
+.tick { position: absolute; width: 13px; height: 13px; border: 0 solid rgba(43, 33, 24, .34); pointer-events: none; }
+.tick--tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.tick--tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.tick--bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.tick--br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+/* Pausa: fuera del fotograma, solo el glifo (zona de toque de 44 px). En estático, «Reproducir» bajo la imagen. */
+.toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px; flex: none;
+  min-width: 44px; height: 44px; padding: 0; border: 1px solid transparent; border-radius: 999px; background: none;
+  color: var(--muted); cursor: pointer; white-space: nowrap;
+  transition: color .2s ease, border-color .2s ease, transform .16s var(--ease-out);
+}
+.toggle:active { transform: scale(.94); }
+.toggle svg { fill: currentColor; flex: none; }
+.toggle__play, .toggle__label { display: none; }
+.toggle.is-paused .toggle__pause { display: none; }
+.toggle.is-paused .toggle__play { display: block; }
+.toggle.is-manual.is-paused { padding: 0 20px 0 16px; border-color: rgba(43, 33, 24, .3); color: var(--ink); }
+.toggle.is-manual.is-paused .toggle__label { display: inline; font-size: .9375rem; font-weight: 550; }
+.toggle--under { position: absolute; top: calc(100% + 2px); right: -15px; z-index: 1; }
+.toggle--under.is-manual { top: calc(100% + 10px); left: 50%; right: auto; translate: -50% 0; }
+html:not(.js) .toggle { display: none; }
+@media (hover: hover) and (pointer: fine) { .toggle:hover { color: var(--ink); } .toggle.is-manual.is-paused:hover { border-color: var(--ink); } }
+
+/* ───── Recorrido: portada + cuatro capítulos ───── */
+.tour { display: grid; grid-template-columns: minmax(0, 1fr); max-width: calc(var(--page) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+.hero { padding: calc(var(--nav-h) + 18px) 0 10px; }
+.hero h1 .ln { display: block; overflow: clip; padding-bottom: .14em; margin-bottom: -.14em; }
+.hero h1 .ln > span { display: block; }
+.lede { margin-top: 12px; max-width: 30em; color: var(--umber); font-size: clamp(.9375rem, 4.1vw, 1.0625rem); line-height: 1.45; text-wrap: balance; }
+.hero__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 8px; }
+.hero__cta .btn { display: none; }               /* en móvil el botón ya está en la barra: aquí manda el escenario */
+.hero__cta small { font-size: .8125rem; color: var(--muted); }
+.hero__cue { display: none; }
+.stage { padding-bottom: 28px; }
+.stage__side { display: flex; justify-content: center; margin-top: 12px; }
+.rail { display: none; }
+
+.chapter { display: grid; gap: 28px; padding: 56px 0; border-top: 1px solid var(--line); }
+.chapter__body .num { margin-bottom: 14px; }
+.chapter__body h2 { font-size: clamp(1.5rem, 6.6vw, 1.875rem); line-height: 1.1; letter-spacing: -.02em; }   /* dentro del recorrido manda el vídeo: el texto es su pie */
+.chapter__body p:last-child { margin-top: 10px; max-width: 29em; color: var(--umber); font-size: 1rem; line-height: 1.5; text-wrap: pretty; }
+.chapter__media { position: relative; height: min(70svh, 560px); aspect-ratio: 9 / 16; margin: 0 auto 60px; }
+.chapter__media .clip { opacity: 1; transform: none; }
+
+@media (min-width: 600px) and (max-width: 719.98px) {
+  /* tableta pequeña: una columna, pero compuesta en eje central con el escenario */
+  .hero, html.live .chapter__body { text-align: center; }
+  .lede, html.live .chapter__body p:last-child { margin-inline: auto; }
+  .hero__cta { justify-content: center; }
+}
+
+@media (min-width: 720px) {
+  .tour { grid-template-columns: minmax(0, 1fr) auto; column-gap: clamp(28px, 5vw, 88px); }
+  .hero { grid-column: 1; align-self: center; padding: calc(var(--nav-h) + 48px) 0 64px; }
+  .lede { margin-top: 28px; font-size: clamp(1.0625rem, 1.5vw, 1.1875rem); line-height: 1.5; }
+  .hero__cta { margin-top: 34px; }
+  .hero__cta .btn { display: inline-flex; }
+  .hero__cta small { font-size: .875rem; }
+  .stage { grid-column: 2; grid-row: 1; align-self: center; padding: calc(var(--nav-h) + 28px) 0 28px; }
+  .chapters { grid-column: 1 / -1; }
+  .chapter { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: clamp(28px, 5vw, 88px); padding: 72px 0; }
+  .chapter__body h2 { font-size: clamp(2rem, 3vw, 2.75rem); letter-spacing: -.024em; }
+  .chapter__body p:last-child { margin-top: 16px; font-size: 1.0625rem; line-height: 1.55; }
+  .chapter__media { height: min(72svh, 640px, 62vw); margin-bottom: 60px; }
+}
+
+/* Modo «live»: el escenario se queda pegado y los capítulos pasan */
+html.live .chapter__media { display: none; }
+html.live .chapter { display: block; padding: 0 0 max(96px, calc(100svh - var(--nav-h) - var(--stage-block) - 56px)); border: 0; scroll-margin-top: calc(var(--stage-block) + 36px); }
+html.live .chapter:last-child { padding-bottom: 0; }
+html.live .chapter__body .num { display: none; }
+html.live .stage {
+  grid-column: 1; grid-row: 2; align-self: start; position: sticky; top: var(--nav-h); z-index: 2;
+  margin-inline: calc(-1 * var(--gutter)); padding: 8px var(--gutter) 0; height: var(--stage-block); background: var(--bone);
+}
+html.live .stage::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 28px; background: linear-gradient(var(--bone), rgba(243, 235, 227, 0)); pointer-events: none; }
+/* el titular 01 asoma bajo la fila 01–04 en cuanto se pega el escenario; el último texto se va con él (--last-h lo mide el script) */
+html.live .chapters { grid-column: 1; grid-row: 2; padding-top: calc(var(--stage-block) + 9svh); margin-bottom: calc(-1 * var(--last-h, 11rem)); }
+html.live .tour { padding-bottom: var(--last-h, 11rem); }
+html.live .stage__side { align-items: center; justify-content: flex-start; width: max(calc(var(--frame-h) * 9 / 16), 250px); max-width: 100%; height: 44px; margin: 10px auto 0; }
+html.live .stage__side .toggle { margin-right: -15px; }
+html.live .rail { display: block; position: relative; flex: 1; height: 100%; }
+.rail__track { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--line); }
+.rail__fill { position: absolute; left: 0; right: 0; top: -.5px; height: 2px; background: var(--terra); transform-origin: left center; transform: scaleX(var(--p, 0)); transition: transform .6s var(--ease-out); }
+.rail ol { display: grid; grid-template-columns: repeat(4, 1fr); height: 100%; }
+.rail a { display: flex; align-items: center; height: 100%; padding-top: 2px; font-size: .75rem; font-weight: 500; letter-spacing: .08em; font-variant-numeric: tabular-nums; color: var(--muted); text-decoration: none; transition: color .3s ease; }
+.rail a[aria-current] { color: var(--ink); font-weight: 600; }
+@media (hover: hover) and (pointer: fine) { .rail a:hover { color: var(--ink); } }
+
+@media (min-width: 720px) {
+  html.live .hero { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: calc(var(--nav-h) + 24px) 0 40px; }
+  html.live .hero__cue { display: inline-flex; align-items: center; gap: 12px; margin-top: clamp(36px, 8svh, 84px); font-size: .9375rem; color: var(--muted); text-decoration: none; width: max-content; }
+  html.live .hero__cue svg { stroke: currentColor; fill: none; }
+  html.live .stage {
+    grid-column: 2; grid-row: 1 / span 2; top: 0; height: 100svh; margin: 0; padding: var(--nav-h) 0 0; background: none;
+    display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 20px;
+  }
+  html.live .stage::after { content: none; }
+  html.live .chapters { grid-column: 1; grid-row: 2; padding-top: 0; margin-bottom: 0; }
+  html.live .tour { padding-bottom: 0; }
+  html.live .chapter { min-height: 90svh; display: flex; align-items: center; padding: 0; scroll-margin-top: 0; }
+  html.live .chapter:last-child { min-height: 100svh; }
+  html.live .chapter__body .num { display: block; }
+  /* a la derecha del escenario: el progreso 01–04 centrado y la pausa alineada con su borde inferior */
+  html.live .stage__side { display: grid; grid-template-rows: 1fr auto 1fr; justify-items: start; width: auto; max-width: none; height: var(--frame-h); margin: 0; }
+  html.live .stage__side .toggle { grid-row: 3; align-self: end; margin: 0 0 -15px -15px; }
+  html.live .rail { grid-row: 2; flex: none; height: calc(var(--frame-h) * .42); }
+  html.live .rail ol { grid-template-columns: none; grid-template-rows: repeat(4, 1fr); }
+  html.live .rail a { align-items: flex-start; padding: 0 8px 0 16px; font-size: .8125rem; line-height: 1; }
+  .rail__track { right: auto; bottom: 0; width: 1px; height: auto; }
+  .rail__fill { left: -.5px; right: auto; top: 0; bottom: 0; width: 2px; height: auto; transform-origin: center top; transform: scaleY(var(--p, 0)); }
+}
+
+/* Entrada de la portada: el titular por líneas, la frase y el botón detrás; el escenario ya está ahí */
+@keyframes line-up { from { transform: translateY(108%); } to { transform: none; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(var(--rise, 10px)); } to { opacity: 1; transform: none; } }
+html.live .hero h1 .ln > span { animation: line-up .7s var(--ease-out) both; animation-delay: calc(40ms + var(--i) * 70ms); }
+html.live .lede { animation: fade-up .5s var(--ease-out) .18s both; }
+html.live .hero__cta { --rise: 8px; animation: fade-up .5s var(--ease-out) .24s both; }
+html.live .hero__cue { --rise: 0px; animation: fade-up .5s var(--ease-out) .34s both; }
+
+/* Ligado al scroll (mejora progresiva: sin soporte, todo queda visible y el progreso avanza por pasos) */
+@keyframes chap-m { 0% { opacity: 0; transform: translateY(18px); } 11% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+@keyframes chap { 0% { opacity: 0; transform: translateY(30px); } 24% { opacity: 1; transform: none; } 76% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-30px); } }
+@keyframes hero-out { to { opacity: 0; transform: translateY(-28px); } }
+@keyframes rail-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes lit { from { opacity: .32; } to { opacity: 1; } }
+@keyframes pro-open { from { clip-path: inset(0 28.9% round 18px); } to { clip-path: inset(0 0 round 18px); } }
+@keyframes pro-zoom { from { scale: .44; } to { scale: 1; } }
+@keyframes tick-l { from { transform: translateX(28.9cqw); } to { transform: none; } }
+@keyframes tick-r { from { transform: translateX(-28.9cqw); } to { transform: none; } }
+@supports (animation-timeline: view()) {
+  html.live .chapter__body { animation: chap-m linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+  html.live .breath span { animation: lit linear both; animation-timeline: view(); animation-range: entry 40% cover 40%; }
+  /* Pro: la ventana vertical se abre a horizontal y la tableta crece con ella; termina antes de llegar a media pantalla */
+  html.live .pro__stage { view-timeline-name: --pro; view-timeline-axis: block; }
+  html.live .pro__card { animation: pro-open linear both; animation-timeline: --pro; animation-range: entry 15% cover 30%; }
+  html.live .pro__screen { animation: pro-zoom linear both; animation-timeline: --pro; animation-range: entry 15% cover 30%; }
+  html.live .pro__stage .tick--tl, html.live .pro__stage .tick--bl { animation: tick-l linear both; animation-timeline: --pro; animation-range: entry 15% cover 30%; }
+  html.live .pro__stage .tick--tr, html.live .pro__stage .tick--br { animation: tick-r linear both; animation-timeline: --pro; animation-range: entry 15% cover 30%; }
+  @media (min-width: 720px) {
+    html.live .chapter__body { animation-name: chap; }
+    /* el texto de portada se disuelve al irse, mientras entra el del capítulo 01 y cambia el clip */
+    html.live .hero__in { animation: hero-out linear both; animation-timeline: view(); animation-range: contain 60% exit 55%; }
+    html.live .tour { timeline-scope: --tour; }
+    html.live .chapters { view-timeline-name: --tour; view-timeline-axis: block; }
+    html.live .rail__fill { animation: rail-fill linear both; animation-timeline: --tour; animation-range: cover 0% contain 100%; }
+  }
+}
+
+/* ───── Cada semana ───── */
+.weekly { background: linear-gradient(var(--bone), var(--bone-2) 12rem, var(--bone-2) calc(100% - 12rem), var(--bone)); padding: 64px var(--gutter) 56px; }
+.weekly__grid { display: grid; grid-template-columns: minmax(0, 1fr); max-width: var(--page); margin-inline: auto; }
+.weekly h2 { margin-bottom: 20px; }
+.picks { display: grid; margin-bottom: 26px; }
+.pick {
+  position: relative; display: block; width: 100%; padding: 13px 0 14px; border: 0; background: none; cursor: pointer; text-align: left;
+  font-size: clamp(1.375rem, 5.6vw, 1.75rem); line-height: 1.15; letter-spacing: -.018em; color: var(--muted);
+  transition: color .35s ease;
+}
+.pick[aria-pressed="true"] { color: var(--ink); }
+.pick__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line); }
+.pick__bar i { position: absolute; left: 0; right: 0; top: -.5px; height: 2px; background: var(--terra); transform-origin: left center; transform: scaleX(0); }
+.pick[aria-pressed="true"] .pick__bar i { transform: scaleX(var(--t, 0)); transition: transform .3s linear; }
+@media (hover: hover) and (pointer: fine) { .pick:hover { color: var(--ink); } }
+.weekly .frame { --frame-h: min(62svh, 560px); margin-bottom: 44px; }
+html:not(.live) .weekly .frame { margin-bottom: 68px; }
+.notes { display: grid; }
+.note { grid-area: 1 / 1; max-width: 30em; color: var(--umber); opacity: 0; visibility: hidden; transition: opacity .4s ease, visibility 0s .4s; text-wrap: pretty; }
+.note.is-on { opacity: 1; visibility: visible; transition-delay: .12s, 0s; }
+html:not(.js) .note { grid-area: auto; opacity: 1; visibility: visible; margin-bottom: 12px; }
+@media (min-width: 600px) and (max-width: 719.98px) {
+  .weekly h2, .note { text-align: center; }
+  .note { margin-inline: auto; }
+}
+@media (min-width: 720px) {
+  .weekly { padding-block: clamp(84px, 14svh, 150px); }
+  .weekly__grid { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 1fr auto auto auto 1fr; column-gap: clamp(40px, 7vw, 112px); }
+  .weekly .frame, html:not(.live) .weekly .frame { --frame-h: min(74svh, 700px, 62vw); grid-column: 1; grid-row: 1 / -1; margin: 0; }
+  .weekly h2 { grid-column: 2; grid-row: 2; margin-bottom: clamp(24px, 4svh, 40px); }
+  .picks { grid-column: 2; grid-row: 3; margin: 0; }
+  .pick { padding: 17px 0 18px; font-size: clamp(1.5rem, 2.5vw, 2.25rem); }
+  .notes { grid-column: 2; grid-row: 4; margin-top: 30px; font-size: 1.125rem; }
+}
+
+/* ───── Respiro ───── */
+.breath { display: grid; place-items: center; min-height: 70svh; padding: 64px var(--gutter); text-align: center; }
+.breath p { font-size: clamp(2.25rem, 10.6vw, 3.25rem); line-height: 1.06; letter-spacing: -.03em; }
+.breath span { display: block; }
+@media (min-width: 720px) {
+  .breath { min-height: 88svh; padding-block: 96px; }
+  .breath p { font-size: clamp(3.5rem, 6.4vw, 6rem); }
+}
+
+/* ───── édit profesionales ───── */
+.pro { background: var(--umber); color: var(--bone); padding: clamp(84px, 15svh, 168px) var(--gutter) clamp(84px, 14svh, 150px); text-align: center; }
+.pro :focus-visible { outline-color: var(--bone); }
+.pro ::selection { background: var(--terra); color: #fff; }
+.pro__logo { height: 30px; width: auto; margin: 0 auto 30px; }
+.pro h2 { max-width: 13em; margin-inline: auto; }
+.pro h2 em { color: var(--terra-soft); }
+.pro__lede { max-width: 33em; margin: 22px auto 0; color: #E4D8CB; font-size: 1.0625rem; text-wrap: balance; }
+.pro__stage { position: relative; container-type: inline-size; aspect-ratio: 4 / 3; width: min(100%, 1000px, calc((100svh - 190px) * 4 / 3)); margin: clamp(44px, 8svh, 84px) auto 0; }
+.pro__card { position: absolute; inset: 0; overflow: hidden; border-radius: 18px; background: var(--bone-pro); clip-path: inset(0 0 round 18px); }
+/* el clip va dentro de la tarjeta con aire y bordes fundidos, como el escenario del recorrido */
+.pro__screen {
+  position: absolute; left: 6%; top: 50%; width: 88%; aspect-ratio: 5 / 4; translate: 0 -50%; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 96%, transparent 100%);
+}
+.pro__screen .clip { opacity: 1; transform: none; }
+.pro__screen .clip.is-dim { opacity: 0; }
+.pro__stage .tick { border-color: rgba(242, 233, 224, .5); }
+.pro__stage .tick--tl, .pro__stage .tick--tr { top: -12px; } .pro__stage .tick--bl, .pro__stage .tick--br { bottom: -12px; }
+.pro__stage .tick--tl, .pro__stage .tick--bl { left: -12px; } .pro__stage .tick--tr, .pro__stage .tick--br { right: -12px; }
+.pro .toggle { color: #CDBFB1; top: calc(100% + 8px); }
+.pro .toggle.is-manual.is-paused { color: var(--bone); border-color: rgba(242, 233, 224, .42); }
+@media (hover: hover) and (pointer: fine) { .pro .toggle:hover { color: var(--bone); } .pro .toggle.is-manual.is-paused:hover { border-color: var(--bone); } }
+.pro__points { display: grid; gap: 0; max-width: var(--page); margin: clamp(64px, 9svh, 88px) auto 0; text-align: left; }
+.pro__points li { position: relative; padding: 18px 0; border-top: 1px solid rgba(242, 233, 224, .22); font: 360 1.375rem/1.2 var(--serif); font-variation-settings: "opsz" 72; letter-spacing: -.015em; transition: opacity .5s ease; }
+.pro__points li::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--terra-soft); transform-origin: left center; transform: scaleX(0); transition: transform .8s var(--ease-out); }
+.pro__points.is-synced li { opacity: .62; }
+.pro__points.is-synced li.is-on { opacity: 1; }
+.pro__points.is-synced li.is-on::before { transform: none; }
+.pro__cta { margin-top: clamp(36px, 6svh, 60px); }
+@media (min-width: 720px) {
+  .pro__logo { height: 34px; margin-bottom: 36px; }
+  .pro__lede { font-size: 1.1875rem; }
+  .pro__points { grid-template-columns: repeat(3, 1fr); column-gap: clamp(24px, 3vw, 40px); }
+  .pro__points li { padding: 22px 0 0; font-size: clamp(1.25rem, 2vw, 1.625rem); text-wrap: balance; }
+}
+
+/* ───── Cierre y pie ───── */
+.final { padding: clamp(96px, 20svh, 200px) var(--gutter) clamp(88px, 16svh, 168px); text-align: center; }
+.final h2 { font-size: clamp(2.75rem, 12vw, 3.5rem); }
+@media (min-width: 720px) { .final h2 { font-size: clamp(4rem, 7vw, 6rem); letter-spacing: -.032em; } }
+.final p { max-width: 31em; margin: 20px auto 0; color: var(--umber); text-wrap: balance; }
+@media (min-width: 720px) { .final p { font-size: 1.1875rem; } }
+.stores { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 34px; }
+.stores a { display: block; border-radius: 10px; transition: transform .16s var(--ease-out); }
+.stores a:active { transform: scale(.97); }
+.stores img { height: clamp(44px, 12.4vw, 52px); width: auto; }
+.final .fine { max-width: 34em; margin-top: 26px; font-size: .875rem; color: var(--muted); }
+.foot { padding: 28px var(--gutter) 36px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--muted); }
+.foot__in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 32px; max-width: var(--page); margin-inline: auto; }
+.foot ul { display: flex; flex-wrap: wrap; gap: 4px 26px; }
+.foot a { text-decoration: none; color: var(--umber); padding: 8px 0; display: inline-block; }
+@media (hover: hover) and (pointer: fine) { .foot a:hover { color: var(--ink); text-decoration: underline; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+  .clip, .note { transition-duration: .2s !important; }
+  .clip { transform: none !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<span class="sentinel" aria-hidden="true"></span>
+
+<header class="nav">
+  <div class="nav__in">
+    <a class="logo" href="#top" aria-label="édit, inicio"><span>é</span>dit</a>
+    <nav class="nav__links" aria-label="Principal">
+      <a href="#c1">Qué hace</a>
+      <a href="#semana">Cada semana</a>
+      <a href="#pro">Profesionales</a>
+    </nav>
+    <div class="nav__side">
+      <a class="nav__login" href="https://dashboard.editstudio.app/login">Iniciar sesión</a>
+      <a class="btn btn--sm" href="https://dashboard.editstudio.app/descargar">Descargar édit</a>
+    </div>
+  </div>
+</header>
+
+<main id="contenido">
+
+<section class="tour" id="top" aria-label="Qué hace édit">
+  <div class="hero">
+    <div class="hero__in">
+      <h1>
+        <span class="ln" style="--i:0"><span>Tu armario,</span></span>
+        <span class="ln" style="--i:1"><span>por fin con</span></span>
+        <span class="ln" style="--i:2"><span><em>sentido</em>.</span></span>
+      </h1>
+      <p class="lede">édit ordena tu ropa, crea looks con ella y te los enseña sobre una foto tuya.</p>
+      <div class="hero__cta">
+        <a class="btn" href="https://dashboard.editstudio.app/descargar">Descargar édit</a>
+        <small>Gratis, para iPhone y Android.</small>
+      </div>
+      <a class="hero__cue" href="#c1">
+        <span>Sigue bajando y míralo en marcha</span>
+        <svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><path d="M6 1v13M1.5 9.5 6 14l4.5-4.5" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="stage" id="escenario">
+    <div class="frame">
+      <i class="tick tick--tl"></i><i class="tick tick--tr"></i><i class="tick tick--bl"></i><i class="tick tick--br"></i>
+      <div class="frame__screen">
+        <video class="clip is-on" src="media/portada.mp4" poster="media/portada.jpg" width="864" height="1536" muted playsinline preload="metadata" controls
+          data-name="tres looks, sobre ti"
+          aria-label="Animación. «Tres looks. Sobre ti. Así te queda.» Dos looks hechos con tu ropa aparecen puestos sobre una foto tuya, con cada prenda señalada."></video>
+      </div>
+    </div>
+    <div class="stage__side">
+      <nav class="rail" aria-label="Capítulos de la demostración">
+        <span class="rail__track" aria-hidden="true"><span class="rail__fill"></span></span>
+        <ol>
+          <li><a href="#c1"><span aria-hidden="true">01</span><span class="vh">Capítulo 1: tu armario, en una foto</span></a></li>
+          <li><a href="#c2"><span aria-hidden="true">02</span><span class="vh">Capítulo 2: todo, en orden</span></a></li>
+          <li><a href="#c3"><span aria-hidden="true">03</span><span class="vh">Capítulo 3: una prenda, ocho looks</span></a></li>
+          <li><a href="#c4"><span aria-hidden="true">04</span><span class="vh">Capítulo 4: pruébatelo</span></a></li>
+        </ol>
+      </nav>
+      <button class="toggle" type="button" aria-label="Pausar el vídeo">
+        <svg class="toggle__pause" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.2" height="11" rx="1"/></svg>
+        <svg class="toggle__play" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 2.9v10.2a.7.7 0 0 0 1.07.6l8-5.1a.7.7 0 0 0 0-1.2l-8-5.1a.7.7 0 0 0-1.07.6z"/></svg>
+        <span class="toggle__label">Reproducir</span>
+      </button>
+    </div>
+  </div>
+
+  <ol class="chapters">
+    <li class="chapter" id="c1">
+      <div class="chapter__body">
+        <p class="num" aria-hidden="true">01</p>
+        <h2>Lo que llevas, ya es tuyo.</h2>
+        <p>Sube una foto tuya de cuerpo entero o fotografía tus prendas. édit reconoce cada una, le quita el fondo y la guarda en tu armario.</p>
+      </div>
+      <figure class="chapter__media">
+        <div class="frame__screen">
+          <noscript><img class="still" src="../assets/video/armario-foto.jpg" alt="" width="720" height="1280" loading="lazy"></noscript>
+          <video class="clip" src="../assets/video/armario-foto.mp4" data-poster="../assets/video/armario-foto.jpg" width="720" height="1280" muted playsinline preload="none" controls
+            data-start="1.8" data-name="tu armario, en una foto"
+            aria-label="Animación. «¿Tu armario, en una foto? Lo que llevas, ya es tuyo. Todo, en su sitio. Y te proponemos looks con tu ropa.» Una foto de cuerpo entero se separa en prendas que entran, una a una, en el armario del móvil."></video>
+        </div>
+        <button class="toggle toggle--under" type="button" aria-label="Reproducir el vídeo"><svg class="toggle__pause" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.2" height="11" rx="1"/></svg><svg class="toggle__play" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 2.9v10.2a.7.7 0 0 0 1.07.6l8-5.1a.7.7 0 0 0 0-1.2l-8-5.1a.7.7 0 0 0-1.07.6z"/></svg><span class="toggle__label">Reproducir</span></button>
+      </figure>
+    </li>
+    <li class="chapter" id="c2">
+      <div class="chapter__body">
+        <p class="num" aria-hidden="true">02</p>
+        <h2>Todo, en su sitio.</h2>
+        <p>Tu ropa se ordena sola por tipo, color y temporada. Encuentra cualquier prenda en un segundo.</p>
+      </div>
+      <figure class="chapter__media">
+        <div class="frame__screen">
+          <noscript><img class="still" src="../assets/video/armario.jpg" alt="" width="720" height="1280" loading="lazy"></noscript>
+          <video class="clip" src="../assets/video/armario.mp4" data-poster="../assets/video/armario.jpg" width="720" height="1280" muted playsinline preload="none" controls
+            data-name="todo, en orden"
+            aria-label="Animación. «Tu armario, por fin en orden.» Decenas de prendas caen desordenadas y se colocan solas en una cuadrícula, ordenadas por tipo y por color. «Encuentra cualquier prenda en un segundo.»"></video>
+        </div>
+        <button class="toggle toggle--under" type="button" aria-label="Reproducir el vídeo"><svg class="toggle__pause" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.2" height="11" rx="1"/></svg><svg class="toggle__play" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 2.9v10.2a.7.7 0 0 0 1.07.6l8-5.1a.7.7 0 0 0 0-1.2l-8-5.1a.7.7 0 0 0-1.07.6z"/></svg><span class="toggle__label">Reproducir</span></button>
+      </figure>
+    </li>
+    <li class="chapter" id="c3">
+      <div class="chapter__body">
+        <p class="num" aria-hidden="true">03</p>
+        <h2>Sácale más a lo que ya tienes.</h2>
+        <p>édit combina tu ropa y te propone looks pensados para tu semana, el clima y tu estilo. Y puedes montar los tuyos.</p>
+      </div>
+      <figure class="chapter__media">
+        <div class="frame__screen">
+          <noscript><img class="still" src="../assets/video/prenda.jpg" alt="" width="720" height="1280" loading="lazy"></noscript>
+          <video class="clip" src="../assets/video/prenda.mp4" data-poster="../assets/video/prenda.jpg" width="720" height="1280" muted playsinline preload="none" controls
+            data-start="1.2" data-name="una prenda, ocho looks"
+            aria-label="Animación. «Un pantalón negro. Ocho looks.» Un carrusel enseña ocho looks distintos, de oficina, de ciudad o formales, con el mismo pantalón. «Sácale más a lo que ya tienes.»"></video>
+        </div>
+        <button class="toggle toggle--under" type="button" aria-label="Reproducir el vídeo"><svg class="toggle__pause" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.2" height="11" rx="1"/></svg><svg class="toggle__play" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 2.9v10.2a.7.7 0 0 0 1.07.6l8-5.1a.7.7 0 0 0 0-1.2l-8-5.1a.7.7 0 0 0-1.07.6z"/></svg><span class="toggle__label">Reproducir</span></button>
+      </figure>
+    </li>
+    <li class="chapter" id="c4">
+      <div class="chapter__body">
+        <p class="num" aria-hidden="true">04</p>
+        <h2>¿Te queda bien?</h2>
+        <p>Elige un look y míralo sobre una foto tuya, en un toque. Así te queda, antes de ponértelo.</p>
+      </div>
+      <figure class="chapter__media">
+        <div class="frame__screen">
+          <noscript><img class="still" src="../assets/video/probador.jpg" alt="" width="720" height="1280" loading="lazy"></noscript>
+          <video class="clip" src="../assets/video/probador.mp4" data-poster="../assets/video/probador.jpg" width="720" height="1280" muted playsinline preload="none" controls
+            data-start="5.2" data-loop="1.6" data-name="pruébatelo"
+            aria-label="Animación. «¿Te queda bien? Pruébatelo en un toque. Tu ropa, sobre ti. Antes de ponértelo.» Un look del armario aparece puesto sobre la foto de una modelo, con cada prenda señalada."></video>
+        </div>
+        <button class="toggle toggle--under" type="button" aria-label="Reproducir el vídeo"><svg class="toggle__pause" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.2" height="11" rx="1"/></svg><svg class="toggle__play" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 2.9v10.2a.7.7 0 0 0 1.07.6l8-5.1a.7.7 0 0 0 0-1.2l-8-5.1a.7.7 0 0 0-1.07.6z"/></svg><span class="toggle__label">Reproducir</span></button>
+      </figure>
+    </li>
+  </ol>
+</section>
+
+<section class="weekly" id="semana">
+  <div class="weekly__grid">
+    <h2>Cada semana, sin pedirlo.</h2>
+    <ul class="picks">
+      <li><button class="pick" type="button" aria-pressed="true" aria-controls="nota-0">Tu semana, resuelta.<span class="pick__bar" aria-hidden="true"><i></i></span></button></li>
+      <li><button class="pick" type="button" aria-pressed="false" aria-controls="nota-1">Tu color, primero.<span class="pick__bar" aria-hidden="true"><i></i></span></button></li>
+      <li><button class="pick" type="button" aria-pressed="false" aria-controls="nota-2">Ocho preguntas. Un estilo.<span class="pick__bar" aria-hidden="true"><i></i></span></button></li>
+    </ul>
+    <figure class="frame">
+      <i class="tick tick--tl"></i><i class="tick tick--tr"></i><i class="tick tick--bl"></i><i class="tick tick--br"></i>
+      <div class="frame__screen">
+        <noscript><img class="still" src="../assets/video/semana.jpg" alt="" width="720" height="1280" loading="lazy"></noscript>
+        <video class="clip is-on" src="../assets/video/semana.mp4" data-poster="../assets/video/semana.jpg" width="720" height="1280" muted playsinline preload="none" controls
+          data-name="tu semana, resuelta"
+          aria-label="Animación. Una notificación en el móvil avisa de que tu selección semanal está lista. «Tu semana, resuelta»: un look para cada día, con tu colorimetría, tu arquetipo y el tiempo. «Y cada semana te conoce mejor.»"></video>
+        <video class="clip" src="../assets/video/color.mp4" data-poster="../assets/video/color.jpg" width="720" height="1280" muted playsinline preload="none"
+          data-name="tu color, primero"
+          aria-label="Animación. «No todo te sienta igual.» Las paletas de las doce estaciones de colorimetría y varios looks elegidos para la paleta Invierno Profundo. «Cada look, pensado con tu paleta.»"></video>
+        <video class="clip" src="../assets/video/arquetipo.mp4" data-poster="../assets/video/arquetipo.jpg" width="720" height="1280" muted playsinline preload="none"
+          data-name="ocho preguntas, un estilo"
+          aria-label="Animación. «Ocho preguntas. Un estilo.» Un test, una rueda de arquetipos y el resultado: Natural y Clásico. «Y tus looks salen de ahí.»"></video>
+      </div>
+      <button class="toggle toggle--under" type="button" aria-label="Pausar el vídeo"><svg class="toggle__pause" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.2" height="11" rx="1"/></svg><svg class="toggle__play" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 2.9v10.2a.7.7 0 0 0 1.07.6l8-5.1a.7.7 0 0 0 0-1.2l-8-5.1a.7.7 0 0 0-1.07.6z"/></svg><span class="toggle__label">Reproducir</span></button>
+    </figure>
+    <div class="notes">
+      <p class="note is-on" id="nota-0">Recibes una selección de looks para los próximos días, pensada para tu semana y para el tiempo que va a hacer. Cada semana te conoce mejor.</p>
+      <p class="note" id="nota-1">No todo te sienta igual. Descubre tu colorimetría entre doce estaciones y recibe cada look pensado con tu paleta.</p>
+      <p class="note" id="nota-2">Un test de ocho preguntas define tu arquetipo de estilo. Y tus looks salen de ahí.</p>
+    </div>
+  </div>
+</section>
+
+<section class="breath" aria-label="Manifiesto">
+  <p><span>La tecnología</span> <span>no sustituye el criterio.</span> <span>Lo <em>amplifica</em>.</span></p>
+</section>
+
+<section class="pro" id="pro">
+  <img class="pro__logo" src="../assets/brand/editpro-logo-inverso-transparente.svg" alt="édit Pro" width="2537" height="560" loading="lazy">
+  <h2>Tu estudio digital de <em>estilismo</em>.</h2>
+  <p class="pro__lede">¿Eres asesora de imagen, estilista o personal shopper? Tus clientas, sus armarios y tus looks, en un sitio. En web y en app.</p>
+  <figure class="pro__stage">
+    <i class="tick tick--tl"></i><i class="tick tick--tr"></i><i class="tick tick--bl"></i><i class="tick tick--br"></i>
+    <div class="pro__card">
+      <div class="pro__screen">
+        <noscript><img class="still" src="media/pro-estudio.jpg" alt="" width="1080" height="864" loading="lazy"></noscript>
+        <video class="clip is-on" src="media/pro-estudio.mp4" data-src-s="media/pro-estudio-720.mp4" data-poster="media/pro-estudio.jpg" data-poster-first width="1080" height="864" muted playsinline preload="none" controls
+          data-name="el estudio de édit Pro"
+          aria-label="Animación. El estudio de édit Pro en una tableta: el panel con todas tus clientas, la ficha de una clienta con su colorimetría, su estilo y su armario, y un dossier de estilismo en PDF listo para entregar."></video>
+      </div>
+    </div>
+    <button class="toggle toggle--under" type="button" aria-label="Pausar el vídeo"><svg class="toggle__pause" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.2" height="11" rx="1"/></svg><svg class="toggle__play" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.6 2.9v10.2a.7.7 0 0 0 1.07.6l8-5.1a.7.7 0 0 0 0-1.2l-8-5.1a.7.7 0 0 0-1.07.6z"/></svg><span class="toggle__label">Reproducir</span></button>
+  </figure>
+  <ol class="pro__points">
+    <li>Todas tus clientas, de un vistazo.</li>
+    <li>Colorimetría, estilo y armario, juntos.</li>
+    <li>Entrégale un dossier de estilismo.</li>
+  </ol>
+  <p class="pro__cta"><a class="btn btn--bone" href="https://dashboard.editstudio.app/login">Descubre édit Pro</a></p>
+</section>
+
+<section class="final" id="descargar">
+  <h2>Vístete sin <em>dudas</em>.</h2>
+  <p>Digitaliza tu armario, crea looks con la ropa que ya tienes y conecta con tu asesora de imagen.</p>
+  <div class="stores">
+    <a href="https://apps.apple.com/es/app/id6796045067"><img src="../assets/img/badge-app-store.png" alt="Consíguelo en el App Store" width="431" height="144" loading="lazy"></a>
+    <a href="https://play.google.com/store/apps/details?id=edit.studio.app"><img src="../assets/img/badge-google-play.png" alt="Disponible en Google Play" width="486" height="144" loading="lazy"></a>
+  </div>
+  <p class="fine">Descargar édit es gratis. Algunas funciones son de la suscripción Premium, que se contrata en la app.</p>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span>© 2026 édit</span>
+    <ul>
+      <li><a href="https://dashboard.editstudio.app/login">Iniciar sesión</a></li>
+      <li><a href="https://www.instagram.com/editstudio.app/">Instagram</a></li>
+      <li><a href="https://www.linkedin.com/company/146595565/">LinkedIn</a></li>
+      <li><a href="https://dashboard.editstudio.app/legal/privacidad">Privacidad</a></li>
+      <li><a href="https://dashboard.editstudio.app/legal/terminos">Términos</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const d = document;
+  const LIVE = d.documentElement.classList.contains('live');
+  const SAVE = !!(navigator.connection && navigator.connection.saveData);
+  const $ = (s, c = d) => c.querySelector(s);
+  const $$ = (s, c = d) => [...c.querySelectorAll(s)];
+  const players = [];
+
+  /* Precalentar un clip: se pide entero antes de que haga falta, para que el cambio no enseñe un hueco. */
+  const warm = v => {
+    if (!v || SAVE || v.dataset.warm) return;
+    v.dataset.warm = '1';
+    v.preload = 'auto';
+    if (v.readyState === 0 && v.networkState !== 2) { try { v.load(); } catch (e) {} }
+  };
+  const ready = v => v.readyState >= 2 && !v.seeking;
+  function whenReady(v, cb) {
+    if (ready(v)) { cb(); return null; }
+    const evs = ['loadeddata', 'seeked', 'canplay'];
+    const off = () => evs.forEach(e => v.removeEventListener(e, on));
+    function on() { if (ready(v)) { off(); cb(); } }
+    evs.forEach(e => v.addEventListener(e, on));
+    return off;
+  }
+
+  /* Un reproductor por escenario: uno o varios clips apilados, un botón de pausa, y solo se mueve lo que se ve. */
+  function createPlayer(host, clips, btn, opts = {}) {
+    const manual = !LIVE;                       // con «reducir movimiento» nada arranca solo
+    let cur = Math.max(0, clips.findIndex(v => v.classList.contains('is-on')));
+    let shown = cur, wants = !manual, seen = false, cancel = null;
+    const api = { show, run, halt, onend: null, get index() { return cur; } };
+
+    const startOf = v => parseFloat(v.dataset.start) || 0;
+    const loopOf = v => v.dataset.loop ? parseFloat(v.dataset.loop) : startOf(v);
+    const seek = (v, t) => { try { v.currentTime = t; } catch (e) {} };
+    const poster = v => { if (v.dataset.poster && !v.getAttribute('poster')) v.poster = v.dataset.poster; };
+
+    const paint = () => {
+      clips.forEach((v, k) => { if (k === cur) v.removeAttribute('aria-hidden'); else v.setAttribute('aria-hidden', 'true'); });
+      if (!btn) return;
+      btn.classList.toggle('is-paused', !wants);
+      btn.classList.toggle('is-manual', manual);
+      btn.setAttribute('aria-label', (wants ? 'Pausar' : 'Reproducir') + ' el vídeo: ' + (clips[cur].dataset.name || ''));
+    };
+
+    function run() {
+      if (!wants || !seen || d.hidden) return;
+      const p = clips[cur].play();
+      if (p && p.catch) p.catch(err => { if (err && err.name === 'NotAllowedError') { wants = false; paint(); } });
+    }
+    function halt() { clips.forEach(v => { if (!v.paused) v.pause(); }); }
+
+    function show(i) {
+      if (i === cur || !clips[i]) return;
+      if (cancel) { cancel(); cancel = null; }
+      const next = clips[i];
+      cur = i;
+      clips.forEach((v, k) => { if (k !== i && k !== shown && !v.paused) v.pause(); });
+      const swap = () => {
+        cancel = null;
+        const prev = clips[shown];
+        shown = i;
+        clips.forEach(v => v.classList.toggle('is-on', v === next));
+        next.classList.remove('is-dim');
+        if (prev !== next) setTimeout(() => { if (clips[cur] !== prev && !prev.paused) prev.pause(); }, 240);
+      };
+      if (manual) {                              // estático: imagen fija al instante
+        poster(next); swap();
+        if (wants) { seek(next, 0); run(); }
+      } else {                                   // en marcha: el clip anterior aguanta hasta que el nuevo tiene su fotograma
+        warm(next);
+        if (i !== shown) seek(next, startOf(next));
+        run();
+        cancel = whenReady(next, swap);
+        warm(clips[i + 1]); warm(clips[i - 1]);
+      }
+      paint();
+    }
+
+    clips.forEach((v, k) => {
+      v.removeAttribute('controls');
+      v.muted = true;
+      v.addEventListener('ended', () => {
+        if (v !== clips[cur]) return;
+        if (manual) { wants = false; paint(); return; }
+        if (api.onend && api.onend()) return;
+        v.classList.add('is-dim');                // vuelve a empezar con un fundido
+        setTimeout(() => {
+          seek(v, loopOf(v));
+          whenReady(v, () => v.classList.remove('is-dim'));
+          if (v === clips[cur]) run();
+        }, 300);
+      });
+      v.addEventListener('canplaythrough', () => { if (!manual && k === cur) warm(clips[k + 1]); });
+      if (opts.ontime) v.addEventListener('timeupdate', () => { if (v === clips[cur]) opts.ontime(v, cur); });
+    });
+
+    if (btn) btn.addEventListener('click', () => {
+      wants = !wants;
+      if (wants) { const v = clips[cur]; if (v.ended) seek(v, manual ? 0 : loopOf(v)); seen = true; run(); } else halt();
+      paint();
+    });
+
+    new IntersectionObserver(es => {
+      seen = es[es.length - 1].isIntersecting;
+      if (seen) run(); else halt();
+    }, { threshold: opts.threshold || .3 }).observe(host);
+
+    // Al acercarse: la imagen fija (solo donde hace falta) y, en marcha, el clip ya pidiéndose.
+    const near = new IntersectionObserver(es => {
+      if (!es.some(e => e.isIntersecting)) return;
+      near.disconnect();
+      const v = clips[cur];
+      if (manual || v.hasAttribute('data-poster-first')) poster(v);
+      if (!manual) { warm(v); if (v.readyState >= 4) warm(clips[cur + 1]); }
+    }, { rootMargin: '80% 0px' });
+    near.observe(host);
+
+    paint();
+    players.push(api);
+    return api;
+  }
+
+  d.addEventListener('visibilitychange', () => players.forEach(p => d.hidden ? p.halt() : p.run()));
+
+  /* ── Recorrido ── */
+  const stage = $('#escenario');
+  const frame = $('.frame', stage);
+  const screen = $('.frame__screen', frame);
+  const stageBtn = $('.stage__side .toggle', stage);
+  const chapters = $$('.chapter');
+
+  if (LIVE) {
+    // Mejora progresiva: en el HTML cada capítulo lleva su vídeo; aquí pasan al escenario pegado.
+    chapters.forEach(ch => screen.appendChild($('video', ch)));
+    const clips = $$('video', screen);
+    const tour = createPlayer(frame, clips, stageBtn);
+    addEventListener('load', () => setTimeout(() => warm(clips[1]), 1200));   // el capítulo 01 nunca arranca frío
+
+    const tourEl = $('.tour'), navEl = $('.nav');
+    const bodies = chapters.map(ch => $('.chapter__body', ch));
+    const links = $$('.rail a', stage);
+    const wide = matchMedia('(min-width: 720px)');
+    let active = 0, ticking = false;
+
+    const sync = () => {
+      ticking = false;
+      let y = innerHeight * .78;
+      if (!wide.matches) { const b = navEl.offsetHeight + stage.offsetHeight; y = b + (innerHeight - b) * .55; }
+      let k = 0;
+      bodies.forEach((b, i) => { if (b.getBoundingClientRect().top <= y) k = i + 1; });
+      if (k === active) return;
+      active = k;
+      tour.show(k);
+      links.forEach((a, i) => { if (i === k - 1) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
+      stage.style.setProperty('--p', k / 4);
+    };
+    const queue = () => { if (!ticking) { ticking = true; requestAnimationFrame(sync); } };
+    // En móvil el último texto sobresale de la fila para irse a la vez que el escenario: se mide su alto.
+    const fit = () => { tourEl.style.setProperty('--last-h', (wide.matches ? 0 : bodies[bodies.length - 1].offsetHeight + 36) + 'px'); queue(); };
+
+    addEventListener('scroll', queue, { passive: true });
+    addEventListener('resize', fit, { passive: true });
+    wide.addEventListener('change', fit);
+    if (d.fonts && d.fonts.ready) d.fonts.ready.then(fit);
+    fit();
+  } else {
+    // Lista estática: cada bloque con su imagen fija y su botón de reproducir.
+    createPlayer(frame, $$('video', screen), stageBtn);
+    chapters.forEach(ch => { const fig = $('.chapter__media', ch); createPlayer(fig, $$('video', fig), $('.toggle', fig)); });
+  }
+
+  /* ── Cada semana: tres clips, uno cada vez ── */
+  const weekly = $('#semana');
+  const picks = $$('.pick', weekly), notes = $$('.note', weekly);
+  const wk = createPlayer($('.frame', weekly), $$('video', weekly), $('.toggle', weekly), {
+    threshold: .5,
+    ontime: (v, i) => picks[i].style.setProperty('--t', v.duration ? Math.min(1, v.currentTime / v.duration) : 0)
+  });
+  const pick = i => {
+    picks.forEach((b, k) => { b.setAttribute('aria-pressed', String(k === i)); if (k !== i) b.style.setProperty('--t', 0); });
+    notes.forEach((n, k) => n.classList.toggle('is-on', k === i));
+    wk.show(i);
+  };
+  picks.forEach((b, i) => b.addEventListener('click', () => pick(i)));
+  wk.onend = () => { pick((wk.index + 1) % picks.length); return true; };
+
+  /* ── édit Pro: las tres frases se encienden con lo que enseña el vídeo ── */
+  const proStage = $('.pro__stage');
+  const proClip = $('video', proStage);
+  if (proClip.dataset.srcS && matchMedia('(max-width: 719px)').matches) proClip.src = proClip.dataset.srcS;   // versión ligera en móvil
+  const list = $('.pro__points'), points = $$('li', list);
+  let scene = -1;
+  createPlayer(proStage, [proClip], $('.toggle', proStage), {
+    threshold: .6,
+    ontime: v => {
+      const t = v.currentTime, s = t < 4.6 ? 0 : t < 8.6 ? 1 : 2;
+      if (s === scene) return;
+      scene = s;
+      list.classList.add('is-synced');
+      points.forEach((li, k) => li.classList.toggle('is-on', k === s));
+    }
+  });
+
+  /* ── Barra: filete cuando hay contenido debajo; umber sobre Pro ── */
+  const nav = $('.nav');
+  new IntersectionObserver(es => nav.classList.toggle('is-stuck', !es[0].isIntersecting)).observe($('.sentinel'));
+  new IntersectionObserver(es => nav.classList.toggle('is-dark', es[es.length - 1].isIntersecting), { rootMargin: '0px 0px -94% 0px' }).observe($('#pro'));
+})();
+</script>
+</body>
+</html>

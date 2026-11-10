@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>édit · propuestas de landing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bone: #F2EBE0; --ink: #2B2118; --terra: #C77B5C; --line: rgba(43, 33, 24, .16); --soft: rgba(43, 33, 24, .64); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bone); color: var(--ink); font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1080px; margin: 0 auto; padding: clamp(40px, 9vw, 112px) 24px 80px; }
+  .kicker { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--soft); margin: 0 0 20px; }
+  h1 { font-family: Fraunces, Georgia, serif; font-weight: 300; font-size: clamp(40px, 7vw, 76px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 20px; text-wrap: balance; }
+  h1 em { color: var(--terra); }
+  .lead { font-size: 18px; line-height: 1.55; color: var(--soft); max-width: 56ch; margin: 0 0 56px; }
+  ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  li { border-bottom: 1px solid var(--line); }
+  a.row { display: grid; grid-template-columns: 72px 1fr auto; gap: 24px; align-items: baseline; padding: 32px 4px; color: inherit; text-decoration: none; transition: background-color .2s ease; }
+  a.row:hover, a.row:focus-visible { background: rgba(43, 33, 24, .045); outline: none; }
+  a.row:focus-visible { box-shadow: inset 0 0 0 2px var(--ink); }
+  .letter { font-family: Fraunces, Georgia, serif; font-style: italic; font-size: 44px; line-height: 1; color: var(--terra); }
+  h2 { font-family: Fraunces, Georgia, serif; font-weight: 400; font-size: clamp(26px, 3.4vw, 36px); line-height: 1.1; letter-spacing: -.01em; margin: 0 0 8px; }
+  .row p { margin: 0; font-size: 16px; line-height: 1.55; color: var(--soft); max-width: 62ch; }
+  .go { font-size: 14px; white-space: nowrap; }
+  .go::after { content: " →"; }
+  a.row.pending { cursor: default; }
+  a.row.pending:hover { background: none; }
+  a.row.pending .go { color: var(--soft); }
+  a.row.pending .go::after { content: ""; }
+  a.row.pending h2, a.row.pending p, a.row.pending .letter { opacity: .45; }
+  footer { margin-top: 40px; font-size: 14px; line-height: 1.6; color: var(--soft); max-width: 70ch; }
+  @media (max-width: 640px) {
+    a.row { grid-template-columns: 44px 1fr; gap: 16px; padding: 24px 0; }
+    .letter { font-size: 34px; }
+    .go { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">édit · nueva landing</p>
+  <h1>Cuatro direcciones para <em>elegir</em>.</h1>
+  <p class="lead">Son prototipos del primer tramo de la página: portada, lo que hace édit, édit profesionales y descarga. Míralos también en el móvil. Las preguntas frecuentes y el blog se añaden después a la dirección elegida.</p>
+  <ol>
+    <li><a class="row" href="a/">
+      <span class="letter" aria-hidden="true">A</span>
+      <span><h2>Escaparate</h2><p>La más cercana a una página de producto de Apple. El vídeo de «una foto, tres looks» abre la página y, justo debajo, un resumen de todo lo que hace édit.</p></span>
+      <span class="go">Abrir A</span>
+    </a></li>
+    <li><a class="row" href="b/">
+      <span class="letter" aria-hidden="true">B</span>
+      <span><h2>Probador</h2><p>Una demostración guiada. Una pantalla se queda fija mientras bajas y édit va haciendo cosas, capítulo a capítulo.</p></span>
+      <span class="go">Abrir B</span>
+    </a></li>
+    <li><a class="row" href="c/">
+      <span class="letter" aria-hidden="true">C</span>
+      <span><h2>Edición</h2><p>Una revista de moda de una sola página. La tipografía manda y los vídeos son las láminas.</p></span>
+      <span class="go">Abrir C</span>
+    </a></li>
+    <li><a class="row" href="d/">
+      <span class="letter" aria-hidden="true">D</span>
+      <span><h2>Fusión</h2><p>Lo mejor de las tres en una sola página: la portada de A, el recorrido fijo de B y la tipografía y la tira de looks de C. Cada función aparece una sola vez.</p></span>
+      <span class="go">Abrir D</span>
+    </a></li>
+  </ol>
+  <footer>Página de trabajo para elegir dirección. No está enlazada desde la web ni aparece en buscadores.</footer>
+</main>
+<script>
+  // Una propuesta se puede abrir cuando su página ya existe; mientras tanto se marca «En construcción».
+  const rows = [...document.querySelectorAll('a.row')];
+  rows.forEach(a => { a.dataset.label = a.querySelector('.go').textContent; a.addEventListener('click', e => { if (a.classList.contains('pending')) e.preventDefault(); }); });
+  async function check() {
+    let waiting = false;
+    for (const a of rows) {
+      let ok = false;
+      try { ok = (await fetch(a.getAttribute('href') + 'index.html', { method: 'HEAD', cache: 'no-store' })).ok; } catch {}
+      a.classList.toggle('pending', !ok);
+      a.setAttribute('aria-disabled', String(!ok));
+      a.querySelector('.go').textContent = ok ? a.dataset.label : 'En construcción';
+      if (!ok) waiting = true;
+    }
+    if (waiting) setTimeout(check, 60000);
+  }
+  check();
+</script>
+</body>
+</html>
