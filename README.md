@@ -25,7 +25,7 @@ Una sola página. Cada función de édit y cada vídeo aparecen una vez.
 | 8 | Asesora | `#asesora` | Tres pasos para trabajar con una asesora de imagen |
 | 9 | Manifiesto | — | «La tecnología no sustituye el criterio. Lo amplifica.» |
 | 10 | Profesionales | `#profesionales` | édit Pro: el estudio en vídeo y tres frases que lo siguen |
-| 11 | Preguntas | `#preguntas` | Rótulo «Preguntas frecuentes» y diez preguntas con `<details>` nativo |
+| 11 | Preguntas | `#preguntas` | Rótulo «Preguntas frecuentes» y nueve preguntas con `<details>` nativo |
 | 12 | Del blog | `#blog` | Los tres últimos artículos (lista generada) |
 | 13 | Descarga | `#descargar` | «Vístete sin dudas.» y las dos insignias de tienda |
 | 14 | Colofón | — | Enlaces de la página, blog, redes, acceso, textos legales y el nombre de la empresa |
