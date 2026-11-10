@@ -23,11 +23,17 @@ const CHECK = process.argv.includes('--check');
 const SITE = {
   url: 'https://editstudio.app',
   name: 'édit',
+  // Otros nombres del sitio, por si el buscador no elige «édit» como nombre: el descriptivo y el dominio.
+  alternateNames: ['édit studio', 'editstudio.app'],
   legalName: 'WITME ADVERTISING S.L.',
   appName: 'édit: armario y estilo',
   appLanguages: ['es', 'en', 'fr', 'it', 'pt'],
   appStore: 'https://apps.apple.com/es/app/id6796045067',
   googlePlay: 'https://play.google.com/store/apps/details?id=edit.studio.app',
+  // Páginas de desarrollador en las tiendas (comprobadas el 10/11/2026).
+  appStoreDeveloper: 'https://apps.apple.com/es/developer/id6796045069',
+  googlePlayDeveloper: 'https://play.google.com/store/apps/developer?id=Witme',
+  appScreenshot: '/assets/img/app-plan.webp',
   login: 'https://dashboard.editstudio.app/login',
   download: 'https://dashboard.editstudio.app/descargar',
   privacy: 'https://dashboard.editstudio.app/legal/privacidad',
@@ -72,7 +78,7 @@ const orgNode = () => ({
   legalName: SITE.legalName,
   url: SITE.url + '/',
   logo: { '@type': 'ImageObject', url: abs(SITE.logo), width: 512, height: 512 },
-  sameAs: SITE.sameAs,
+  sameAs: [...SITE.sameAs, SITE.appStoreDeveloper, SITE.googlePlayDeveloper],
 });
 // Ancho y alto de una imagen PNG, JPEG, WebP o GIF leyendo su cabecera. Devuelve null si no existe o no la entiende.
 export function imageSize(file) {
@@ -148,9 +154,14 @@ function buildHome() {
   const nDetails = (html.match(/<details>/g) || []).length;
   if (faq.length !== nDetails) fail(`index.html: hay ${nDetails} preguntas pero solo se han podido leer ${faq.length}; revisa el formato de <details>`);
 
+  const shot = imageSize(join(ROOT, SITE.appScreenshot));
+  if (!shot) fail(`no puedo leer el tamaño de ${SITE.appScreenshot}`);
+  const shotAlt = unesc((new RegExp(`<img\\s[^>]*src="${SITE.appScreenshot.slice(1).replace(/\./g, '\\.')}"[^>]*\\salt="([^"]*)"`).exec(html) || [])[1] || '');
+  const stores = [SITE.appStore, SITE.googlePlay];
+
   const graph = [
     orgNode(),
-    { '@type': 'WebSite', '@id': WEB_ID, url: SITE.url + '/', name: SITE.name, inLanguage: 'es', publisher: { '@id': ORG_ID } },
+    { '@type': 'WebSite', '@id': WEB_ID, url: SITE.url + '/', name: SITE.name, alternateName: SITE.alternateNames, inLanguage: 'es', publisher: { '@id': ORG_ID } },
     {
       '@type': 'WebPage',
       '@id': SITE.url + '/#webpage',
@@ -160,6 +171,7 @@ function buildHome() {
       inLanguage: 'es',
       isPartOf: { '@id': WEB_ID },
       about: { '@id': APP_ID },
+      mainEntity: { '@id': APP_ID },
       primaryImageOfPage: { '@type': 'ImageObject', url: abs(SITE.ogImage), width: 1200, height: 630 },
     },
     {
@@ -170,11 +182,14 @@ function buildHome() {
       description,
       url: SITE.url + '/',
       image: abs(SITE.logo),
+      screenshot: { '@type': 'ImageObject', url: abs(SITE.appScreenshot), width: shot.width, height: shot.height, ...(shotAlt ? { caption: shotAlt } : {}) },
       applicationCategory: 'LifestyleApplication',
       operatingSystem: 'iOS, Android',
       inLanguage: SITE.appLanguages,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
-      installUrl: [SITE.appStore, SITE.googlePlay],
+      installUrl: stores,
+      downloadUrl: stores,
+      sameAs: stores,
       publisher: { '@id': ORG_ID },
     },
   ];
