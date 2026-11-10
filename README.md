@@ -64,6 +64,7 @@ El mismo sistema se aplica a las clientas de una profesional: una experiencia m�
 | `robots.txt` | Reglas para robots y dirección del sitemap | Sí |
 | `blog/` | Páginas del blog | No, las genera `tools/build.mjs` |
 | `sitemap.xml`, `llms.txt` | Mapa del sitio y resumen para asistentes | No, los genera `tools/build.mjs` |
+| `404.html` | Página de «no encontrada» | No, la genera `tools/build.mjs` |
 | `tools/build.mjs` | Generador | |
 | `tools/check.mjs` | Comprobaciones antes de publicar | |
 
@@ -77,14 +78,15 @@ node tools/build.mjs --check  # no escribe nada; falla si falta generar algo
 node tools/check.mjs          # revisa todas las páginas; falla si hay errores
 ```
 
-`tools/build.mjs` hace cuatro cosas:
+`tools/build.mjs` hace cinco cosas:
 
 1. Escribe los datos estructurados (JSON-LD) de la portada entre los comentarios `datos-estructurados:inicio` y `datos-estructurados:fin`. Las preguntas frecuentes del marcado salen del texto visible de `#preguntas`, así que siempre coinciden.
 2. Genera `blog/index.html` y una página por artículo en `blog/<slug>/index.html`.
-3. Genera `sitemap.xml`.
+3. Genera `sitemap.xml`. La fecha de la portada sale de la constante `homeUpdated` de `tools/build.mjs`: actualízala a mano cuando cambies el contenido de `index.html`.
 4. Genera `llms.txt` a partir de `content/llms.txt` (sustituye `{{blog}}` por la lista de artículos).
+5. Genera `404.html`, con la barra y el pie del blog. Lleva `noindex` y no entra en el sitemap.
 
-`tools/check.mjs` comprueba, entre otras cosas: título y descripción de cada página, dirección canónica única, un solo `<h1>`, datos estructurados válidos y sin valoraciones, que las preguntas del marcado sean las visibles, enlaces internos y anclas, textos alternativos de las imágenes, que `sitemap.xml` y `llms.txt` estén al día y que no aparezcan términos que no usamos en los textos.
+`tools/check.mjs` comprueba, entre otras cosas: título (único) y descripción de cada página, dirección canónica única, un solo `<h1>`, datos estructurados válidos, sin valoraciones y con fechas que llevan zona horaria, que las preguntas del marcado sean las visibles, enlaces internos y anclas, textos alternativos de las imágenes, tamaño y texto alternativo de la imagen para compartir, que `sitemap.xml`, `llms.txt` y `404.html` estén al día, que `404.html` no aparezca en el sitemap y que en los textos no haya dominios ajenos ni términos que no usamos.
 
 ## Cambiar las preguntas frecuentes
 
@@ -103,7 +105,7 @@ Edita la sección `#preguntas` de `index.html` y ejecuta `node tools/build.mjs`:
    ---
    ```
 
-   Opcionales: `actualizado` (fecha), `slug`, `autor`, `imagen` y `imagen_alt`, `borrador: si` (no se publica). Si el título lleva dos puntos, va entre comillas.
+   Opcionales: `actualizado` (fecha), `slug`, `autor`, `imagen` y `imagen_alt`, `borrador: si` (no se publica). Si el título lleva dos puntos, va entre comillas. En los datos estructurados la fecha sale con hora y zona horaria: las 09:00 de la península (constante `publishTime` de `tools/build.mjs`).
 2. Escribe el texto en Markdown: `##` y `###` para los apartados, párrafos, negrita, cursiva, enlaces, listas, citas e imágenes con texto alternativo. Funciona mejor si cada `##` es la pregunta que se haría una lectora y el primer párrafo la responde.
 3. Ejecuta `node tools/build.mjs` y `node tools/check.mjs`.
 4. Sube juntos el `.md` y los archivos generados.
@@ -114,7 +116,8 @@ Para retirar un artículo, borra su `.md` y su carpeta en `blog/` (el generador 
 
 - `robots.txt` permite todo salvo `content/`, `tools/` y `README.md`, y declara el sitemap. Cloudflare añade delante sus propias reglas: el bloqueo de los robots de entrenamiento se gestiona en su panel, no aquí.
 - `llms.txt` resume el producto y enlaza las páginas principales. Es una convención todavía poco adoptada: cuesta poco mantenerla, pero no sustituye a un buen contenido.
-- Los datos estructurados describen la organización, la web, la app, las preguntas frecuentes y cada artículo. No incluyen valoraciones ni precios.
+- Los datos estructurados describen la organización, la web, la app, las preguntas frecuentes y cada artículo. No incluyen valoraciones. La app declara precio 0 porque la descarga es gratuita.
+- `404.html` solo se sirve en las direcciones que no existen si está activado en la configuración del alojamiento.
 
 ## Enlaces
 
@@ -122,6 +125,7 @@ Para retirar un artículo, borra su `.md` y su carpeta en `blog/` (el generador 
 | --- | --- |
 | Descargar | https://dashboard.editstudio.app/descargar |
 | Iniciar sesión | https://dashboard.editstudio.app/login |
+| Soporte | https://dashboard.editstudio.app/soporte |
 | App Store | https://apps.apple.com/es/app/id6796045067 |
 | Google Play | https://play.google.com/store/apps/details?id=edit.studio.app |
 | Web | https://editstudio.app |
