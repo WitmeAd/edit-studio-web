@@ -470,8 +470,8 @@ ${ogImageTags(image, alt, path)}${extra}<meta name="twitter:card" content="summa
 <meta name="twitter:image" content="${esc(abs(image))}">
 <meta name="twitter:image:alt" content="${esc(alt)}">
 `;
-  // La barra es la de la portada; en el blog, su enlace queda marcado como la página actual.
-  const nav = path && path.startsWith('/blog/') ? parts.nav.replace('<a href="/blog/">', '<a href="/blog/" aria-current="page">') : parts.nav;
+  // La barra es la de la portada; en el blog, su enlace queda marcado (como página actual en el índice; como sección en los artículos).
+  const nav = path && path.startsWith('/blog/') ? parts.nav.replace('<a href="/blog/">', `<a href="/blog/" aria-current="${path === '/blog/' ? 'page' : 'true'}">`) : parts.nav;
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
