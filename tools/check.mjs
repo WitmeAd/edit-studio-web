@@ -8,16 +8,17 @@
 // que cada página tenga título (único), descripción, canonical, un solo <h1> y titulares sin saltos
 // de nivel, que las imágenes tengan texto alternativo y medidas, que la imagen para compartir declare
 // su tamaño y su texto alternativo, que las fechas de los datos estructurados lleven zona horaria,
-// que 404.html tenga noindex y no esté en el sitemap, y que no se cuelen dominios ajenos ni palabras
-// que no usamos de cara al público (en el texto, en los atributos y en los datos estructurados).
-// En la portada, además: las anclas estables, los vídeos (póster con medidas, descripción, sin
-// precarga), la precarga del póster de cabecera y los botones de descarga.
+// que 404.html tenga noindex y no esté en el sitemap, y que no se cuelen dominios ajenos, enlaces a los
+// prototipos de /new/ ni palabras que no usamos de cara al público (en el texto, en los atributos y en
+// los datos estructurados). En la portada, además: las anclas estables, los vídeos (póster con medidas,
+// descripción, sin precarga), la precarga del póster de cabecera, los botones de descarga y que la fecha
+// de la portada (homeUpdated) no se haya quedado atrás.
 
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { extractFaq, imageSize } from './build.mjs';
+import { extractFaq, imageSize, homeUpdated } from './build.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://editstudio.app';
@@ -143,8 +144,8 @@ function checkHome(html, where) {
     if (!/\swidth="\d+"/.test(v) || !/\sheight="\d+"/.test(v)) err(w + 'el vídeo no declara width y height');
     if (!/\spreload="none"/.test(v)) err(w + 'debe llevar preload="none": nada se descarga hasta que toca');
     if (unesc((/\saria-label="([^"]*)"/.exec(v) || [])[1] || '').length < 40) err(w + 'falta un aria-label que cuente lo que se ve');
-    // Fuera de la cabecera el vídeo viaja en <noscript>: sin JavaScript necesita su póster.
-    if (i > 0 && !/\sposter="[^"]+"/.test(v)) err(w + 'falta poster');
+    // Sin JavaScript el vídeo se ve con sus controles: necesita su póster (con JavaScript, el motor se lo quita).
+    if (!/\sposter="[^"]+"/.test(v)) err(w + 'falta poster');
   });
 
   // Cabecera: el póster del primer pantallazo se precarga con prioridad alta y las fuentes tienen preconnect.
@@ -206,6 +207,11 @@ for (const page of pages()) {
       if (!meta(html, p)) err(where + 'falta ' + p);
     }
     if (meta(html, 'og:url') && canon && meta(html, 'og:url') !== canon) err(where + 'og:url distinto del canonical');
+    // Tarjeta grande al compartir: sin estas dos etiquetas algunas redes enseñan solo el enlace.
+    const tw = (name) => (new RegExp(`<meta name="${name}" content="([^"]*)"`).exec(html) || [])[1] || '';
+    if (tw('twitter:card') !== 'summary_large_image') err(where + 'falta <meta name="twitter:card" content="summary_large_image">');
+    if (!tw('twitter:image')) err(where + 'falta twitter:image');
+    else if (tw('twitter:image') !== meta(html, 'og:image')) err(where + 'twitter:image distinto de og:image');
     // Imagen para compartir: texto alternativo siempre; ancho y alto reales si la imagen es del sitio.
     if (!meta(html, 'og:image:alt')) err(where + 'falta og:image:alt');
     const og = meta(html, 'og:image') && resolveLocal(page, meta(html, 'og:image'));
@@ -316,6 +322,7 @@ for (const page of pages()) {
       if (!url) { err(where + `${m[1]} vacío`); continue; }
       if (/^http:\/\//.test(url)) err(where + `enlace sin https: ${url}`);
       if (url.includes(OLD_DOWNLOAD)) err(where + `${url}: en un ordenador acaba en el inicio de sesión; «Descargar» va a #descargar`);
+      if (/^(?:https:\/\/editstudio\.app)?\/?new\//.test(url)) err(where + `${url}: las páginas públicas no enlazan a los prototipos de /new/`);
       if (is404 && !/^(https:|\/|#|mailto:)/.test(url)) err(where + `${url}: en esta página las rutas deben empezar por /`);
       const r = resolveLocal(page, url);
       if (!r) continue;
@@ -338,6 +345,8 @@ for (const page of pages()) {
   }
   for (const m of html.matchAll(/<img\s[^>]*>/g)) {
     if (!/\salt="/.test(m[0])) err(where + 'imagen sin alt: ' + m[0].slice(0, 80));
+    // Solo el fotograma fijo de un vídeo va con alt vacío: lo que se ve lo cuenta el aria-label del vídeo.
+    else if (/\salt=""/.test(m[0]) && !/\sclass="[^"]*\bfilm__poster\b/.test(m[0])) err(where + 'imagen con alt vacío: ' + ((/src="([^"]*)"/.exec(m[0]) || [])[1] || ''));
     if (!/\swidth="\d+"/.test(m[0]) || !/\sheight="\d+"/.test(m[0])) warn(where + 'imagen sin width/height: ' + ((/src="([^"]*)"/.exec(m[0]) || [])[1] || ''));
   }
 
@@ -351,6 +360,20 @@ for (const page of pages()) {
     if (m) err(where + `aparece ${name}: «…${text.slice(Math.max(0, m.index - 30), m.index + 30).trim()}…»`);
   }
 }
+
+// ── 2a. La fecha de la portada no se ha quedado atrás ──
+// Sale en sitemap.xml, en llms.txt y en los datos estructurados (WebPage.dateModified). Si index.html ha cambiado después
+// (último commit o cambios sin guardar en git), hay que ponerla al día. Sin git, no se comprueba.
+try {
+  const git = (...args) => execFileSync('git', ['-C', ROOT, ...args], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  const hoy = new Date();
+  const last = git('status', '--porcelain', '--', 'index.html')
+    ? `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+    : git('log', '-1', '--format=%cs', '--', 'index.html');
+  if (/^\d{4}-\d{2}-\d{2}$/.test(last) && last > homeUpdated) {
+    warn(`index.html cambió el ${last} y la fecha de la portada es ${homeUpdated}: actualiza SITE.homeUpdated en tools/build.mjs y ejecuta node tools/build.mjs`);
+  }
+} catch { /* sin git */ }
 
 // ── 2b. Recursos que ya no usa ninguna página ──
 {
