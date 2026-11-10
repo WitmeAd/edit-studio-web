@@ -59,7 +59,7 @@ const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const unesc = (s) => s.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
 const plain = (html) => unesc(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
-const abs = (path) => SITE.url + path;
+const abs = (path) => (path.startsWith('https://') ? path : SITE.url + path);
 function fail(msg) { console.error('ERROR: ' + msg); process.exit(1); }
 function jsonLd(graph) {
   const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }, null, 1).replace(/</g, '\\u003c');
@@ -74,6 +74,49 @@ const orgNode = () => ({
   logo: { '@type': 'ImageObject', url: abs(SITE.logo), width: 512, height: 512 },
   sameAs: SITE.sameAs,
 });
+// Ancho y alto de una imagen PNG, JPEG, WebP o GIF leyendo su cabecera. Devuelve null si no existe o no la entiende.
+export function imageSize(file) {
+  if (!existsSync(file)) return null;
+  const b = readFileSync(file);
+  if (b.length > 24 && b.readUInt32BE(0) === 0x89504e47) return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
+  if (b.length > 10 && b.toString('latin1', 0, 3) === 'GIF') return { width: b.readUInt16LE(6), height: b.readUInt16LE(8) };
+  if (b.length > 30 && b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP') {
+    const kind = b.toString('latin1', 12, 16);
+    if (kind === 'VP8 ') return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
+    if (kind === 'VP8L') return { width: 1 + (((b[22] & 0x3f) << 8) | b[21]), height: 1 + (((b[24] & 0x0f) << 10) | (b[23] << 2) | (b[22] >> 6)) };
+    if (kind === 'VP8X') return { width: 1 + b.readUIntLE(24, 3), height: 1 + b.readUIntLE(27, 3) };
+    return null;
+  }
+  if (b.length > 4 && b[0] === 0xff && b[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) { i++; continue; }
+      const marker = b[i + 1];
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) return { width: b.readUInt16BE(i + 7), height: b.readUInt16BE(i + 5) };
+      if (marker === 0xff) { i++; continue; }
+      if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { i += 2; continue; }
+      i += 2 + b.readUInt16BE(i + 2);
+    }
+  }
+  return null;
+}
+// Texto alternativo de la imagen para compartir: el que está escrito en la portada.
+let ogAltCache;
+function ogImageAlt() {
+  if (ogAltCache === undefined) ogAltCache = unesc((/<meta property="og:image:alt" content="([^"]*)"/.exec(read('index.html')) || [])[1] || '');
+  if (!ogAltCache) fail('index.html: falta og:image:alt');
+  return ogAltCache;
+}
+// Etiquetas og:image con ancho, alto (si la imagen es del sitio) y texto alternativo.
+function ogImageTags(image, alt, where) {
+  let out = `<meta property="og:image" content="${esc(abs(image))}">\n`;
+  if (image.startsWith('/')) {
+    const size = imageSize(join(ROOT, image));
+    if (!size) fail(`${where}: no puedo leer el tamaño de ${image} (tiene que existir y ser PNG, JPEG, WebP o GIF)`);
+    out += `<meta property="og:image:width" content="${size.width}">\n<meta property="og:image:height" content="${size.height}">\n`;
+  }
+  return out + `<meta property="og:image:alt" content="${esc(alt)}">\n`;
+}
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 function fechaLarga(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -268,7 +311,7 @@ function loadPosts() {
   return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.slug < b.slug ? -1 : 1));
 }
 
-function head({ title, description, path, type, image, extra = '', ld }) {
+function head({ title, description, path, type, image, imageAlt, extra = '', ld }) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -288,8 +331,7 @@ function head({ title, description, path, type, image, extra = '', ld }) {
 <meta property="og:url" content="${abs(path)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
-<meta property="og:image" content="${abs(image)}">
-${extra}<meta name="twitter:card" content="summary_large_image">
+${ogImageTags(image, imageAlt || ogImageAlt(), path)}${extra}<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="${esc(SITE.fonts)}" rel="stylesheet">
@@ -391,7 +433,7 @@ function renderPost(p, posts) {
   const extra = `<meta property="article:published_time" content="${p.date}">\n<meta property="article:modified_time" content="${p.updated}">\n`;
   const others = posts.filter((o) => o.slug !== p.slug).slice(0, 3);
   const upd = p.updated !== p.date ? ` · Actualizado el <time datetime="${p.updated}">${fechaLarga(p.updated)}</time>` : '';
-  return head({ title, description: p.description, path: p.path, type: 'article', image: p.image, extra, ld }) + `
+  return head({ title, description: p.description, path: p.path, type: 'article', image: p.image, imageAlt: p.image !== SITE.ogImage ? p.imageAlt || p.title : '', extra, ld }) + `
 <main>
 <article class="post">
   <header class="post-head">
