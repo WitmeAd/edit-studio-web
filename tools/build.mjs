@@ -9,6 +9,7 @@
 //   2. Blog: content/blog/*.md  ->  blog/<slug>/index.html  y  blog/index.html
 //   3. sitemap.xml
 //   4. llms.txt, a partir de content/llms.txt
+//   5. 404.html, la página de «no encontrada», con la barra y el pie del blog
 //
 // No borra nada: si quitas un artículo, borra tú su carpeta en blog/ (el script avisa).
 
@@ -339,33 +340,40 @@ function loadPosts() {
   return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.slug < b.slug ? -1 : 1));
 }
 
-function head({ title, description, path, type, image, imageAlt, extra = '', ld }) {
-  return `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${esc(title)}</title>
-<meta name="description" content="${esc(description)}">
+// Cabecera común. Con noindex (404.html) la página se sirve en cualquier dirección: no lleva descripción, canonical,
+// etiquetas para compartir ni datos estructurados.
+function head({ title, description, path, type, image, imageAlt, extra = '', ld, noindex = false }) {
+  const seo = noindex
+    ? `<meta name="robots" content="noindex">`
+    : `<meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${abs(path)}">
-<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-<meta name="theme-color" content="#FFFFFF">
-<link rel="icon" href="/favicon.ico" sizes="48x48">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta property="og:type" content="${type}">
+<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">`;
+  const share = noindex
+    ? ''
+    : `<meta property="og:type" content="${type}">
 <meta property="og:site_name" content="${esc(SITE.name)}">
 <meta property="og:locale" content="es_ES">
 <meta property="og:url" content="${abs(path)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 ${ogImageTags(image, imageAlt || ogImageAlt(), path)}${extra}<meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+`;
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(title)}</title>
+${seo}
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+${share}<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="${esc(SITE.fonts)}" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/blog.css">
-${jsonLd(ld)}
-</head>
+${noindex ? '' : jsonLd(ld) + '\n'}</head>
 <body>
 <nav>
   <a href="/" class="logo" aria-label="édit, inicio"><span class="e">é</span>dit</a>
@@ -538,6 +546,24 @@ function buildBlog(posts) {
   }
 }
 
+// ───────────────────────────── 5. 404.html ─────────────────────────────
+// No va en sitemap.xml. Para que el alojamiento la sirva hay que activarlo en su configuración.
+function build404() {
+  write('404.html', head({ title: 'No encontramos esa página · édit', noindex: true }) + `
+<main>
+<div class="post notfound">
+  <header class="post-head">
+    <h1>No encontramos esa página</h1>
+  </header>
+  <div class="post-body">
+    <p><a href="/">Ir a la portada</a> · <a href="/blog/">Ir al blog</a></p>
+  </div>
+</div>
+</main>
+
+` + FOOT);
+}
+
 // ───────────────────────────── 3. sitemap.xml ─────────────────────────────
 function buildSitemap(posts) {
   fechaLarga(SITE.homeUpdated);
@@ -570,6 +596,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   buildBlog(posts);
   buildSitemap(posts);
   buildLlms(posts);
+  build404();
   if (CHECK) {
     if (changed.length) { console.error('Sin generar o desactualizado: ' + changed.join(', ') + '\nEjecuta: node tools/build.mjs'); process.exit(1); }
     console.log('Todo al día.');
