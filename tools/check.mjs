@@ -4,11 +4,14 @@
 //   node tools/check.mjs
 //
 // Revisa: que lo generado esté al día, que los datos estructurados sean JSON válido y coincidan
-// con las preguntas visibles, que los enlaces y archivos internos existan, que cada página tenga
-// título (único), descripción, canonical y un solo <h1>, que las imágenes tengan texto alternativo,
-// que la imagen para compartir declare su tamaño y su texto alternativo, que las fechas de los datos
-// estructurados lleven zona horaria, que 404.html tenga noindex y no esté en el sitemap, y que no se
-// cuelen dominios ajenos ni palabras que no usamos de cara al público.
+// con las preguntas visibles, que los enlaces y archivos internos existan (también pósters y vídeos),
+// que cada página tenga título (único), descripción, canonical, un solo <h1> y titulares sin saltos
+// de nivel, que las imágenes tengan texto alternativo y medidas, que la imagen para compartir declare
+// su tamaño y su texto alternativo, que las fechas de los datos estructurados lleven zona horaria,
+// que 404.html tenga noindex y no esté en el sitemap, y que no se cuelen dominios ajenos ni palabras
+// que no usamos de cara al público (en el texto, en los atributos y en los datos estructurados).
+// En la portada, además: las anclas estables, los vídeos (póster con medidas, descripción, sin
+// precarga), la precarga del póster de cabecera y los botones de descarga.
 
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -45,6 +48,15 @@ function foreignDomains(text) {
 const DATE_KEYS = new Set(['datePublished', 'dateModified', 'dateCreated', 'uploadDate']);
 const DATE_TZ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})$/;
 
+// Anclas de la portada que no se pueden perder: las usan la barra, el índice, el blog, llms.txt y enlaces de fuera.
+const HOME_ANCHORS = ['indice', 'armario', 'probador', 'looks', 'a-tu-medida', 'planes', 'asesora', 'profesionales', 'preguntas', 'blog', 'descargar'];
+// «Descargar» va al ancla con las dos insignias (y, con JavaScript, a la tienda del móvil): esta dirección, en un
+// ordenador, acaba en el inicio de sesión.
+const OLD_DOWNLOAD = 'dashboard.editstudio.app/descargar';
+const STORE_RE = /^https:\/\/(apps\.apple\.com|play\.google\.com)\//;
+// Archivos del sitio a los que apunta alguna página (para avisar de los que sobran en assets/).
+const used = new Set();
+
 // ── 1. Lo generado está al día ──
 try {
   execFileSync(process.execPath, [join(ROOT, 'tools/build.mjs'), '--check'], { stdio: 'pipe' });
@@ -78,7 +90,7 @@ function visibleText(html) {
 }
 function attrTexts(html) {
   const out = [];
-  const re = /\s(?:alt|title|aria-label|content)="([^"]*)"/g;
+  const re = /\s(?:alt|title|aria-label|aria-description|placeholder|content|data-[\w-]+)="([^"]*)"/g;
   let m;
   while ((m = re.exec(html))) out.push(unesc(m[1]));
   return out.join(' \n ');
@@ -106,6 +118,52 @@ function idsOf(rel) {
     idCache.set(rel, new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])));
   }
   return idCache.get(rel);
+}
+
+// Comprobaciones propias de la portada.
+function checkHome(html, where) {
+  const ids = idsOf('index.html');
+  for (const a of HOME_ANCHORS) if (!ids.has(a)) err(where + `falta el ancla #${a}`);
+
+  // Vídeos: cada película lleva su fotograma fijo (una imagen con medidas) y un vídeo mudo, con medidas, sin precarga
+  // y con la descripción de lo que se ve.
+  const films = html.split(/(?=<div class="film[\s"])/).slice(1);
+  const nVideos = (html.match(/<video[\s>]/g) || []).length;
+  if (!films.length) err(where + 'no encuentro ninguna película (<div class="film" data-film>)');
+  if (nVideos !== films.length) err(where + `hay ${nVideos} <video> y ${films.length} películas: cada vídeo va dentro de su <div class="film">`);
+  films.forEach((chunk, i) => {
+    const w = `${where}vídeo «${(/data-nombre="([^"]*)"/.exec(chunk) || [])[1] || 'n.º ' + (i + 1)}»: `;
+    const poster = /<img class="film__poster"[^>]*>/.exec(chunk);
+    const video = /<video\s[^>]*>/.exec(chunk);
+    if (!poster) err(w + 'falta el fotograma fijo (<img class="film__poster">)');
+    else if (!/\swidth="\d+"/.test(poster[0]) || !/\sheight="\d+"/.test(poster[0])) err(w + 'el fotograma fijo no declara width y height');
+    if (!video) { err(w + 'falta <video>'); return; }
+    const v = video[0];
+    for (const a of ['muted', 'playsinline']) if (!new RegExp(`\\s${a}[\\s>=]`).test(v)) err(w + 'falta ' + a);
+    if (!/\swidth="\d+"/.test(v) || !/\sheight="\d+"/.test(v)) err(w + 'el vídeo no declara width y height');
+    if (!/\spreload="none"/.test(v)) err(w + 'debe llevar preload="none": nada se descarga hasta que toca');
+    if (unesc((/\saria-label="([^"]*)"/.exec(v) || [])[1] || '').length < 40) err(w + 'falta un aria-label que cuente lo que se ve');
+    // Fuera de la cabecera el vídeo viaja en <noscript>: sin JavaScript necesita su póster.
+    if (i > 0 && !/\sposter="[^"]+"/.test(v)) err(w + 'falta poster');
+  });
+
+  // Cabecera: el póster del primer pantallazo se precarga con prioridad alta y las fuentes tienen preconnect.
+  const first = (/<img class="film__poster" src="([^"]*)"/.exec(html) || [])[1];
+  const pre = /<link rel="preload" as="image" href="([^"]*)"[^>]*>/.exec(html);
+  if (!pre) err(where + 'falta la precarga del póster de la cabecera (<link rel="preload" as="image">)');
+  else {
+    if (pre[1] !== first) err(where + `se precarga ${pre[1]} y el póster de la cabecera es ${first}`);
+    if (!/fetchpriority="high"/.test(pre[0])) err(where + 'la precarga del póster debe llevar fetchpriority="high"');
+  }
+  if (!/<link rel="preconnect" href="https:\/\/fonts\.gstatic\.com"/.test(html)) err(where + 'falta el preconnect de las fuentes');
+
+  // Descarga: botones con data-tienda, el script que los lleva a la tienda del móvil y las dos insignias en #descargar.
+  if (!/\sdata-tienda[\s>=]/.test(html)) err(where + 'no hay ningún botón «Descargar» con data-tienda');
+  if (!html.includes('/* tienda:inicio')) err(where + 'falta el script «tienda» que lleva «Descargar» a la tienda del móvil');
+  const section = (id) => (new RegExp(`<section[^>]*\\sid="${id}"[\\s\\S]*?</section>`).exec(html) || [''])[0];
+  for (const s of ['apps.apple.com', 'play.google.com']) if (!section('descargar').includes(s)) err(where + `la sección #descargar no enlaza a ${s}`);
+  if (!/href="\/blog\/[a-z0-9-]+\/"/.test(section('blog'))) err(where + 'el bloque «Del blog» no enlaza a ningún artículo');
+  if (!extractFaq(html).length) err(where + 'no hay preguntas frecuentes');
 }
 
 const canonicals = new Map();
@@ -164,6 +222,12 @@ for (const page of pages()) {
   }
   const h1 = (html.match(/<h1[\s>]/g) || []).length;
   if (h1 !== 1) err(where + `tiene ${h1} <h1> (debe haber uno)`);
+  // Titulares sin saltos de nivel: después de un h2 puede venir un h3, no un h4.
+  let level = 0;
+  for (const m of html.matchAll(/<h([1-6])[\s>][\s\S]*?<\/h\1>/g)) {
+    if (level && +m[1] > level + 1) err(where + `salto de titular: <h${m[1]}> «${visibleText(m[0]).trim().slice(0, 50)}» después de un <h${level}>`);
+    level = +m[1];
+  }
   if ((html.match(/<main[\s>]/g) || []).length !== 1) err(where + 'debe tener un <main>');
 
   // Datos estructurados
@@ -216,7 +280,21 @@ for (const page of pages()) {
       const vis = visibleText(html);
       for (const f of faq) if (!vis.includes(f.q) || !vis.includes(f.a)) err(where + `la pregunta «${f.q}» no está tal cual en el texto visible`);
     }
-    for (const t of ['Organization', 'WebSite', 'MobileApplication']) if (!nodes.some((n) => n['@type'] === t)) err(where + 'falta ' + t + ' en el JSON-LD');
+    for (const t of ['Organization', 'WebSite', 'WebPage', 'MobileApplication']) if (!nodes.some((n) => n['@type'] === t)) err(where + 'falta ' + t + ' en el JSON-LD');
+    const app = nodes.find((n) => n['@type'] === 'MobileApplication');
+    if (app) {
+      if (!app.offers || app.offers.price !== '0') err(where + 'MobileApplication: offers debe seguir con precio 0 (la descarga es gratuita)');
+      for (const k of ['screenshot', 'downloadUrl', 'sameAs']) if (!app[k]) err(where + 'MobileApplication sin ' + k);
+      const vis = visibleText(html).toLowerCase();
+      for (const f of app.featureList || []) if (!vis.includes(f.split(': ').pop().toLowerCase())) err(where + `MobileApplication: la función «${f}» no está en el texto visible`);
+    }
+    // Película de la portada: los cinco datos que pide el tipo y la misma descripción que lleva el vídeo en la página.
+    const film = nodes.find((n) => n['@type'] === 'VideoObject');
+    if (film) {
+      for (const k of ['name', 'description', 'thumbnailUrl', 'uploadDate', 'contentUrl']) if (!film[k]) err(where + 'VideoObject sin ' + k);
+      if (film.description && !attrTexts(html).includes(film.description)) err(where + 'VideoObject: la descripción no es la del vídeo de la página (aria-label)');
+    }
+    checkHome(html, where);
   } else if (page !== 'blog/index.html' && !is404) {
     const post = nodes.find((n) => n['@type'] === 'BlogPosting');
     if (!post) err(where + 'falta BlogPosting');
@@ -225,26 +303,39 @@ for (const page of pages()) {
       const h1Text = unesc(((/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html) || [])[1] || '').replace(/<[^>]+>/g, '')).trim();
       if (post.headline !== h1Text) err(where + 'el titular del JSON-LD no coincide con el <h1>');
       if (!visibleText(html).includes('min de lectura')) err(where + 'falta la línea de autoría y fecha');
-      const byline = visibleText((/<p class="post-meta">([\s\S]*?)<\/p>/.exec(html) || [])[1] || '').split(' · ')[0].trim();
+      const byline = visibleText((/<p class="post-meta[^"]*">([\s\S]*?)<\/p>/.exec(html) || [])[1] || '').split(' · ')[0].trim();
       const author = post.author && post.author.name;
       if (author && author !== byline) err(where + `la autora del JSON-LD («${author}») no es la que se ve en el artículo («${byline}»)`);
     }
     if (!nodes.some((n) => n['@type'] === 'BreadcrumbList')) err(where + 'falta BreadcrumbList');
   }
 
-  // Enlaces y archivos
-  for (const m of html.matchAll(/\s(href|src)="([^"]*)"/g)) {
-    const url = unesc(m[2]);
-    if (!url) { err(where + `${m[1]} vacío`); continue; }
-    if (/^http:\/\//.test(url)) err(where + `enlace sin https: ${url}`);
-    if (is404 && !/^(https:|\/|#|mailto:)/.test(url)) err(where + `${url}: en esta página las rutas deben empezar por /`);
-    const r = resolveLocal(page, url);
-    if (!r) continue;
-    const [rel, hash] = r;
-    if (!existsSync(join(ROOT, rel))) { err(where + `${url} no existe (${rel})`); continue; }
-    if (hash && rel.endsWith('.html') && !idsOf(rel).has(hash)) err(where + `${url}: no hay ningún id="${hash}" en ${rel}`);
+  // Enlaces y archivos (también pósters, variantes de imagen y los dos cortes del vídeo de profesionales)
+  for (const m of html.matchAll(/\s(href|src|srcset|poster|data-ancho|data-movil)="([^"]*)"/g)) {
+    for (const url of m[1] === 'srcset' ? unesc(m[2]).split(',').map((u) => u.trim().split(/\s+/)[0]) : [unesc(m[2])]) {
+      if (!url) { err(where + `${m[1]} vacío`); continue; }
+      if (/^http:\/\//.test(url)) err(where + `enlace sin https: ${url}`);
+      if (url.includes(OLD_DOWNLOAD)) err(where + `${url}: en un ordenador acaba en el inicio de sesión; «Descargar» va a #descargar`);
+      if (is404 && !/^(https:|\/|#|mailto:)/.test(url)) err(where + `${url}: en esta página las rutas deben empezar por /`);
+      const r = resolveLocal(page, url);
+      if (!r) continue;
+      const [rel, hash] = r;
+      if (!existsSync(join(ROOT, rel))) { err(where + `${url} no existe (${rel})`); continue; }
+      used.add(rel);
+      if (hash && rel.endsWith('.html') && !idsOf(rel).has(hash)) err(where + `${url}: no hay ningún id="${hash}" en ${rel}`);
+    }
   }
-  for (const m of html.matchAll(/<a\s[^>]*target="_blank"[^>]*>/g)) if (!/rel="[^"]*noopener/.test(m[0])) err(where + 'enlace en pestaña nueva sin rel="noopener"');
+  for (const u of [meta(html, 'og:image'), ...(ldText.match(/https:\/\/editstudio\.app\/[^"\\]*/g) || [])]) {
+    const r = u && resolveLocal(page, u);
+    if (r) used.add(r[0]);
+  }
+  for (const m of html.matchAll(/<a\s[^>]*>/g)) {
+    const href = (/\shref="([^"]*)"/.exec(m[0]) || [])[1] || '';
+    const blank = /\starget="_blank"/.test(m[0]);
+    if (blank && !/rel="[^"]*noopener/.test(m[0])) err(where + 'enlace en pestaña nueva sin rel="noopener"');
+    if (STORE_RE.test(href) && !blank) err(where + `el enlace a la tienda (${href}) debe abrirse en una pestaña nueva`);
+    if (/\sdata-tienda[\s>=]/.test(m[0]) && !/#descargar$/.test(href)) err(where + `un botón «Descargar» (data-tienda) apunta a «${href}» y debe ir al ancla #descargar`);
+  }
   for (const m of html.matchAll(/<img\s[^>]*>/g)) {
     if (!/\salt="/.test(m[0])) err(where + 'imagen sin alt: ' + m[0].slice(0, 80));
     if (!/\swidth="\d+"/.test(m[0]) || !/\sheight="\d+"/.test(m[0])) warn(where + 'imagen sin width/height: ' + ((/src="([^"]*)"/.exec(m[0]) || [])[1] || ''));
@@ -259,6 +350,12 @@ for (const page of pages()) {
     const m = re.exec(text);
     if (m) err(where + `aparece ${name}: «…${text.slice(Math.max(0, m.index - 30), m.index + 30).trim()}…»`);
   }
+}
+
+// ── 2b. Recursos que ya no usa ninguna página ──
+{
+  const walk = (rel) => readdirSync(join(ROOT, rel)).flatMap((f) => (statSync(join(ROOT, rel, f)).isDirectory() ? walk(rel + '/' + f) : [rel + '/' + f]));
+  if (existsSync(join(ROOT, 'assets'))) for (const f of walk('assets')) if (!f.endsWith('.DS_Store') && !used.has(f)) warn(`${f}: ninguna página lo usa; bórralo si sobra`);
 }
 
 // ── 3. Textos fuente y llms.txt ──
