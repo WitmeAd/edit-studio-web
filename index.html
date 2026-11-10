@@ -40,7 +40,7 @@
 })(document.documentElement.classList, window);
 </script>
 <style>
-/* común:inicio — de aquí a «común:fin», estilos que también usan el blog y 404.html: tools/build.mjs los copia a assets/css/blog.css */
+/* común:inicio — de aquí a la marca de cierre, estilos que también usan el blog y 404.html: tools/build.mjs los copia a assets/css/blog.css */
 /* ───────── Sistema: una sola hoja de variables ───────── */
 :root {
   --lienzo: #FBF8F3;
@@ -214,6 +214,8 @@ p { text-wrap: pretty; }
   text-align: center; overflow: clip; transform-origin: 50% 100%;
 }
 .hero__sub { margin-top: clamp(14px, 1.6vw, 18px); max-width: 34rem; text-wrap: balance; font-size: clamp(1.0625rem, 1.45vw, 1.25rem); line-height: 1.45; color: var(--texto-2); }
+/* Rótulo sobre el titular (dentro del h1): dice qué es édit */
+.hero__rotulo { display: block; margin-bottom: clamp(10px, 1.1vw, 14px); font-variation-settings: normal; text-wrap: balance; }
 .hero__cta { margin: clamp(16px, 1.9vw, 24px) 0 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 26px; }
 /* La película llena lo que queda de vitrina y se sale un poco por abajo: el producto asoma, no flota */
 .hero__film { --ft: 6%; --fb: 6%; --fl: 8%; --fr: 8%; --fw: min(100% + 2 * var(--pad), 520px); flex: none; width: var(--fw); max-width: none; margin: auto 0 calc(var(--fw) * -.07); }
@@ -221,11 +223,13 @@ p { text-wrap: pretty; }
   .hero__title .ln { display: inline-block; vertical-align: top; }
   .hero__sub { max-width: 54rem; }
   .hero__cta { margin-bottom: 4px; }
-  .hero__film { --fh: clamp(480px, calc(100 * var(--svh)) - 304px, 800px); --fw: min(100%, var(--fh) * .8); }
+  .hero__film { --fh: clamp(480px, calc(100 * var(--svh)) - 338px, 800px); --fw: min(100%, var(--fh) * .8); }
 }
 
 /* ───────── 2 · Índice ───────── */
 .indice { padding-bottom: clamp(48px, 6vw, 96px); }
+/* Entradilla: la frase que define édit, a lo ancho de la lista */
+.indice__def { flex-basis: 100%; max-width: 44rem; color: var(--texto-2); }
 .indice__list { border-top: 1px solid var(--tinta); }
 .irow { --bg: var(--lienzo); }
 .irow a { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 14px; align-items: center; min-height: 58px; padding-block: 10px; border-bottom: 1px solid var(--linea); }
@@ -513,7 +517,27 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 .faq-a a { color: var(--tinta); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; }
 @media (min-width: 900px) { .faq__grid { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); } .faq__grid .h2 { position: sticky; top: calc(var(--nav) + 36px); align-self: start; } }
 
-/* ───────── 12 · Descarga ───────── */
+/* ───────── 12 · Del blog: tres filas, con la tipografía del índice ───────── */
+.blog { padding-bottom: clamp(56px, 7vw, 104px); }
+.blog .cab { align-items: center; }
+/* común:inicio — filas de artículos (portada, índice del blog y «Sigue leyendo») */
+.notas { border-top: 1px solid var(--tinta); }
+.nota a { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px 28px; padding-block: 18px 22px; border-bottom: 1px solid var(--linea); }
+.nota p { max-width: 34rem; color: var(--texto-2); }
+.nota .go { display: none; }
+@media (min-width: 900px) {
+  .nota a { grid-template-columns: 5rem minmax(0, 5fr) minmax(0, 6fr) 34px; column-gap: 0; align-items: baseline; padding-block: 26px 28px; }
+  .nota :is(h2, h3) { padding-right: clamp(28px, 3vw, 48px); transition: transform .5s var(--ease); }
+  .nota .go { display: block; align-self: center; justify-self: end; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.1; opacity: 0; transform: translateX(-10px); transition: opacity .3s ease, transform .5s var(--ease); }
+  .nota a:focus-visible .go { opacity: 1; transform: none; }
+}
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+  .nota a:hover .go { opacity: 1; transform: none; }
+  .nota a:hover :is(h2, h3) { transform: translateX(.2em); }
+}
+/* común:fin */
+
+/* ───────── 13 · Descarga ───────── */
 .descarga { text-align: center; padding-block: clamp(64px, 8vw, 120px) clamp(84px, 10vw, 150px); background: radial-gradient(ellipse 72% 58% at 50% 50%, var(--lienzo) 60%, rgba(251, 248, 243, 0)); }
 .descarga .cartel { display: flex; flex-direction: column; align-items: center; }
 .descarga p { margin: clamp(22px, 2.6vw, 34px) auto 0; max-width: 31rem; font-size: 1.1875rem; line-height: 1.5; color: var(--texto-2); text-wrap: balance; }
@@ -525,7 +549,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 .tiendas a:active { transform: scale(.97); }
 .tiendas img { height: clamp(46px, 12.6vw, 52px); width: auto; }
 
-/* ───────── 13 · Colofón: el canto de la mesa, con un pespunte en vez de una línea ───────── */
+/* ───────── 14 · Colofón: el canto de la mesa, con un pespunte en vez de una línea ───────── */
 .colofon { padding-block: clamp(40px, 5vw, 64px) 30px; font-size: .9375rem; color: var(--texto-2); background: repeating-linear-gradient(90deg, rgba(43, 33, 24, .42) 0 7px, #0000 7px 12px) 0 0 / 100% 1px no-repeat var(--lienzo); }
 .colofon__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px var(--gap); }
 .colofon__marca { grid-column: 1 / -1; }
@@ -553,6 +577,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
   /* Solo transform: el póster cuenta como pintado desde el primer fotograma (LCP) */
   @keyframes pelicula { from { transform: translateY(3%) scale(.97); } }
   .hero__title .ln > span { animation: frase .9s var(--ease) both; animation-delay: calc(var(--i) * 140ms + 40ms); }
+  .hero__rotulo { animation: apoyo .7s var(--ease) both; }
   .hero__sub { animation: apoyo .7s var(--ease) .34s both; }
   .hero__cta { animation: apoyo .7s var(--ease) .42s both; }
   .hero__film { animation: pelicula 1s var(--ease) .18s both; transform-origin: 50% 100%; }
@@ -625,7 +650,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 }
 @media (prefers-reduced-motion: reduce) {
   .js .slide::after { transition: opacity .2s ease; }
-  .rail, .film__video, .film__poster, .dot, .dot i, .dot i b, .cap, .cap i, .nav, .capa, .tira__roll, .tira__list li::after, .irow .tit, .irow .go, .cinta__tira i { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .rail, .film__video, .film__poster, .dot, .dot i, .dot i b, .cap, .cap i, .nav, .capa, .tira__roll, .tira__list li::after, .irow .tit, .irow .go, .nota :is(h2, h3), .nota .go, .cinta__tira i { transition-duration: .01s !important; transition-delay: 0s !important; }
 }
 /* común:inicio */
 @media (prefers-reduced-transparency: reduce) {
@@ -679,6 +704,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
    "name": "édit: app de armario digital, looks y asesora de imagen",
    "description": "App de estilismo para iPhone y Android: digitaliza tu armario con fotos, crea looks con tu ropa, pruébatelos sobre una foto tuya y elige tu asesora de imagen.",
    "inLanguage": "es",
+   "dateModified": "2026-11-10T09:00:00+01:00",
    "isPartOf": {
     "@id": "https://editstudio.app/#website"
    },
@@ -693,6 +719,9 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
     "url": "https://editstudio.app/assets/img/og.png",
     "width": 1200,
     "height": 630
+   },
+   "video": {
+    "@id": "https://editstudio.app/#pelicula"
    }
   },
   {
@@ -705,9 +734,10 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
    "image": "https://editstudio.app/assets/img/icon-512.png",
    "screenshot": {
     "@type": "ImageObject",
-    "url": "https://editstudio.app/assets/img/app-plan.webp",
-    "width": 840,
-    "height": 1824
+    "url": "https://editstudio.app/assets/img/app-mi-armario.webp",
+    "width": 632,
+    "height": 860,
+    "caption": "Pantalla «Mi armario» de la app édit en un móvil: buscador, filtros por tipo y una cuadrícula de zapatos."
    },
    "applicationCategory": "LifestyleApplication",
    "operatingSystem": "iOS, Android",
@@ -717,6 +747,15 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
     "fr",
     "it",
     "pt"
+   ],
+   "featureList": [
+    "Armario: tu armario digital, foto a foto",
+    "Probador: probador virtual, sobre una foto tuya",
+    "Looks: outfits con la ropa que ya tienes",
+    "Tu semana: el «qué me pongo» de cada día",
+    "Color y estilo: tu colorimetría y tu arquetipo",
+    "Planes: viajes, eventos, temporadas y maleta",
+    "Asesora: una profesional, con tu armario real"
    ],
    "offers": {
     "@type": "Offer",
@@ -735,6 +774,20 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
     "https://apps.apple.com/es/app/id6796045067",
     "https://play.google.com/store/apps/details?id=edit.studio.app"
    ],
+   "publisher": {
+    "@id": "https://editstudio.app/#organization"
+   }
+  },
+  {
+   "@type": "VideoObject",
+   "@id": "https://editstudio.app/#pelicula",
+   "name": "édit en marcha: una foto tuya, tres looks",
+   "description": "Una foto tuya de cuerpo entero, subida en el móvil: «Súbela una vez». En un momento aparecen tus looks: «Tres looks. Sobre ti». «Así te queda»: la misma persona con dos looks distintos, guardados en Mis looks.",
+   "thumbnailUrl": "https://editstudio.app/assets/video/hero.jpg",
+   "contentUrl": "https://editstudio.app/assets/video/hero.mp4",
+   "uploadDate": "2026-11-10T09:00:00+01:00",
+   "duration": "PT7S",
+   "inLanguage": "es",
    "publisher": {
     "@id": "https://editstudio.app/#organization"
    }
@@ -838,10 +891,11 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
       <a href="#a-tu-medida">A tu medida</a>
       <a href="#profesionales">Profesionales</a>
       <a href="#preguntas">Preguntas</a>
+      <a href="/blog/">Blog</a>
     </nav>
     <div class="nav__fin">
       <a href="https://dashboard.editstudio.app/login">Iniciar sesión</a>
-      <a class="btn btn--sm" href="https://dashboard.editstudio.app/descargar">Descargar</a>
+      <a class="btn btn--sm" href="#descargar" data-tienda>Descargar</a>
     </div>
   </div>
 </header>
@@ -852,12 +906,13 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
   <div class="escena">
   <section class="escaparate" aria-labelledby="titulo">
     <h1 class="display hero__title" id="titulo">
+      <span class="sc hero__rotulo">La app de armario digital y estilismo</span>
       <span class="ln" style="--i:0"><span>Una foto tuya.</span></span>
       <span class="ln" style="--i:1"><span>Tres <em>looks</em>.</span></span>
     </h1>
     <p class="hero__sub">Sube una foto y édit te prueba looks hechos con tu propia ropa.</p>
     <div class="hero__cta">
-      <a class="btn" href="https://dashboard.editstudio.app/descargar">Descargar édit</a>
+      <a class="btn" href="#descargar" data-tienda>Descargar édit</a>
       <a class="link" href="#profesionales">¿Eres asesora de imagen? <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5 9.5 7 5 11.5"/></svg></a>
     </div>
     <div class="film fundido hero__film" id="film-hero" data-film data-nombre="una foto tuya, tres looks" data-espera="620">
@@ -877,29 +932,30 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
       <header class="cab">
         <h2 class="h2" id="t-indice">Lo que hace <em>édit</em>.</h2>
         <p class="cab__nota">Vestirse mejor empieza por mirar distinto lo que ya tienes.</p>
+        <p class="indice__def">édit es una app de estilismo personal para iPhone y Android: digitaliza tu armario con fotos, crea looks con la ropa que ya tienes, te los prueba sobre una foto tuya y te conecta con una asesora de&nbsp;imagen.</p>
       </header>
       <div class="indice__grid">
         <ol class="indice__list">
           <li class="irow"><a href="#armario" data-num="N.º 01" data-tema="Armario">
-            <span class="num sc"><i>N.º </i>01</span><span class="tit">Armario</span><span class="glosa">Tu ropa, digitalizada con fotos</span>
+            <span class="num sc"><i>N.º </i>01</span><span class="tit">Armario</span><span class="glosa">Tu armario digital, foto a foto</span>
             <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
             <!-- percha -->
             <svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><path class="tr" pathLength="1" d="M19 20.3a5 5 0 1 1 5 5v3.2"/><path class="tr" pathLength="1" style="--d:1" d="M24 28.5 3.4 41.4c-2.4 1.5-1.3 5.1 1.5 5.1h38.2c2.8 0 3.9-3.6 1.5-5.1L24 28.5Z"/></svg>
           </a></li>
           <li class="irow"><a href="#probador" data-num="N.º 02" data-tema="Probador">
-            <span class="num sc"><i>N.º </i>02</span><span class="tit">Probador</span><span class="glosa">Cada look, sobre una foto tuya</span>
+            <span class="num sc"><i>N.º </i>02</span><span class="tit">Probador</span><span class="glosa">Probador virtual, sobre una foto tuya</span>
             <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
             <!-- espejo de pie -->
             <svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><path class="tr" pathLength="1" d="M9.5 46.5V17a14.5 14.5 0 0 1 29 0v29.5Z"/><path class="tr" pathLength="1" style="--d:1" d="M14.5 41.5V17a9.5 9.5 0 0 1 19 0v24.5Z"/><path class="tr" pathLength="1" style="--d:3" d="m19.5 23 6-6M19.5 31l9.5-9.5" stroke-opacity=".6"/></svg>
           </a></li>
           <li class="irow"><a href="#looks" data-num="N.º 03" data-tema="Looks">
-            <span class="num sc"><i>N.º </i>03</span><span class="tit">Looks</span><span class="glosa">Con la ropa que ya tienes</span>
+            <span class="num sc"><i>N.º </i>03</span><span class="tit">Looks</span><span class="glosa">Outfits con la ropa que ya tienes</span>
             <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
             <!-- tarjetas en abanico -->
             <svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><rect class="tr" pathLength="1" style="--d:1" x="14" y="13" width="20" height="30" rx="3.6" transform="rotate(-16 24 62)"/><rect class="tr" pathLength="1" style="--d:2" x="14" y="13" width="20" height="30" rx="3.6" transform="rotate(16 24 62)"/><rect class="tapa" x="14" y="13" width="20" height="30" rx="3.6"/><rect class="velo" x="14" y="13" width="20" height="30" rx="3.6"/><rect class="tr" pathLength="1" x="14" y="13" width="20" height="30" rx="3.6"/></svg>
           </a></li>
           <li class="irow"><a href="#a-tu-medida" data-ir="0" data-num="N.º 04" data-tema="Tu semana">
-            <span class="num sc"><i>N.º </i>04</span><span class="tit">Tu semana</span><span class="glosa">Una selección para los próximos días</span>
+            <span class="num sc"><i>N.º </i>04</span><span class="tit">Tu semana</span><span class="glosa">El «qué me pongo» de cada día</span>
             <svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>
             <!-- calendario -->
             <svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><rect class="tr" pathLength="1" x="1.5" y="8.5" width="45" height="38" rx="6"/><path class="tr" pathLength="1" style="--d:1" d="M1.5 19.5h45"/><path class="tr" pathLength="1" style="--d:2" d="M13.5 4v8.5M34.5 4v8.5"/><path class="pt" d="M13.5 28.5h.01M24 28.5h.01M34.5 28.5h.01M13.5 38h.01M24 38h.01" stroke-width="2.6"/><circle class="lleno" cx="34.5" cy="38" r="2.9"/></svg>
@@ -980,7 +1036,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
         <li class="chapter" id="probador" data-bg="v1">
           <div class="chapter__txt">
             <h2 class="h2">¿Te queda <em>bien</em>?</h2>
-            <p>Elige un look de tu armario y míralo sobre una foto tuya, en un&nbsp;toque.</p>
+            <p>Tu probador virtual: elige un look de tu armario y míralo sobre una foto tuya, en un&nbsp;toque.</p>
           </div>
           <figure class="chapter__media vitrina" style="--bg: var(--v1)">
             <div class="film" id="film-c3" data-film data-nombre="el probador">
@@ -1001,7 +1057,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
       <div class="tira__head">
         <div>
           <h2 class="h2" id="t-looks">Un pantalón negro.<br> <em>Ocho</em>&nbsp;looks.</h2>
-          <p>Sácale más a lo que ya tienes. édit te propone looks con tu propia ropa, y tú puedes montar los&nbsp;tuyos.</p>
+          <p>Sácale más a lo que ya tienes. édit te propone looks con tu propia ropa, y tú puedes crear tus propios&nbsp;outfits.</p>
         </div>
         <div class="tira__meta">
           <div class="tira__count" aria-hidden="true">
@@ -1127,7 +1183,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
           <div class="cell__card">
             <div class="cell__txt">
               <h3 class="h4">Un viaje, un&nbsp;evento, una&nbsp;<em>temporada</em>.</h3>
-              <p>Organiza tus planes con los looks de cada día y&nbsp;la&nbsp;maleta.</p>
+              <p>Organiza tus planes con los looks de cada día. Y&nbsp;al hacer la maleta, marca lo que ya&nbsp;llevas.</p>
             </div>
             <img class="cell__img" src="assets/img/app-plan-evento.webp" alt="Un plan en édit, «Evento Trabajo»: 3 looks, 13 piezas y 3 días." width="840" height="374" loading="lazy" decoding="async">
           </div>
@@ -1136,9 +1192,9 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
           <div class="cell__card">
             <div class="cell__txt">
               <h3 class="h4">Cualquier prenda, en&nbsp;un <em>segundo</em>.</h3>
-              <p>Todo tu armario en el móvil, ordenado y a&nbsp;mano.</p>
+              <p>Tu armario virtual en el móvil, ordenado y a&nbsp;mano.</p>
             </div>
-            <img class="cell__img" src="assets/img/app-mi-armario.webp" alt="Pantalla «Mi armario» de édit en un móvil: buscador, filtros por tipo y una cuadrícula de zapatos." width="632" height="860" loading="lazy" decoding="async">
+            <img class="cell__img" src="assets/img/app-mi-armario.webp" alt="Pantalla «Mi armario» de la app édit en un móvil: buscador, filtros por tipo y una cuadrícula de zapatos." width="632" height="860" loading="lazy" decoding="async">
           </div>
         </article>
         <article class="cell cell--buy" data-rv style="--i:2">
@@ -1264,14 +1320,31 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
     </div>
   </section>
 
-  <!-- ══ 12 · Descarga ══ -->
+  <!-- ══ 12 · Del blog ══ -->
+  <section class="section blog calma" id="blog" aria-labelledby="t-blog">
+    <div class="wrap">
+      <header class="cab">
+        <h2 class="h2" id="t-blog">Del <em>blog</em>.</h2>
+        <a class="link" href="/blog/">Todos los artículos <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5 9.5 7 5 11.5"/></svg></a>
+      </header>
+      <!-- blog:inicio (generado por tools/build.mjs a partir de content/blog; no editar a mano) -->
+      <ol class="notas">
+        <li class="nota"><a href="/blog/como-digitalizar-tu-armario/"><span class="sc">01</span><h3 class="h4">Cómo digitalizar tu armario paso a paso</h3><p>Guía práctica para pasar tu ropa al móvil sin agobios: por dónde empezar, cómo hacer las fotos y qué hacer con cada prenda para sacarle partido.</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
+        <li class="nota"><a href="/blog/crear-looks-con-la-ropa-que-ya-tienes/"><span class="sc">02</span><h3 class="h4">¿Qué me pongo? Cómo crear looks con la ropa que ya tienes</h3><p>Un método sencillo para combinar lo que ya está en tu armario, guardar los looks que funcionan y dejar resuelto el de mañana sin comprar nada.</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
+        <li class="nota"><a href="/blog/hacer-la-maleta-por-looks/"><span class="sc">03</span><h3 class="h4">Cómo hacer la maleta por looks: del plan a la maleta</h3><p>Deja de meter prendas sueltas. Planifica el viaje por días, decide los looks antes de salir y lleva solo lo que te vas a poner, sin «por si acaso».</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
+      </ol>
+      <!-- blog:fin -->
+    </div>
+  </section>
+
+  <!-- ══ 13 · Descarga ══ -->
   <section class="descarga" id="descargar" aria-labelledby="t-descarga">
     <div class="wrap">
       <h2 class="cartel rv" id="t-descarga" data-rv><span class="ln" style="--i:0"><span>Vístete</span></span> <span class="ln" style="--i:1"><span>sin <em>dudas</em>.</span></span></h2>
       <p>Digitaliza tu armario, crea looks con la ropa que ya tienes y conecta con tu asesora de&nbsp;imagen.</p>
       <div class="tiendas">
-        <a href="https://apps.apple.com/es/app/id6796045067"><img src="assets/img/badge-app-store.png" alt="Consíguelo en el App Store" width="431" height="144" loading="lazy"></a>
-        <a href="https://play.google.com/store/apps/details?id=edit.studio.app"><img src="assets/img/badge-google-play.png" alt="Descargar en Google Play" width="486" height="144" loading="lazy"></a>
+        <a href="https://apps.apple.com/es/app/id6796045067" target="_blank" rel="noopener" aria-label="Consíguelo en el App Store, se abre en una pestaña nueva"><img src="assets/img/badge-app-store.png" alt="Consíguelo en el App Store" width="431" height="144" loading="lazy" decoding="async"></a>
+        <a href="https://play.google.com/store/apps/details?id=edit.studio.app" target="_blank" rel="noopener" aria-label="Descargar en Google Play, se abre en una pestaña nueva"><img src="assets/img/badge-google-play.png" alt="Descargar en Google Play" width="486" height="144" loading="lazy" decoding="async"></a>
       </div>
       <small>Descargar édit es gratis. Algunas funciones son de la suscripción Premium, que se contrata en la app.</small>
     </div>
@@ -1279,7 +1352,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 
 </main>
 
-<!-- ══ 13 · Colofón ══ -->
+<!-- ══ 14 · Colofón ══ -->
 <footer class="colofon">
   <div class="wrap">
     <div class="colofon__grid">
@@ -1299,6 +1372,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
       <nav aria-label="Fuera de página">
         <p class="sc" aria-hidden="true">Fuera de página</p>
         <ul>
+          <li><a href="/blog/">Blog</a></li>
           <li><a href="https://www.instagram.com/editstudio.app/" target="_blank" rel="noopener" aria-label="Instagram, se abre en una pestaña nueva">Instagram</a></li>
           <li><a href="https://www.linkedin.com/company/146595565/" target="_blank" rel="noopener" aria-label="LinkedIn, se abre en una pestaña nueva">LinkedIn</a></li>
           <li><a href="https://dashboard.editstudio.app/login">Iniciar sesión</a></li>
@@ -1315,6 +1389,17 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
     <p class="colofon__base sc">© 2026 édit</p>
   </div>
 </footer>
+
+<script>
+/* tienda:inicio — «Descargar» lleva al ancla con las dos insignias; con JavaScript, en iPhone y iPad va directo al App Store
+   y en Android, a Google Play. tools/build.mjs copia este bloque al blog y a 404.html. */
+(function (n, t) {
+  t = /iPhone|iPad|iPod/.test(n.userAgent) || (n.platform === 'MacIntel' && n.maxTouchPoints > 1) ? 'https://apps.apple.com/es/app/id6796045067'
+    : /Android/.test(n.userAgent) ? 'https://play.google.com/store/apps/details?id=edit.studio.app' : '';
+  if (t) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
+})(navigator);
+/* tienda:fin */
+</script>
 
 <script>
 (() => {

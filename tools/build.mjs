@@ -5,11 +5,15 @@
 //   node tools/build.mjs --check   no escribe nada; falla si algo quedaría distinto
 //
 // Qué hace:
-//   1. Datos estructurados (JSON-LD) de index.html, a partir de las preguntas frecuentes visibles.
-//   2. Blog: content/blog/*.md  ->  blog/<slug>/index.html  y  blog/index.html
-//   3. sitemap.xml
-//   4. llms.txt, a partir de content/llms.txt
-//   5. 404.html, la página de «no encontrada», con la barra y el pie del blog
+//   1. Portada (index.html): la lista «Del blog» y los datos estructurados (JSON-LD), a partir de lo que se ve en la página.
+//   2. assets/css/blog.css: los estilos comunes de la portada (tramos «común») más content/blog.css.
+//   3. Blog: content/blog/*.md  ->  blog/<slug>/index.html  y  blog/index.html
+//   4. sitemap.xml
+//   5. llms.txt, a partir de content/llms.txt
+//   6. 404.html, la página de «no encontrada»
+//
+// El blog y 404.html toman de la portada la barra, el colofón, las insignias de tienda, la hoja de fuentes y el
+// script de «Descargar»: se cambian en index.html y aquí se copian.
 //
 // No borra nada: si quitas un artículo, borra tú su carpeta en blog/ (el script avisa).
 
@@ -36,18 +40,19 @@ const SITE = {
   // Páginas de desarrollador en las tiendas (comprobadas el 10/11/2026).
   appStoreDeveloper: 'https://apps.apple.com/es/developer/id6796045069',
   googlePlayDeveloper: 'https://play.google.com/store/apps/developer?id=Witme',
-  appScreenshot: '/assets/img/app-plan.webp',
-  login: 'https://dashboard.editstudio.app/login',
-  download: 'https://dashboard.editstudio.app/descargar',
-  privacy: 'https://dashboard.editstudio.app/legal/privacidad',
-  terms: 'https://dashboard.editstudio.app/legal/terminos',
+  // Captura de la app que se declara en los datos estructurados: la pantalla «Mi armario» de la portada.
+  appScreenshot: '/assets/img/app-mi-armario.webp',
+  // Película de la portada (VideoObject). «published» es el día en que se publicó en la web: cámbialo si se sustituye el vídeo.
+  heroVideo: { name: 'édit en marcha: una foto tuya, tres looks', file: '/assets/video/hero.mp4', poster: '/assets/video/hero.jpg', duration: 'PT7S', published: '2026-11-10' },
   sameAs: ['https://www.instagram.com/editstudio.app/', 'https://www.linkedin.com/company/146595565/'],
   logo: '/assets/img/icon-512.png',
   ogImage: '/assets/img/og.png',
+  themeColor: '#FBF8F3',
   author: 'Equipo édit',
   // Hora de publicación que se declara en los datos estructurados (hora peninsular); los artículos solo llevan fecha.
   publishTime: '09:00',
-  fonts: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap',
+  // Cuántos artículos salen en el bloque «Del blog» de la portada.
+  homePosts: 3,
   blogTitle: 'Blog de édit: armario, looks y estilo con intención',
   blogDescription: 'Ideas prácticas para ordenar tu armario, crear looks con la ropa que ya tienes y vestirte con más intención.',
 };
@@ -147,9 +152,20 @@ function slugify(s) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-// ───────────────────────────── 1. Datos estructurados de la portada ─────────────────────────────
+// ───────────────────────────── 1. Portada: lo que se toma de ella y lo que se escribe en ella ─────────────────────────────
 const INI = '<!-- datos-estructurados:inicio (generado por tools/build.mjs a partir de la página; no editar a mano) -->';
 const FIN = '<!-- datos-estructurados:fin -->';
+const BLOG_INI = '<!-- blog:inicio (generado por tools/build.mjs a partir de content/blog; no editar a mano) -->';
+const BLOG_FIN = '<!-- blog:fin -->';
+const GO = '<svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg>';
+const dos = (n) => String(n).padStart(2, '0');
+
+// Trozo de un texto entre dos marcas, sin ellas. Falla con un mensaje claro si no están.
+function between(s, a, b, where) {
+  const i = s.indexOf(a), j = i === -1 ? -1 : s.indexOf(b, i + a.length);
+  if (j === -1) fail(`${where}: no encuentro el tramo entre «${a}» y «${b}»`);
+  return s.slice(i + a.length, j);
+}
 
 export function extractFaq(html) {
   const out = [];
@@ -159,7 +175,57 @@ export function extractFaq(html) {
   return out;
 }
 
-function buildHome() {
+// Funciones de la app, tal como se leen en el índice de la portada: «Armario: tu armario digital, foto a foto».
+export function extractFeatures(html) {
+  const out = [];
+  const re = /<span class="tit">([^<]+)<\/span><span class="glosa">([^<]+)<\/span>/g;
+  let m;
+  while ((m = re.exec(html))) {
+    const glosa = plain(m[2]);
+    out.push(`${plain(m[1])}: ${/^\p{Lu}\p{Ll}/u.test(glosa) ? glosa[0].toLowerCase() + glosa.slice(1) : glosa}`);
+  }
+  return out;
+}
+
+// Estilos comunes: los tramos de la hoja de la portada marcados con «común:inicio» y «común:fin».
+export function commonCss(html) {
+  const css = between(html, '<style>', '</style>', 'index.html');
+  const parts = [...css.matchAll(/\/\* común:inicio[^*]*\*\/\n([\s\S]*?)\n\/\* común:fin \*\//g)].map((m) => m[1]);
+  if (!parts.length) fail('index.html: no hay ningún tramo de estilos entre «/* común:inicio … */» y «/* común:fin */»');
+  return parts.join('\n\n');
+}
+
+// Piezas de la portada que repiten el blog y 404.html, con las rutas y las anclas vistas desde cualquier página.
+let partsCache;
+function homeParts() {
+  if (partsCache) return partsCache;
+  const html = read('index.html');
+  const where = 'index.html';
+  const fromRoot = (s) => s.replace(/href="#top"/g, 'href="/"').replace(/href="#/g, 'href="/#').replace(/(src|srcset)="assets\//g, '$1="/assets/');
+  const fonts = (/<link href="(https:\/\/fonts\.googleapis\.com\/[^"]+)" rel="stylesheet">/.exec(html) || [])[1];
+  if (!fonts) fail(`${where}: no encuentro la hoja de fuentes`);
+  const NAV = '<header class="nav" id="nav">', FOOTER = '<footer class="colofon">', BADGES = '<div class="tiendas">';
+  const nav = fromRoot(NAV + between(html, NAV, '</header>', where) + '</header>');
+  const foot = fromRoot(FOOTER + between(html, FOOTER, '</footer>', where) + '</footer>')
+    .replace('aria-label="édit, volver arriba"', 'aria-label="édit, inicio"')
+    .replace(/En esta página/g, 'En la portada');
+  const badges = fromRoot(BADGES + between(html, BADGES, '</div>', where) + '</div>').replace(/\n\s+/g, '\n      ');
+  const store = (/\/\* tienda:inicio[\s\S]*?\*\/\n([\s\S]*?)\n\/\* tienda:fin \*\//.exec(html) || [])[1];
+  if (!store) fail(`${where}: no encuentro el script entre «/* tienda:inicio … */» y «/* tienda:fin */»`);
+  for (const [name, piece] of [['la barra', nav], ['el colofón', foot]]) {
+    if (!piece.includes('href="/blog/"')) fail(`${where}: ${name} no enlaza al blog`);
+  }
+  return (partsCache = { fonts, nav, foot, badges, store });
+}
+
+// Filas de artículos (las mismas en la portada, en el índice del blog y en «Sigue leyendo»).
+function notas(posts, { tag, meta, indent, cls = 'notas' }) {
+  return `${indent}<ol class="${cls}">\n` +
+    posts.map((p, i) => `${indent}  <li class="nota"><a href="${p.path}"><span class="sc">${meta(p, i)}</span><${tag} class="h4">${inline(p.title, p.where)}</${tag}><p>${esc(p.description)}</p>${GO}</a></li>`).join('\n') +
+    `\n${indent}</ol>`;
+}
+
+function buildHome(posts) {
   let html = read('index.html');
   const title = plain((/<title>([\s\S]*?)<\/title>/.exec(html) || [])[1] || '');
   const description = unesc((/<meta name="description" content="([^"]*)"/.exec(html) || [])[1] || '');
@@ -168,10 +234,27 @@ function buildHome() {
   const nDetails = (html.match(/<details>/g) || []).length;
   if (faq.length !== nDetails) fail(`index.html: hay ${nDetails} preguntas pero solo se han podido leer ${faq.length}; revisa el formato de <details>`);
 
+  // Bloque «Del blog»: los últimos artículos, entre sus dos marcas.
+  const b0 = html.indexOf(BLOG_INI), b1 = html.indexOf(BLOG_FIN);
+  if (b0 === -1 || b1 < b0) fail('index.html: faltan las marcas «blog:inicio» y «blog:fin» del bloque «Del blog»');
+  const indent = (/\n([ \t]*)$/.exec(html.slice(0, b0)) || ['', ''])[1];
+  html = html.slice(0, b0) + BLOG_INI + '\n' +
+    notas(posts.slice(0, SITE.homePosts), { tag: 'h3', meta: (p, i) => dos(i + 1), indent }) +
+    '\n' + indent + html.slice(b1);
+
   const shot = imageSize(join(ROOT, SITE.appScreenshot));
   if (!shot) fail(`no puedo leer el tamaño de ${SITE.appScreenshot}`);
   const shotAlt = unesc((new RegExp(`<img\\s[^>]*src="${SITE.appScreenshot.slice(1).replace(/\./g, '\\.')}"[^>]*\\salt="([^"]*)"`).exec(html) || [])[1] || '');
+  if (!shotAlt) fail(`index.html: la captura ${SITE.appScreenshot} tiene que estar en la página, con su texto alternativo`);
+  const features = extractFeatures(html);
   const stores = [SITE.appStore, SITE.googlePlay];
+
+  // Película de la portada: su descripción es la que lleva el vídeo en la página (aria-label).
+  const film = SITE.heroVideo;
+  const filmLabel = unesc((/id="film-hero"[\s\S]*?<video\s[^>]*\saria-label="([^"]*)"/.exec(html) || [])[1] || '').replace(/^Vídeo sin sonido\.\s*/, '');
+  if (!filmLabel) fail('index.html: el vídeo de la portada (#film-hero) necesita un aria-label que cuente lo que se ve');
+  for (const f of [film.file, film.poster]) if (!existsSync(join(ROOT, f))) fail(`no existe ${f} (SITE.heroVideo)`);
+  const FILM_ID = SITE.url + '/#pelicula';
 
   const graph = [
     orgNode(),
@@ -183,10 +266,12 @@ function buildHome() {
       name: title,
       description,
       inLanguage: 'es',
+      dateModified: fechaHora(SITE.homeUpdated),
       isPartOf: { '@id': WEB_ID },
       about: { '@id': APP_ID },
       mainEntity: { '@id': APP_ID },
       primaryImageOfPage: { '@type': 'ImageObject', url: abs(SITE.ogImage), width: 1200, height: 630 },
+      video: { '@id': FILM_ID },
     },
     {
       '@type': 'MobileApplication',
@@ -196,14 +281,27 @@ function buildHome() {
       description,
       url: SITE.url + '/',
       image: abs(SITE.logo),
-      screenshot: { '@type': 'ImageObject', url: abs(SITE.appScreenshot), width: shot.width, height: shot.height, ...(shotAlt ? { caption: shotAlt } : {}) },
+      screenshot: { '@type': 'ImageObject', url: abs(SITE.appScreenshot), width: shot.width, height: shot.height, caption: shotAlt },
       applicationCategory: 'LifestyleApplication',
       operatingSystem: 'iOS, Android',
       inLanguage: SITE.appLanguages,
+      ...(features.length ? { featureList: features } : {}),
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
       installUrl: stores,
       downloadUrl: stores,
       sameAs: stores,
+      publisher: { '@id': ORG_ID },
+    },
+    {
+      '@type': 'VideoObject',
+      '@id': FILM_ID,
+      name: film.name,
+      description: filmLabel,
+      thumbnailUrl: abs(film.poster),
+      contentUrl: abs(film.file),
+      uploadDate: fechaHora(film.published),
+      duration: film.duration,
+      inLanguage: 'es',
       publisher: { '@id': ORG_ID },
     },
   ];
@@ -222,9 +320,19 @@ function buildHome() {
   else if (html.includes('</head>')) html = html.replace('</head>', block + '\n</head>');
   else fail('index.html: no encuentro </head>');
   write('index.html', html);
+  partsCache = null;
 }
 
-// ───────────────────────────── 2. Blog ─────────────────────────────
+// ───────────────────────────── 2. Hoja de estilos del blog y de 404.html ─────────────────────────────
+function buildCss() {
+  if (!existsSync(join(ROOT, 'content/blog.css'))) fail('falta content/blog.css (los estilos propios del blog)');
+  write('assets/css/blog.css',
+    '/* Generado por tools/build.mjs: no editar a mano.\n' +
+    '   Primera parte: los estilos comunes de la portada (tramos «común» de index.html). Segunda: content/blog.css. */\n\n' +
+    commonCss(read('index.html')) + '\n\n' + read('content/blog.css'));
+}
+
+// ───────────────────────────── 3. Blog ─────────────────────────────
 function safeUrl(u, where) {
   if (/^(https:\/\/|\/(?!\/)|#|mailto:)/.test(u)) return u;
   fail(`${where}: enlace no admitido «${u}» (usa https://, una ruta que empiece por / o un ancla #)`);
@@ -340,14 +448,16 @@ function loadPosts() {
   return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.slug < b.slug ? -1 : 1));
 }
 
-// Cabecera común. Con noindex (404.html) la página se sirve en cualquier dirección: no lleva descripción, canonical,
-// etiquetas para compartir ni datos estructurados.
+// Cabecera común, con la barra de la portada. Con noindex (404.html) la página se sirve en cualquier dirección: no lleva
+// descripción, canonical, etiquetas para compartir ni datos estructurados.
 function head({ title, description, path, type, image, imageAlt, extra = '', ld, noindex = false }) {
+  const parts = homeParts();
   const seo = noindex
     ? `<meta name="robots" content="noindex">`
     : `<meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${abs(path)}">
 <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">`;
+  const alt = noindex ? '' : imageAlt || ogImageAlt();
   const share = noindex
     ? ''
     : `<meta property="og:type" content="${type}">
@@ -356,88 +466,58 @@ function head({ title, description, path, type, image, imageAlt, extra = '', ld,
 <meta property="og:url" content="${abs(path)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
-${ogImageTags(image, imageAlt || ogImageAlt(), path)}${extra}<meta name="twitter:card" content="summary_large_image">
+${ogImageTags(image, alt, path)}${extra}<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image:alt" content="${esc(alt)}">
 `;
+  // La barra es la de la portada; en el blog, su enlace queda marcado como la página actual.
+  const nav = path && path.startsWith('/blog/') ? parts.nav.replace('<a href="/blog/">', '<a href="/blog/" aria-current="page">') : parts.nav;
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 ${seo}
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="${SITE.themeColor}">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 ${share}<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="${esc(SITE.fonts)}" rel="stylesheet">
+<link href="${parts.fonts}" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/blog.css">
 ${noindex ? '' : jsonLd(ld) + '\n'}</head>
-<body>
-<nav>
-  <a href="/" class="logo" aria-label="édit, inicio"><span class="e">é</span>dit</a>
-  <div class="nav-links">
-    <a href="/#app" class="nav-text">édit</a>
-    <a href="/#pro" class="nav-pro nav-text">édit profesionales</a>
-    <a href="/blog/" class="nav-blog">Blog</a>
-    <a href="${SITE.login}" class="btn btn-outline-olive">Iniciar sesión</a>
-  </div>
-</nav>
+<body id="top">
+
+<a class="salto" href="#contenido">Saltar al contenido</a>
+
+${nav}
 `;
 }
 
-const BADGES = `<div class="store-badges">
-        <a href="${SITE.appStore}" target="_blank" rel="noopener" aria-label="Descargar en el App Store"><img src="/assets/img/badge-app-store.png" width="431" height="144" loading="lazy" decoding="async" alt="Descargar en el App Store"></a>
-        <a href="${SITE.googlePlay}" target="_blank" rel="noopener" aria-label="Disponible en Google Play"><img src="/assets/img/badge-google-play.png" width="486" height="144" loading="lazy" decoding="async" alt="Disponible en Google Play"></a>
-      </div>`;
-
-const CTA = `<aside class="wrap cta">
-  <div class="signup">
-    <div class="signup-head">
-      <h2>Empezamos por lo que ya tienes.</h2>
-      <p>Descarga édit y empieza a vestirte con más intención hoy mismo.</p>
-      ${BADGES}
-    </div>
+// Cierre con las insignias de tienda (las de la portada).
+function cta() {
+  return `<aside class="cierre" aria-labelledby="t-cierre">
+  <div class="cierre__in">
+    <h2 class="h2" id="t-cierre">Empezamos por lo que ya <em>tienes</em>.</h2>
+    <p>Descarga édit y empieza a vestirte con más intención hoy mismo.</p>
+    ${homeParts().badges.replace(/\n {6}/g, '\n    ')}
   </div>
 </aside>`;
+}
 
-const FOOT = `<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <a href="/" class="logo"><span class="e">é</span>dit</a>
-        <p>Vestirse desde tu eje.</p>
-        <div class="foot-social">
-          <a href="https://www.instagram.com/editstudio.app/" target="_blank" rel="noopener" aria-label="Instagram"><img src="/assets/img/icon-instagram.png" width="36" height="36" loading="lazy" decoding="async" alt="Instagram"></a>
-          <a href="https://www.linkedin.com/company/146595565/" target="_blank" rel="noopener" aria-label="LinkedIn"><img src="/assets/img/icon-linkedin.png" width="36" height="36" loading="lazy" decoding="async" alt="LinkedIn"></a>
-        </div>
-      </div>
-      <div class="foot-cols">
-        <div class="foot-col">
-          <h2>Ecosistema</h2>
-          <a href="/#app">édit · para ti</a>
-          <a href="/#pro">édit profesionales</a>
-          <a href="/#como-funciona">Cómo funciona</a>
-        </div>
-        <div class="foot-col">
-          <h2>Recursos</h2>
-          <a href="/blog/">Blog</a>
-          <a href="/#preguntas">Preguntas frecuentes</a>
-        </div>
-        <div class="foot-col">
-          <h2>Empieza</h2>
-          <a href="${SITE.download}">Descargar édit</a>
-          <a href="${SITE.login}">Iniciar sesión</a>
-        </div>
-      </div>
-    </div>
-    <div class="foot-bottom">© 2026 édit · El ecosistema de estilismo digital. <span class="foot-legal"><a href="${SITE.privacy}">Privacidad</a> · <a href="${SITE.terms}">Términos</a></span></div>
-  </div>
-</footer>
+// Colofón de la portada y el script que lleva «Descargar» a la tienda del móvil.
+function foot() {
+  const parts = homeParts();
+  return `${parts.foot}
+
+<script>
+${parts.store}
+</script>
 </body>
 </html>
 `;
+}
 
 const crumbs = (items) => ({
   '@type': 'BreadcrumbList',
@@ -473,27 +553,27 @@ function renderPost(p, posts) {
   const others = posts.filter((o) => o.slug !== p.slug).slice(0, 3);
   const upd = p.updated !== p.date ? ` · Actualizado el <time datetime="${p.updated}">${fechaLarga(p.updated)}</time>` : '';
   return head({ title, description: p.description, path: p.path, type: 'article', image: p.image, imageAlt: p.image !== SITE.ogImage ? p.imageAlt || p.title : '', extra, ld }) + `
-<main>
-<article class="post">
-  <header class="post-head">
-    <nav class="crumbs" aria-label="Estás en"><a href="/">Inicio</a> <span aria-hidden="true">›</span> <a href="/blog/">Blog</a></nav>
+<main id="contenido" tabindex="-1">
+<article class="post calma">
+  <header class="post__cab lectura">
+    <nav class="migas sc" aria-label="Estás en"><a href="/">Inicio</a> <span aria-hidden="true">/</span> <a href="/blog/">Blog</a></nav>
     <h1>${inline(p.title, p.where)}</h1>
-    <p class="post-meta">${esc(p.author)} · <time datetime="${p.date}">${fechaLarga(p.date)}</time>${upd} · ${p.minutes} min de lectura</p>
+    <p class="post-meta sc">${esc(p.author)} · <time datetime="${p.date}">${fechaLarga(p.date)}</time>${upd} · ${p.minutes} min de lectura</p>
   </header>
-  <div class="post-body">
-${p.summary ? `<p class="post-summary"><strong>En breve.</strong> ${inline(p.summary, p.where)}</p>\n` : ''}${p.image !== SITE.ogImage ? `<figure><img src="${esc(p.image)}" alt="${esc(p.imageAlt)}"></figure>\n` : ''}${p.html}
+  <div class="post__body lectura">
+${p.summary ? `<p class="post__resumen"><strong class="sc">En breve.</strong> ${inline(p.summary, p.where)}</p>\n` : ''}${p.image !== SITE.ogImage ? `<figure><img src="${esc(p.image)}" alt="${esc(p.imageAlt)}"></figure>\n` : ''}${p.html}
   </div>
 </article>
-${CTA}
-${others.length ? `<section class="more">
-  <h2>Sigue leyendo</h2>
-  <ul>
-${others.map((o) => `    <li><a href="${o.path}">${inline(o.title, o.where)}</a><span>${esc(o.description)}</span></li>`).join('\n')}
-  </ul>
+${cta()}
+${others.length ? `<section class="section calma mas" aria-labelledby="t-mas">
+  <div class="wrap">
+    <header class="cab"><h2 class="h2" id="t-mas">Sigue <em>leyendo</em>.</h2></header>
+${notas(others, { tag: 'h3', meta: (o, i) => dos(i + 1), indent: '    ' })}
+  </div>
 </section>
 ` : ''}</main>
 
-` + FOOT;
+` + foot();
 }
 
 function renderIndex(posts) {
@@ -511,25 +591,23 @@ function renderIndex(posts) {
     crumbs([['Inicio', '/'], ['Blog', '/blog/']]),
     orgNode(),
   ];
+  const meta = (p) => `<time datetime="${p.date}">${fechaLarga(p.date)}</time> <span>${p.minutes} min de lectura</span>`;
   return head({ title: SITE.blogTitle, description: SITE.blogDescription, path: '/blog/', type: 'website', image: SITE.ogImage, ld }) + `
-<main>
-<header class="blog-head">
-  <span class="eyebrow">Blog</span>
-  <h1>Ideas para vestirte con <em>intención</em>.</h1>
-  <p>${esc(SITE.blogDescription)}</p>
-</header>
-<div class="post-list">
-${posts.map((p) => `  <article>
-    <p class="post-meta"><time datetime="${p.date}">${fechaLarga(p.date)}</time> · ${p.minutes} min de lectura</p>
-    <h2><a href="${p.path}">${inline(p.title, p.where)}</a></h2>
-    <p>${esc(p.description)}</p>
-    <a class="read" href="${p.path}" aria-label="Leer: ${esc(p.title)}">Leer el artículo</a>
-  </article>`).join('\n')}
-</div>
-${CTA}
+<main id="contenido" tabindex="-1">
+<section class="section calma portadilla" aria-labelledby="titulo">
+  <div class="wrap">
+    <header class="portadilla__cab">
+      <p class="sc">Blog</p>
+      <h1 class="display" id="titulo">Ideas para vestirte con <em>intención</em>.</h1>
+      <p>${esc(SITE.blogDescription)}</p>
+    </header>
+${notas(posts, { tag: 'h2', meta, indent: '    ', cls: 'notas notas--fecha' })}
+  </div>
+</section>
+${cta()}
 </main>
 
-` + FOOT;
+` + foot();
 }
 
 function buildBlog(posts) {
@@ -546,25 +624,22 @@ function buildBlog(posts) {
   }
 }
 
-// ───────────────────────────── 5. 404.html ─────────────────────────────
+// ───────────────────────────── 6. 404.html ─────────────────────────────
 // No va en sitemap.xml. Para que el alojamiento la sirva hay que activarlo en su configuración.
 function build404() {
   write('404.html', head({ title: 'No encontramos esa página · édit', noindex: true }) + `
-<main>
-<div class="post notfound">
-  <header class="post-head">
-    <h1>No encontramos esa página</h1>
-  </header>
-  <div class="post-body">
-    <p><a href="/">Ir a la portada</a> · <a href="/blog/">Ir al blog</a></p>
-  </div>
-</div>
+<main id="contenido" tabindex="-1">
+<section class="nohay" aria-labelledby="titulo">
+  <p class="sc">Error 404</p>
+  <h1 class="display" id="titulo">No encontramos esa <em>página</em>.</h1>
+  <p class="nohay__ir"><a class="btn" href="/">Ir a la portada</a> <a class="link" href="/blog/">Ir al blog <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5 9.5 7 5 11.5"/></svg></a></p>
+</section>
 </main>
 
-` + FOOT);
+` + foot());
 }
 
-// ───────────────────────────── 3. sitemap.xml ─────────────────────────────
+// ───────────────────────────── 4. sitemap.xml ─────────────────────────────
 function buildSitemap(posts) {
   fechaLarga(SITE.homeUpdated);
   const urls = [{ loc: '/', lastmod: SITE.homeUpdated }];
@@ -578,7 +653,7 @@ function buildSitemap(posts) {
   write('sitemap.xml', xml);
 }
 
-// ───────────────────────────── 4. llms.txt ─────────────────────────────
+// ───────────────────────────── 5. llms.txt ─────────────────────────────
 function buildLlms(posts) {
   if (!existsSync(join(ROOT, 'content/llms.txt'))) return;
   const tpl = read('content/llms.txt');
@@ -586,13 +661,15 @@ function buildLlms(posts) {
   const list = posts.length
     ? posts.map((p) => `- [${p.title}](${abs(p.path)}): ${p.description}`).join('\n')
     : '- Todavía no hay artículos publicados.';
-  write('llms.txt', tpl.replace('{{blog}}', list));
+  // {{actualizado}} (opcional) es la fecha del último cambio de la portada, la misma del sitemap.
+  write('llms.txt', tpl.replace('{{blog}}', list).replace('{{actualizado}}', fechaLarga(SITE.homeUpdated)));
 }
 
 // ───────────────────────────── Ejecución ─────────────────────────────
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  buildHome();
   const posts = loadPosts();
+  buildHome(posts);
+  buildCss();
   buildBlog(posts);
   buildSitemap(posts);
   buildLlms(posts);

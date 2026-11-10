@@ -1,0 +1,70 @@
+/* ───────── Blog y 404.html: lo que no está en la portada ─────────
+   Este archivo se edita a mano. Todo lo demás (variables, tipografía, barra, botones, filas de artículos, insignias y
+   colofón) viene de index.html; tools/build.mjs lo junta en assets/css/blog.css. */
+body { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+main { flex: 1 0 auto; }
+.nav__links a[aria-current] { color: var(--tinta); }
+@media (prefers-reduced-motion: no-preference) { .salto { transition: transform .2s var(--ease); } }
+
+/* Columna de lectura: unos 70 caracteres por línea */
+.lectura { width: min(41rem, 100% - 2 * var(--gutter)); margin-inline: auto; }
+
+/* ───────── Índice del blog ───────── */
+.portadilla { padding-block: clamp(72px, 9vw, 136px) clamp(56px, 7vw, 104px); }
+.portadilla__cab { margin-bottom: clamp(32px, 4.4vw, 60px); }
+.portadilla__cab h1 { margin-top: 14px; max-width: 11em; }
+.portadilla__cab p:not(.sc) { margin-top: clamp(16px, 2vw, 24px); max-width: 34rem; font-size: 1.1875rem; line-height: 1.5; color: var(--texto-2); }
+/* Filas con fecha: la fecha y el tiempo de lectura ocupan la columna del número */
+.notas--fecha .sc { display: flex; flex-wrap: wrap; gap: 0 1.2em; }
+@media (min-width: 900px) {
+  .notas--fecha .nota a { grid-template-columns: 14rem minmax(0, 5fr) minmax(0, 6fr) 34px; }
+  .notas--fecha .sc { flex-direction: column; gap: 2px; }
+}
+
+/* ───────── Artículo ───────── */
+.post { padding-block: clamp(72px, 9vw, 128px) clamp(64px, 8vw, 120px); }
+.migas { display: flex; gap: .7em; }
+.migas a { text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .3em; text-decoration-thickness: 1px; transition: text-decoration-color .2s ease; }
+.migas span { opacity: .6; }
+.post__cab h1 { margin-top: 18px; font-size: clamp(2.125rem, 4.4vw, 3.25rem); font-weight: 360; font-variation-settings: "opsz" 84; letter-spacing: -.016em; line-height: 1.06; }
+.post-meta { margin-top: clamp(18px, 2.2vw, 26px); padding-bottom: clamp(20px, 2.4vw, 28px); border-bottom: 1px solid var(--tinta); }
+.post__body { margin-top: clamp(28px, 3.6vw, 44px); font-size: 1.0625rem; line-height: 1.7; color: var(--umber); }
+.post__body > * + * { margin-top: 1.2em; }
+.post__body h2 { margin-top: 2.2em; font-size: clamp(1.625rem, 2.9vw, 2rem); font-weight: 400; letter-spacing: -.012em; line-height: 1.16; color: var(--tinta); }
+.post__body h3 { margin-top: 1.9em; font-size: 1.375rem; font-weight: 440; letter-spacing: -.006em; line-height: 1.22; color: var(--tinta); }
+.post__body :is(h2, h3) + * { margin-top: .7em; }
+.post__body strong { font-weight: 600; color: var(--tinta); }
+.post__body em { color: inherit; }
+.post__body a { color: var(--tinta); text-decoration: underline; text-decoration-color: var(--terra-osc); text-decoration-thickness: 1px; text-underline-offset: .25em; }
+.post__body ul, .post__body ol { padding-left: 1.3em; }
+.post__body ul { list-style: disc; }
+.post__body ol { list-style: decimal; }
+.post__body li + li { margin-top: .5em; }
+.post__body li::marker { color: var(--terra-osc); font-weight: 500; }
+.post__body blockquote { padding-left: 1.1em; border-left: 1px solid var(--terra-osc); font-family: var(--serif); font-style: italic; font-weight: 360; font-size: 1.3em; line-height: 1.35; color: var(--tinta); }
+.post__body figure { margin-block: 2em; }
+.post__body figure img { width: 100%; height: auto; border-radius: 14px; }
+/* Separador: el pespunte del colofón */
+.post__body hr { height: 1px; margin-block: 2.4em; border: 0; background: repeating-linear-gradient(90deg, rgba(43, 33, 24, .42) 0 7px, #0000 7px 12px); }
+/* «En breve»: la respuesta corta, en una vitrina */
+.post__resumen { padding: 22px 24px 24px; border-radius: 20px; background: var(--v2); font-size: 1.0625rem; line-height: 1.6; }
+.post__resumen .sc { display: block; margin-bottom: 8px; font-weight: 500; color: var(--texto-2); }
+@media (hover: hover) and (pointer: fine) { .migas a:hover { text-decoration-color: currentColor; } .post__body a:hover { text-decoration-color: currentColor; } }
+@media (min-width: 700px) { .post__body { font-size: 1.125rem; } .post__resumen { padding: 28px 32px 30px; } }
+
+/* ───────── Cierre: descarga, en una vitrina con la geometría de la portada ───────── */
+.cierre { margin-inline: clamp(8px, 1vw, 12px); }
+.cierre__in { border-radius: var(--R); background: var(--v1); padding: clamp(56px, 7.4vw, 112px) var(--gutter); text-align: center; }
+.cierre p { margin: clamp(14px, 1.8vw, 22px) auto 0; max-width: 30rem; font-size: 1.1875rem; line-height: 1.5; color: var(--texto-2); text-wrap: balance; }
+main > .cierre:last-child { margin-bottom: clamp(56px, 7vw, 104px); }
+
+/* ───────── Sigue leyendo ───────── */
+.mas { padding-bottom: clamp(64px, 8vw, 120px); }
+
+/* ───────── 404 ───────── */
+.nohay { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: clamp(420px, calc(72 * var(--svh)), 640px); padding: clamp(64px, 8vw, 120px) var(--gutter); text-align: center; background: radial-gradient(ellipse 62% 56% at 50% 50%, var(--lienzo) 58%, rgba(251, 248, 243, 0)); }
+.nohay h1 { margin-top: 16px; max-width: 9em; }
+.nohay__ir { margin-top: clamp(24px, 3vw, 36px); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 26px; }
+main:has(> .nohay) { display: flex; flex-direction: column; }
+
+@media (prefers-reduced-motion: reduce) { .migas a { transition-duration: .01s !important; } }
