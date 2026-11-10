@@ -277,6 +277,7 @@ function head({ title, description, path, type, image, extra = '', ld }) {
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${abs(path)}">
+<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
