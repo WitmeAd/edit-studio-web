@@ -1,0 +1,6 @@
+# Archivos del repositorio que no forman parte del sitio publicado (misma sintaxis que .gitignore).
+# Lo lee el alojamiento al subir los recursos estáticos; ver «Buscadores y asistentes» en README.md.
+README.md
+content/
+tools/
+.assetsignore

@@ -1,5 +1,6 @@
 # édit · https://editstudio.app
-# Cloudflare añade delante sus propias reglas (las de los robots de entrenamiento se gestionan en su panel).
+# El alojamiento puede añadir delante sus propias reglas.
+# content/, tools/ y README.md no forman parte del sitio (ver .assetsignore); se vetan aquí por si llegaran a servirse.
 
 User-agent: *
 Allow: /
