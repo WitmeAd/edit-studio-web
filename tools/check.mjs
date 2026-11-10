@@ -5,14 +5,16 @@
 //
 // Revisa: que lo generado esté al día, que los datos estructurados sean JSON válido y coincidan
 // con las preguntas visibles, que los enlaces y archivos internos existan, que cada página tenga
-// título, descripción, canonical y un solo <h1>, que las imágenes tengan texto alternativo,
-// y que no se cuelen palabras que no usamos de cara al público.
+// título (único), descripción, canonical y un solo <h1>, que las imágenes tengan texto alternativo,
+// que la imagen para compartir declare su tamaño y su texto alternativo, que las fechas de los datos
+// estructurados lleven zona horaria, que 404.html tenga noindex y no esté en el sitemap, y que no se
+// cuelen dominios ajenos ni palabras que no usamos de cara al público.
 
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { extractFaq } from './build.mjs';
+import { extractFaq, imageSize } from './build.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://editstudio.app';
@@ -30,6 +32,19 @@ const FORBIDDEN = [
   [/\b(openai|chatgpt|gpt-?\d|gemini|anthropic|claude|replicate|midjourney|llm)\b/i, 'nombre de proveedor o de modelo'],
 ];
 
+// Dominio propio. Cualquier otro dominio escrito en el texto visible (por ejemplo «edit.app») es ajeno.
+const OWN_DOMAIN = 'editstudio.app';
+const DOMAIN_RE = /(?<![\p{L}\p{N}@.-])((?:[a-z0-9-]+\.)+(?:app|com|es|net|org|io|studio|dev|co|eu|me|info|shop|store|online|site|web|xyz))(?![\p{L}\p{N}-])/gu;
+function foreignDomains(text) {
+  const out = new Set();
+  for (const m of text.matchAll(DOMAIN_RE)) if (m[1] !== OWN_DOMAIN && !m[1].endsWith('.' + OWN_DOMAIN)) out.add(m[1]);
+  return [...out];
+}
+
+// Fechas de los datos estructurados: con hora y zona horaria (2026-11-10T09:00:00+01:00).
+const DATE_KEYS = new Set(['datePublished', 'dateModified', 'dateCreated', 'uploadDate']);
+const DATE_TZ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})$/;
+
 // ── 1. Lo generado está al día ──
 try {
   execFileSync(process.execPath, [join(ROOT, 'tools/build.mjs'), '--check'], { stdio: 'pipe' });
@@ -38,6 +53,10 @@ try {
 }
 
 // ── 2. Páginas ──
+// 404.html se sirve en cualquier dirección que no exista: lleva noindex y no lleva descripción, canonical,
+// etiquetas para compartir ni datos estructurados.
+const NOT_FOUND = '404.html';
+if (!existsSync(join(ROOT, NOT_FOUND))) err('falta 404.html (lo genera tools/build.mjs)');
 function pages() {
   const out = ['index.html'];
   const walk = (rel) => {
@@ -50,6 +69,7 @@ function pages() {
     }
   };
   walk('blog');
+  if (existsSync(join(ROOT, NOT_FOUND))) out.push(NOT_FOUND);
   return out;
 }
 const unesc = (s) => s.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
@@ -89,39 +109,66 @@ function idsOf(rel) {
 }
 
 const canonicals = new Map();
+const titles = new Map();
+const meta = (html, prop) => (new RegExp(`<meta property="${prop}" content="([^"]*)"`).exec(html) || [])[1] || '';
 for (const page of pages()) {
   const html = read(page);
   const where = page + ': ';
+  const is404 = page === NOT_FOUND;
 
   // Cabecera
   const title = unesc((/<title>([\s\S]*?)<\/title>/.exec(html) || [])[1] || '');
   const desc = unesc((/<meta name="description" content="([^"]*)"/.exec(html) || [])[1] || '');
   const canon = (/<link rel="canonical" href="([^"]*)"/.exec(html) || [])[1];
+  const robots = (/<meta name="robots" content="([^"]*)"/.exec(html) || [])[1] || '';
   if (!title) err(where + 'falta <title>');
-  else if (title.length > 65) warn(where + `título largo (${title.length} caracteres): los buscadores suelen cortar hacia los 60`);
-  if (!desc) err(where + 'falta la descripción');
-  else if (desc.length > 165) warn(where + `descripción larga (${desc.length} caracteres): los buscadores suelen cortar hacia los 155`);
-  else if (desc.length < 70) warn(where + `descripción corta (${desc.length} caracteres)`);
-  const expected = SITE + '/' + page.replace(/index\.html$/, '');
-  if (!canon) err(where + 'falta el canonical');
-  else if (canon !== expected) err(where + `canonical «${canon}», esperado «${expected}»`);
-  if (canon) {
-    if (canonicals.has(canon)) err(where + 'canonical repetido con ' + canonicals.get(canon));
-    canonicals.set(canon, page);
+  else {
+    if (title.length > 65) warn(where + `título largo (${title.length} caracteres): los buscadores suelen cortar hacia los 60`);
+    if (titles.has(title)) err(where + 'título repetido con ' + titles.get(title));
+    titles.set(title, page);
   }
   if (!/<html lang="es"/.test(html)) err(where + 'falta lang="es"');
-  for (const p of ['og:title', 'og:description', 'og:image', 'og:url', 'og:type']) {
-    if (!new RegExp(`<meta property="${p}" content="[^"]+"`).test(html)) err(where + 'falta ' + p);
+  if (is404) {
+    if (!/\bnoindex\b/.test(robots)) err(where + 'debe llevar <meta name="robots" content="noindex">');
+    if (canon) err(where + 'no debe llevar canonical: se sirve en cualquier dirección');
+  } else {
+    if (!desc) err(where + 'falta la descripción');
+    else if (desc.length > 165) warn(where + `descripción larga (${desc.length} caracteres): los buscadores suelen cortar hacia los 155`);
+    else if (desc.length < 70) warn(where + `descripción corta (${desc.length} caracteres)`);
+    const expected = SITE + '/' + page.replace(/index\.html$/, '');
+    if (!canon) err(where + 'falta el canonical');
+    else if (canon !== expected) err(where + `canonical «${canon}», esperado «${expected}»`);
+    if (canon) {
+      if (canonicals.has(canon)) err(where + 'canonical repetido con ' + canonicals.get(canon));
+      canonicals.set(canon, page);
+    }
+    if (/\bnoindex\b/.test(robots)) err(where + 'lleva noindex');
+    if (!/max-image-preview:large/.test(robots)) err(where + 'falta <meta name="robots"> con max-image-preview:large');
+    for (const p of ['og:title', 'og:description', 'og:image', 'og:url', 'og:type']) {
+      if (!meta(html, p)) err(where + 'falta ' + p);
+    }
+    if (meta(html, 'og:url') && canon && meta(html, 'og:url') !== canon) err(where + 'og:url distinto del canonical');
+    // Imagen para compartir: texto alternativo siempre; ancho y alto reales si la imagen es del sitio.
+    if (!meta(html, 'og:image:alt')) err(where + 'falta og:image:alt');
+    const og = meta(html, 'og:image') && resolveLocal(page, meta(html, 'og:image'));
+    if (og) {
+      const size = imageSize(join(ROOT, og[0]));
+      const w = meta(html, 'og:image:width'), h = meta(html, 'og:image:height');
+      if (!existsSync(join(ROOT, og[0]))) err(where + `og:image apunta a ${og[0]}, que no existe`);
+      else if (!w || !h) err(where + 'faltan og:image:width y og:image:height');
+      else if (size && (+w !== size.width || +h !== size.height)) err(where + `og:image declara ${w}×${h} y ${og[0]} mide ${size.width}×${size.height}`);
+    }
   }
-  const ogUrl = (/<meta property="og:url" content="([^"]*)"/.exec(html) || [])[1];
-  if (ogUrl && canon && ogUrl !== canon) err(where + 'og:url distinto del canonical');
+  if (page === 'index.html' && /\.no-js\s/.test(html) && !/<html[^>]*\sclass="[^"]*\bno-js\b/.test(html)) {
+    err(where + 'hay reglas .no-js pero <html> no lleva class="no-js": sin JavaScript el contenido tarda en verse');
+  }
   const h1 = (html.match(/<h1[\s>]/g) || []).length;
   if (h1 !== 1) err(where + `tiene ${h1} <h1> (debe haber uno)`);
   if ((html.match(/<main[\s>]/g) || []).length !== 1) err(where + 'debe tener un <main>');
 
   // Datos estructurados
   const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
-  if (!blocks.length) err(where + 'no tiene datos estructurados');
+  if (!blocks.length && !is404) err(where + 'no tiene datos estructurados');
   const nodes = [];
   for (const b of blocks) {
     try {
@@ -144,6 +191,15 @@ for (const page of pages()) {
     }
   };
   walkRefs(nodes);
+  const walkDates = (v) => {
+    if (Array.isArray(v)) return v.forEach(walkDates);
+    if (!v || typeof v !== 'object') return;
+    for (const [k, x] of Object.entries(v)) {
+      if (!DATE_KEYS.has(k)) walkDates(x);
+      else if (typeof x !== 'string' || !DATE_TZ.test(x)) err(where + `JSON-LD: ${k} «${x}» debe llevar hora y zona horaria (2026-11-10T09:00:00+01:00)`);
+    }
+  };
+  walkDates(nodes);
   const ldText = JSON.stringify(nodes);
   if (/aggregateRating|"review"/i.test(ldText)) err(where + 'JSON-LD con valoraciones: solo si son reales y están visibles en la página');
   for (const u of ldText.match(/https:\/\/editstudio\.app\/[^"\\]*/g) || []) {
@@ -161,7 +217,7 @@ for (const page of pages()) {
       for (const f of faq) if (!vis.includes(f.q) || !vis.includes(f.a)) err(where + `la pregunta «${f.q}» no está tal cual en el texto visible`);
     }
     for (const t of ['Organization', 'WebSite', 'MobileApplication']) if (!nodes.some((n) => n['@type'] === t)) err(where + 'falta ' + t + ' en el JSON-LD');
-  } else if (page !== 'blog/index.html') {
+  } else if (page !== 'blog/index.html' && !is404) {
     const post = nodes.find((n) => n['@type'] === 'BlogPosting');
     if (!post) err(where + 'falta BlogPosting');
     else {
@@ -169,6 +225,9 @@ for (const page of pages()) {
       const h1Text = unesc(((/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html) || [])[1] || '').replace(/<[^>]+>/g, '')).trim();
       if (post.headline !== h1Text) err(where + 'el titular del JSON-LD no coincide con el <h1>');
       if (!visibleText(html).includes('min de lectura')) err(where + 'falta la línea de autoría y fecha');
+      const byline = visibleText((/<p class="post-meta">([\s\S]*?)<\/p>/.exec(html) || [])[1] || '').split(' · ')[0].trim();
+      const author = post.author && post.author.name;
+      if (author && author !== byline) err(where + `la autora del JSON-LD («${author}») no es la que se ve en el artículo («${byline}»)`);
     }
     if (!nodes.some((n) => n['@type'] === 'BreadcrumbList')) err(where + 'falta BreadcrumbList');
   }
@@ -178,6 +237,7 @@ for (const page of pages()) {
     const url = unesc(m[2]);
     if (!url) { err(where + `${m[1]} vacío`); continue; }
     if (/^http:\/\//.test(url)) err(where + `enlace sin https: ${url}`);
+    if (is404 && !/^(https:|\/|#|mailto:)/.test(url)) err(where + `${url}: en esta página las rutas deben empezar por /`);
     const r = resolveLocal(page, url);
     if (!r) continue;
     const [rel, hash] = r;
@@ -189,6 +249,9 @@ for (const page of pages()) {
     if (!/\salt="/.test(m[0])) err(where + 'imagen sin alt: ' + m[0].slice(0, 80));
     if (!/\swidth="\d+"/.test(m[0]) || !/\sheight="\d+"/.test(m[0])) warn(where + 'imagen sin width/height: ' + ((/src="([^"]*)"/.exec(m[0]) || [])[1] || ''));
   }
+
+  // Dominios ajenos escritos en el texto
+  for (const d of foreignDomains(visibleText(html))) err(where + `aparece el dominio «${d}» en el texto visible y no es de édit (${OWN_DOMAIN})`);
 
   // Palabras que no usamos
   const text = visibleText(html) + ' \n ' + attrTexts(html) + ' \n ' + ldText;
@@ -231,6 +294,10 @@ else {
     else if (!canonicals.has(l)) err(`sitemap.xml: ${l} no coincide con el canonical de su página`);
   }
   for (const c of canonicals.keys()) if (!locs.includes(c)) err(`sitemap.xml: falta ${c}`);
+  if (locs.some((l) => /\/404(\.html)?\/?$/.test(l))) err('sitemap.xml: 404.html no debe aparecer');
+  for (const m of read('sitemap.xml').matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+    if (!/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/.test(m[1])) err(`sitemap.xml: ${(/<loc>([^<]+)<\/loc>/.exec(m[1]) || [])[1]} sin <lastmod> (AAAA-MM-DD)`);
+  }
 }
 if (!existsSync(join(ROOT, 'robots.txt'))) err('falta robots.txt');
 else if (!read('robots.txt').includes(`Sitemap: ${SITE}/sitemap.xml`)) err('robots.txt: falta la línea Sitemap');
