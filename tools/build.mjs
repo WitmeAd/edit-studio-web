@@ -467,6 +467,7 @@ function head({ title, description, path, type, image, imageAlt, extra = '', ld,
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 ${ogImageTags(image, alt, path)}${extra}<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${esc(abs(image))}">
 <meta name="twitter:image:alt" content="${esc(alt)}">
 `;
   // La barra es la de la portada; en el blog, su enlace queda marcado como la página actual.
