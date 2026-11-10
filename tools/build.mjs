@@ -23,6 +23,8 @@ const CHECK = process.argv.includes('--check');
 const SITE = {
   url: 'https://editstudio.app',
   name: 'édit',
+  // Fecha del último cambio de contenido de la portada (AAAA-MM-DD). Se actualiza a mano; sale en sitemap.xml.
+  homeUpdated: '2026-11-10',
   // Otros nombres del sitio, por si el buscador no elige «édit» como nombre: el descriptivo y el dominio.
   alternateNames: ['édit studio', 'editstudio.app'],
   legalName: 'WITME ADVERTISING S.L.',
@@ -538,7 +540,8 @@ function buildBlog(posts) {
 
 // ───────────────────────────── 3. sitemap.xml ─────────────────────────────
 function buildSitemap(posts) {
-  const urls = [{ loc: '/' }];
+  fechaLarga(SITE.homeUpdated);
+  const urls = [{ loc: '/', lastmod: SITE.homeUpdated }];
   if (posts.length) {
     urls.push({ loc: '/blog/', lastmod: posts.map((p) => p.updated).sort().pop() });
     for (const p of posts) urls.push({ loc: p.path, lastmod: p.updated });
