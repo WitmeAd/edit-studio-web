@@ -1,0 +1,8 @@
+{
+    "name": "edit-studio-app",
+    "compatibility_date": "2026-11-10",
+    "assets": {
+      "directory": ".",
+      "not_found_handling": "404-page"
+    }
+  }
