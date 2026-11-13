@@ -5,3 +5,5 @@
 /tools/
 /.assetsignore
 wrangler.jsonc
+/.git/
+/.github/
