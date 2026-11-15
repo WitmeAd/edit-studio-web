@@ -21,6 +21,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { transform as i18nTransform, catalog as i18nCatalog } from './i18n.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CHECK = process.argv.includes('--check');
@@ -64,6 +65,84 @@ export const homeUpdated = SITE.homeUpdated;
 const ORG_ID = SITE.url + '/#organization';
 const WEB_ID = SITE.url + '/#website';
 const APP_ID = SITE.url + '/#app';
+
+// ───────────────────────────── Idiomas ─────────────────────────────
+// El español vive en la raíz; los demás, en /en/, /fr/, /it/ y /pt/. Cada idioma tiene content/i18n/<idioma>.json con
+// «ui» (los textos de las plantillas) y «portada» (las traducciones de los textos de index.html), y sus páginas
+// temáticas en content/paginas/<idioma>/*.md (con «traduce: <slug en español>»).
+export const LANGS = ['es', 'en', 'fr', 'it', 'pt'];
+const LANG_INFO = {
+  es: { name: 'Español', locale: 'es_ES', hreflang: 'es' },
+  en: { name: 'English', locale: 'en_US', hreflang: 'en' },
+  fr: { name: 'Français', locale: 'fr_FR', hreflang: 'fr' },
+  it: { name: 'Italiano', locale: 'it_IT', hreflang: 'it' },
+  pt: { name: 'Português', locale: 'pt_PT', hreflang: 'pt' },
+};
+const UI_ES = {
+  inicio: 'Inicio', estasEn: 'Estás en', actualizado: 'Actualizado el', enBreve: 'En breve.', masSobre: 'Más sobre {0}édit{/0}.',
+  videoSinSonido: 'Vídeo sin sonido.', saltar: 'Saltar al contenido', idioma: 'Idioma',
+  cierreTitulo: 'Empezamos por lo que ya {0}tienes{/0}.', cierreTexto: 'Descarga édit y empieza a vestirte con más intención hoy mismo.',
+  proTitulo: 'Tu estudio, en un {0}sitio{/0}.', proTexto: 'Crea tu cuenta de asesora en la web y trabaja desde el ordenador o desde la app.',
+  proBoton: 'Crear mi cuenta de asesora', proLogin: 'Ya tengo cuenta',
+  enEstaPagina: 'En esta página', enLaPortada: 'En la portada', volverArriba: 'édit, volver arriba', marcaInicio: 'édit, inicio',
+  preguntasFrecuentes: 'Preguntas frecuentes', paginasTitulo: 'Más sobre {0}édit{/0}.',
+};
+const I18N = {};
+function i18n(lang) {
+  if (lang === 'es') return { ui: UI_ES, portada: null };
+  if (!I18N[lang]) {
+    const rel = `content/i18n/${lang}.json`;
+    if (!existsSync(join(ROOT, rel))) return null;
+    let data;
+    try { data = JSON.parse(read(rel)); } catch (e) { fail(`${rel}: JSON no válido (${e.message})`); }
+    const ui = { ...data.ui };
+    for (const k of Object.keys(UI_ES)) if (!ui[k]) fail(`${rel}: falta ui.${k}`);
+    I18N[lang] = { ui, portada: data.portada || {} };
+  }
+  return I18N[lang];
+}
+// Idiomas activos: el español y los que tienen su archivo de traducciones.
+export const activeLangs = () => LANGS.filter((l) => l === 'es' || existsSync(join(ROOT, `content/i18n/${l}.json`)));
+const homePath = (lang) => (lang === 'es' ? '/' : `/${lang}/`);
+function fechaLang(iso, lang) {
+  if (lang === 'es') return fechaLarga(iso);
+  fechaLarga(iso);
+  return new Intl.DateTimeFormat(LANG_INFO[lang].hreflang, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(iso + 'T12:00:00Z'));
+}
+// «Texto con {0}marca{/0}» -> «Texto con <em>marca</em>».
+const em = (s) => esc(s).replace(/\{0\}/g, '<em>').replace(/\{\/0\}/g, '</em>');
+// Enlaces <link rel="alternate" hreflang> de una página que existe en varios idiomas (alts: { es: '/', en: '/en/' … }).
+function hreflangTags(alts) {
+  const langs = LANGS.filter((l) => alts && alts[l]);
+  if (langs.length < 2) return '';
+  return langs.map((l) => `<link rel="alternate" hreflang="${LANG_INFO[l].hreflang}" href="${abs(alts[l])}">`).join('\n') +
+    (alts.es ? `\n<link rel="alternate" hreflang="x-default" href="${abs(alts.es)}">` : '') + '\n';
+}
+// Selector de idioma del colofón: la misma página en cada idioma, o su portada si no está traducida.
+const IDIOMAS_INI = '<!-- idiomas:inicio (generado por tools/build.mjs; no editar a mano) -->';
+const IDIOMAS_FIN = '<!-- idiomas:fin -->';
+function langNav(lang, alts) {
+  const langs = activeLangs();
+  if (langs.length < 2) return '';
+  const ui = i18n(lang).ui;
+  return `<nav class="idiomas" aria-label="${esc(ui.idioma)}">` + langs.map((l) => {
+    const href = (alts && alts[l]) || homePath(l);
+    return `<a href="${href}" hreflang="${LANG_INFO[l].hreflang}" lang="${LANG_INFO[l].hreflang}"${l === lang ? ' aria-current="page"' : ''}>${LANG_INFO[l].name}</a>`;
+  }).join(' ') + '</nav>';
+}
+function fillLangNav(html, lang, alts, where) {
+  const a = html.indexOf(IDIOMAS_INI), b = html.indexOf(IDIOMAS_FIN);
+  if (a === -1 || b < a) fail(`${where}: faltan las marcas «idiomas:inicio» y «idiomas:fin» del colofón`);
+  const indent = (/\n([ \t]*)$/.exec(html.slice(0, a)) || ['', ''])[1];
+  const nav = langNav(lang, alts);
+  return html.slice(0, a) + IDIOMAS_INI + '\n' + (nav ? indent + nav + '\n' : '') + indent + html.slice(b);
+}
+// Pone (o renueva) los <link rel="alternate" hreflang> justo después de la canónica.
+function setHreflang(html, alts) {
+  html = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">\n/g, '');
+  const tags = hreflangTags(alts);
+  return tags ? html.replace(/(<link rel="canonical" href="[^"]*">\n)/, `$1${tags}`) : html;
+}
 
 // ───────────────────────────── Utilidades ─────────────────────────────
 const changed = [];
@@ -123,11 +202,11 @@ export function imageSize(file) {
   return null;
 }
 // Texto alternativo de la imagen para compartir: el que está escrito en la portada.
-let ogAltCache;
-function ogImageAlt() {
-  if (ogAltCache === undefined) ogAltCache = unesc((/<meta property="og:image:alt" content="([^"]*)"/.exec(read('index.html')) || [])[1] || '');
-  if (!ogAltCache) fail('index.html: falta og:image:alt');
-  return ogAltCache;
+const ogAltCache = {};
+function ogImageAlt(lang = 'es') {
+  if (ogAltCache[lang] === undefined) ogAltCache[lang] = unesc((/<meta property="og:image:alt" content="([^"]*)"/.exec(lang === 'es' ? read('index.html') : LOCAL_HOME[lang] || '') || [])[1] || '');
+  if (!ogAltCache[lang]) fail(`${lang === 'es' ? 'index.html' : lang + '/index.html'}: falta og:image:alt`);
+  return ogAltCache[lang];
 }
 // Etiquetas og:image con ancho, alto (si la imagen es del sitio) y texto alternativo.
 function ogImageTags(image, alt, where) {
@@ -204,27 +283,33 @@ export function commonCss(html) {
 }
 
 // Piezas de la portada que repiten el blog y 404.html, con las rutas y las anclas vistas desde cualquier página.
-let partsCache;
-function homeParts() {
-  if (partsCache) return partsCache;
-  const html = read('index.html');
-  const where = 'index.html';
-  const fromRoot = (s) => s.replace(/href="#top"/g, 'href="/"').replace(/href="#/g, 'href="/#').replace(/(src|srcset)="assets\//g, '$1="/assets/');
+let partsCache = {};
+const LOCAL_HOME = {};
+function homeParts(lang = 'es') {
+  if (partsCache[lang]) return partsCache[lang];
+  const html = lang === 'es' ? read('index.html') : LOCAL_HOME[lang];
+  if (!html) fail(`no hay portada en «${lang}» todavía`);
+  const where = lang === 'es' ? 'index.html' : `${lang}/index.html`;
+  const ui = i18n(lang).ui;
+  const home = homePath(lang);
+  const fromRoot = (s) => s.replace(/href="#top"/g, `href="${home}"`).replace(/href="#/g, `href="${home}#`).replace(/(src|srcset)="assets\//g, '$1="/assets/');
   // Fuentes propias: las mismas precargas de la portada (las @font-face viajan en los estilos comunes).
   const fonts = [...html.matchAll(/<link rel="preload" href="([^"]+\.woff2)" as="font" type="font\/woff2" crossorigin>/g)].map((m) => m[1]);
   if (!fonts.length) fail(`${where}: no encuentro la precarga de las fuentes (<link rel="preload" … as="font">)`);
   const NAV = '<header class="nav" id="nav">', FOOTER = '<footer class="colofon">', BADGES = '<div class="tiendas">';
   const nav = fromRoot(NAV + between(html, NAV, '</header>', where) + '</header>');
   const foot = fromRoot(FOOTER + between(html, FOOTER, '</footer>', where) + '</footer>')
-    .replace('aria-label="édit, volver arriba"', 'aria-label="édit, inicio"')
-    .replace(/En esta página/g, 'En la portada');
+    .replace(`aria-label="${esc(ui.volverArriba)}"`, `aria-label="${esc(ui.marcaInicio)}"`)
+    .split(esc(ui.enEstaPagina)).join(esc(ui.enLaPortada));
   const badges = fromRoot(BADGES + between(html, BADGES, '</div>', where) + '</div>').replace(/\n\s+/g, '\n      ');
   const store = (/\/\* tienda:inicio[\s\S]*?\*\/\n([\s\S]*?)\n\/\* tienda:fin \*\//.exec(html) || [])[1];
   if (!store) fail(`${where}: no encuentro el script entre «/* tienda:inicio … */» y «/* tienda:fin */»`);
-  for (const [name, piece] of [['la barra', nav], ['el colofón', foot]]) {
-    if (!piece.includes('href="/blog/"')) fail(`${where}: ${name} no enlaza al blog`);
+  if (lang === 'es') {
+    for (const [name, piece] of [['la barra', nav], ['el colofón', foot]]) {
+      if (!piece.includes('href="/blog/"')) fail(`${where}: ${name} no enlaza al blog`);
+    }
   }
-  return (partsCache = { fonts, nav, foot, badges, store });
+  return (partsCache[lang] = { fonts, nav, foot, badges, store });
 }
 
 // Filas de artículos (las mismas en la portada, en el índice del blog y en «Sigue leyendo»).
@@ -234,50 +319,64 @@ function notas(posts, { tag, meta, indent, cls = 'notas' }) {
     `\n${indent}</ol>`;
 }
 
-function buildHome(posts) {
+// Sustituye la lista entre las marcas del bloque «Del blog» por la que se le pase.
+function fillBlogList(html, items, where) {
+  const b0 = html.indexOf(BLOG_INI), b1 = html.indexOf(BLOG_FIN);
+  if (b0 === -1 || b1 < b0) fail(`${where}: faltan las marcas «blog:inicio» y «blog:fin» del bloque «Del blog»`);
+  const indent = (/\n([ \t]*)$/.exec(html.slice(0, b0)) || ['', ''])[1];
+  return html.slice(0, b0) + BLOG_INI + '\n' + notas(items, { tag: 'h3', meta: (p, i) => dos(i + 1), indent }) + '\n' + indent + html.slice(b1);
+}
+
+function buildHome(posts, alts) {
   let html = read('index.html');
+  html = fillBlogList(html, posts.slice(0, SITE.homePosts), 'index.html');
+  html = fillLangNav(html, 'es', alts, 'index.html');
+  html = setHreflang(html, alts);
+  html = setHomeLd(html, 'es', 'index.html');
+  write('index.html', html);
+  partsCache = {};
+  return html;
+}
+
+// Datos estructurados de una portada (la española o una traducida), sacados de lo que se ve en ella.
+function setHomeLd(html, lang, where) {
+  const path = homePath(lang);
   const title = plain((/<title>([\s\S]*?)<\/title>/.exec(html) || [])[1] || '');
   const description = unesc((/<meta name="description" content="([^"]*)"/.exec(html) || [])[1] || '');
-  if (!title || !description) fail('index.html: falta <title> o la descripción');
+  if (!title || !description) fail(`${where}: falta <title> o la descripción`);
   const faq = extractFaq(html);
   const nDetails = (html.match(/<details>/g) || []).length;
-  if (faq.length !== nDetails) fail(`index.html: hay ${nDetails} preguntas pero solo se han podido leer ${faq.length}; revisa el formato de <details>`);
-
-  // Bloque «Del blog»: los últimos artículos, entre sus dos marcas.
-  const b0 = html.indexOf(BLOG_INI), b1 = html.indexOf(BLOG_FIN);
-  if (b0 === -1 || b1 < b0) fail('index.html: faltan las marcas «blog:inicio» y «blog:fin» del bloque «Del blog»');
-  const indent = (/\n([ \t]*)$/.exec(html.slice(0, b0)) || ['', ''])[1];
-  html = html.slice(0, b0) + BLOG_INI + '\n' +
-    notas(posts.slice(0, SITE.homePosts), { tag: 'h3', meta: (p, i) => dos(i + 1), indent }) +
-    '\n' + indent + html.slice(b1);
+  if (faq.length !== nDetails) fail(`${where}: hay ${nDetails} preguntas pero solo se han podido leer ${faq.length}; revisa el formato de <details>`);
+  const inLang = LANG_INFO[lang].hreflang;
+  const pageId = abs(path) + '#webpage';
 
   const shot = imageSize(join(ROOT, SITE.appScreenshot));
   if (!shot) fail(`no puedo leer el tamaño de ${SITE.appScreenshot}`);
-  const shotAlt = unesc((new RegExp(`<img\\s[^>]*src="${SITE.appScreenshot.slice(1).replace(/\./g, '\\.')}"[^>]*\\salt="([^"]*)"`).exec(html) || [])[1] || '');
-  if (!shotAlt) fail(`index.html: la captura ${SITE.appScreenshot} tiene que estar en la página, con su texto alternativo`);
+  const shotAlt = unesc((new RegExp(`<img\\s[^>]*src="/?${SITE.appScreenshot.slice(1).replace(/\./g, '\\.')}"[^>]*\\salt="([^"]*)"`).exec(html) || [])[1] || '');
+  if (!shotAlt) fail(`${where}: la captura ${SITE.appScreenshot} tiene que estar en la página, con su texto alternativo`);
   const features = extractFeatures(html);
-  const stores = [SITE.appStore, SITE.googlePlay];
 
   // Película de la portada: su descripción es la que lleva el vídeo en la página (aria-label).
   const film = SITE.heroVideo;
-  const filmLabel = unesc((/id="film-hero"[\s\S]*?<video\s[^>]*\saria-label="([^"]*)"/.exec(html) || [])[1] || '').replace(/^Vídeo sin sonido\.\s*/, '');
-  if (!filmLabel) fail('index.html: el vídeo de la portada (#film-hero) necesita un aria-label que cuente lo que se ve');
+  const filmLabel = unesc((/id="film-hero"[\s\S]*?<video\s[^>]*\saria-label="([^"]*)"/.exec(html) || [])[1] || '').replace(new RegExp('^' + i18n(lang).ui.videoSinSonido.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*'), '');
+  if (!filmLabel) fail(`${where}: el vídeo de la portada (#film-hero) necesita un aria-label que cuente lo que se ve`);
   for (const f of [film.file, film.poster]) if (!existsSync(join(ROOT, f))) fail(`no existe ${f} (SITE.heroVideo)`);
   // Imagen principal de la página: el fotograma de la película de la portada, que es lo primero que se ve.
   const posterSize = imageSize(join(ROOT, film.poster));
   if (!posterSize) fail(`no puedo leer el tamaño de ${film.poster}`);
-  const FILM_ID = SITE.url + '/#pelicula';
+  const FILM_ID = abs(path) + '#pelicula';
+  const stores = storeLinks(lang);
 
   const graph = [
     orgNode(),
-    { '@type': 'WebSite', '@id': WEB_ID, url: SITE.url + '/', name: SITE.name, alternateName: SITE.alternateNames, inLanguage: 'es', publisher: { '@id': ORG_ID } },
+    { '@type': 'WebSite', '@id': WEB_ID, url: SITE.url + '/', name: SITE.name, alternateName: SITE.alternateNames, inLanguage: activeLangs().map((l) => LANG_INFO[l].hreflang), publisher: { '@id': ORG_ID } },
     {
       '@type': 'WebPage',
-      '@id': SITE.url + '/#webpage',
-      url: SITE.url + '/',
+      '@id': pageId,
+      url: abs(path),
       name: title,
       description,
-      inLanguage: 'es',
+      inLanguage: inLang,
       dateModified: fechaHora(SITE.homeUpdated),
       isPartOf: { '@id': WEB_ID },
       about: { '@id': APP_ID },
@@ -291,7 +390,7 @@ function buildHome(posts) {
       name: SITE.name,
       alternateName: SITE.appStoreNames,
       description,
-      url: SITE.url + '/',
+      url: abs(path),
       image: abs(SITE.logo),
       screenshot: { '@type': 'ImageObject', url: abs(SITE.appScreenshot), width: shot.width, height: shot.height, caption: shotAlt },
       applicationCategory: 'LifestyleApplication',
@@ -320,19 +419,23 @@ function buildHome(posts) {
   if (faq.length) {
     graph.push({
       '@type': 'FAQPage',
-      '@id': SITE.url + '/#preguntas',
-      inLanguage: 'es',
-      isPartOf: { '@id': SITE.url + '/#webpage' },
+      '@id': abs(path) + '#preguntas',
+      inLanguage: inLang,
+      isPartOf: { '@id': pageId },
       mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
     });
   }
   const block = INI + '\n' + jsonLd(graph) + '\n' + FIN;
   const a = html.indexOf(INI), b = html.indexOf(FIN);
-  if (a !== -1 && b > a) html = html.slice(0, a) + block + html.slice(b + FIN.length);
-  else if (html.includes('</head>')) html = html.replace('</head>', block + '\n</head>');
-  else fail('index.html: no encuentro </head>');
-  write('index.html', html);
-  partsCache = null;
+  if (a !== -1 && b > a) return html.slice(0, a) + block + html.slice(b + FIN.length);
+  if (html.includes('</head>')) return html.replace('</head>', block + '\n</head>');
+  fail(`${where}: no encuentro </head>`);
+}
+
+// Tiendas: en español, la ficha española; en los demás idiomas, la que corresponda al país de quien la abra.
+function storeLinks(lang) {
+  if (lang === 'es') return [SITE.appStore, SITE.googlePlay];
+  return [SITE.appStore.replace('/es/app/', '/app/'), `${SITE.googlePlay}&hl=${LANG_INFO[lang].hreflang}`];
 }
 
 // ───────────────────────────── 2. Hoja de estilos del blog y de 404.html ─────────────────────────────
@@ -479,19 +582,20 @@ function loadPosts() {
 
 // Cabecera común, con la barra de la portada. Con noindex (404.html) la página se sirve en cualquier dirección: no lleva
 // descripción, canonical, etiquetas para compartir ni datos estructurados.
-function head({ title, description, path, type, image, imageAlt, extra = '', ld, noindex = false }) {
-  const parts = homeParts();
+function head({ title, description, path, type, image, imageAlt, extra = '', ld, noindex = false, lang = 'es', alts = null }) {
+  const parts = homeParts(lang);
+  const ui = i18n(lang).ui;
   const seo = noindex
     ? `<meta name="robots" content="noindex">`
     : `<meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${abs(path)}">
-<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">`;
-  const alt = noindex ? '' : imageAlt || ogImageAlt();
+${hreflangTags(alts)}<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">`;
+  const alt = noindex ? '' : imageAlt || ogImageAlt(lang);
   const share = noindex
     ? ''
     : `<meta property="og:type" content="${type}">
 <meta property="og:site_name" content="${esc(SITE.name)}">
-<meta property="og:locale" content="es_ES">
+<meta property="og:locale" content="${LANG_INFO[lang].locale}">
 <meta property="og:url" content="${abs(path)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
@@ -502,7 +606,7 @@ ${ogImageTags(image, alt, path)}${extra}<meta name="twitter:card" content="summa
   // La barra es la de la portada; en el blog, su enlace queda marcado (como página actual en el índice; como sección en los artículos).
   const nav = path && path.startsWith('/blog/') ? parts.nav.replace('<a href="/blog/">', `<a href="/blog/" aria-current="${path === '/blog/' ? 'page' : 'true'}">`) : parts.nav;
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="${LANG_INFO[lang].hreflang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -517,27 +621,28 @@ ${share}${parts.fonts.map((f) => `<link rel="preload" href="${f}" as="font" type
 ${noindex ? '' : jsonLd(ld) + '\n'}</head>
 <body id="top">
 
-<a class="salto" href="#contenido">Saltar al contenido</a>
+<a class="salto" href="#contenido">${esc(ui.saltar)}</a>
 
 ${nav}
 `;
 }
 
 // Cierre con las insignias de tienda (las de la portada).
-function cta() {
+function cta(lang = 'es') {
+  const ui = i18n(lang).ui;
   return `<aside class="cierre" aria-labelledby="t-cierre">
   <div class="cierre__in">
-    <h2 class="h2" id="t-cierre">Empezamos por lo que ya <em>tienes</em>.</h2>
-    <p>Descarga édit y empieza a vestirte con más intención hoy mismo.</p>
-    ${homeParts().badges.replace(/\n {6}/g, '\n    ')}
+    <h2 class="h2" id="t-cierre">${em(ui.cierreTitulo)}</h2>
+    <p>${esc(ui.cierreTexto)}</p>
+    ${homeParts(lang).badges.replace(/\n {6}/g, '\n    ')}
   </div>
 </aside>`;
 }
 
 // Colofón de la portada y el script que lleva «Descargar» a la tienda del móvil.
-function foot() {
-  const parts = homeParts();
-  return `${parts.foot}
+function foot(lang = 'es', alts = null) {
+  const parts = homeParts(lang);
+  return `${fillLangNav(parts.foot, lang, alts, lang + ': colofón')}
 
 <script>
 ${parts.store}
@@ -658,10 +763,10 @@ function buildBlog(posts) {
 // (versalitas sobre el <h1>), migas (nombre corto en las migas, el colofón y las listas), resumen, actualizado, orden,
 // tipo (producto | comparativa | profesionales), video (nombre de un clip de assets/video) con video_alt, y cta (app | pro).
 // Si el texto lleva un apartado «## Preguntas frecuentes», sus «###» y sus respuestas salen como FAQPage.
-const RESERVED = new Set(['blog', 'assets', 'new', 'content', 'tools']);
-const FAQ_HEAD = /^## Preguntas frecuentes\s*$/m;
+const RESERVED = new Set(['blog', 'assets', 'new', 'content', 'tools', ...LANGS]);
 
-export function faqFromMarkdown(body) {
+export function faqFromMarkdown(body, heading = 'Preguntas frecuentes') {
+  const FAQ_HEAD = new RegExp(`^## ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'm');
   const at = body.search(FAQ_HEAD);
   if (at === -1) return [];
   const rest = body.slice(at).replace(FAQ_HEAD, '');
@@ -670,14 +775,17 @@ export function faqFromMarkdown(body) {
   return [...block.matchAll(/^### (.+)\n+([\s\S]*?)(?=^### |(?![\s\S]))/gm)].map((m) => ({ q: mdPlain(m[1]), a: mdPlain(m[2]) }));
 }
 
-function loadPages() {
-  const dir = join(ROOT, 'content/paginas');
+function loadPages(lang = 'es') {
+  const rel = lang === 'es' ? 'content/paginas' : `content/paginas/${lang}`;
+  const dir = join(ROOT, rel);
   if (!existsSync(dir)) return [];
   const pages = [];
+  const ui = i18n(lang).ui;
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
-    const parsed = parseMd('content/paginas', file);
+    const parsed = parseMd(rel, file);
     if (!parsed) continue;
     const { where, meta, body, slug } = parsed;
+    if (lang !== 'es' && !meta.traduce) fail(`${where}: falta «traduce:» con el slug de la página en español`);
     if (RESERVED.has(slug)) fail(`${where}: «${slug}» es una carpeta reservada`);
     if (pages.some((p) => p.slug === slug)) fail(`${where}: slug repetido «${slug}»`);
     const tipo = meta.tipo || 'producto';
@@ -705,27 +813,42 @@ function loadPages() {
       order: Number(meta.orden || 99),
       cta: meta.cta || (tipo === 'profesionales' ? 'pro' : 'app'),
       video,
-      faq: faqFromMarkdown(body),
+      faq: faqFromMarkdown(body, ui.preguntasFrecuentes),
       html: markdown(body, where),
-      path: `/${slug}/`,
+      path: lang === 'es' ? `/${slug}/` : `/${lang}/${slug}/`,
+      lang,
+      es: lang === 'es' ? slug : meta.traduce,
     });
   }
   return pages.sort((a, b) => a.order - b.order || (a.slug < b.slug ? -1 : 1));
 }
 
 // Cierre para profesionales: alta como asesora en la web, y la app en las tiendas.
-function ctaPro() {
+function ctaPro(lang = 'es') {
+  const ui = i18n(lang).ui;
   return `<aside class="cierre cierre--pro" aria-labelledby="t-cierre">
   <div class="cierre__in">
-    <h2 class="h2" id="t-cierre">Tu estudio, en un <em>sitio</em>.</h2>
-    <p>Crea tu cuenta de asesora en la web y trabaja desde el ordenador o desde la app.</p>
-    <p class="cierre__btns"><a class="btn" href="https://dashboard.editstudio.app/signup?role=stylist">Crear mi cuenta de asesora</a> <a class="link" href="https://dashboard.editstudio.app/login">Ya tengo cuenta</a></p>
-    ${homeParts().badges.replace(/\n {6}/g, '\n    ')}
+    <h2 class="h2" id="t-cierre">${em(ui.proTitulo)}</h2>
+    <p>${esc(ui.proTexto)}</p>
+    <p class="cierre__btns"><a class="btn" href="https://dashboard.editstudio.app/signup?role=stylist">${esc(ui.proBoton)}</a> <a class="link" href="https://dashboard.editstudio.app/login">${esc(ui.proLogin)}</a></p>
+    ${homeParts(lang).badges.replace(/\n {6}/g, '\n    ')}
   </div>
 </aside>`;
 }
 
-function renderPage(p, pages, posts) {
+// Enlaces internos de una página traducida: a la versión de ese idioma cuando existe.
+function localizeLinks(html, lang, routes) {
+  if (lang === 'es') return html;
+  return html.replace(/href="(\/[^"#?]*)((?:#[^"]*)?)"/g, (m, path, hash) => {
+    const to = routes[path];
+    return to ? `href="${to}${hash}"` : m;
+  });
+}
+
+function renderPage(p, pages, posts, alts, routes) {
+  const lang = p.lang;
+  const ui = i18n(lang).ui;
+  const inLang = LANG_INFO[lang].hreflang;
   const webpageId = abs(p.path) + '#webpage';
   const ld = [
     {
@@ -735,7 +858,7 @@ function renderPage(p, pages, posts) {
       name: p.title,
       headline: p.title,
       description: p.description,
-      inLanguage: 'es',
+      inLanguage: inLang,
       datePublished: fechaHora(p.date),
       dateModified: fechaHora(p.updated),
       isPartOf: { '@type': 'WebSite', '@id': WEB_ID, url: SITE.url + '/', name: SITE.name },
@@ -743,48 +866,93 @@ function renderPage(p, pages, posts) {
       publisher: { '@id': ORG_ID },
       ...(p.video ? { video: { '@type': 'VideoObject', name: p.title, description: p.video.alt, thumbnailUrl: abs(p.video.poster), contentUrl: abs(p.video.file), uploadDate: fechaHora(p.date), inLanguage: 'es', publisher: { '@id': ORG_ID } } } : {}),
     },
-    crumbs([['Inicio', '/'], [p.short, p.path]]),
+    crumbs([[ui.inicio, homePath(lang)], [p.short, p.path]]),
     orgNode(),
   ];
   if (p.faq.length) {
     ld.push({
       '@type': 'FAQPage',
       '@id': abs(p.path) + '#preguntas-frecuentes',
-      inLanguage: 'es',
+      inLanguage: inLang,
       isPartOf: { '@id': webpageId },
       mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
     });
   }
   const others = pages.filter((o) => o.slug !== p.slug);
   const film = p.video
-    ? `<figure class="pagina__film"><video src="${p.video.file}" poster="${p.video.poster}" width="${p.video.width}" height="${p.video.height}" muted playsinline loop controls preload="none" aria-label="Vídeo sin sonido. ${esc(p.video.alt)}"></video></figure>\n`
+    ? `<figure class="pagina__film"><video src="${p.video.file}" poster="${p.video.poster}" width="${p.video.width}" height="${p.video.height}" muted playsinline loop controls preload="none" aria-label="${esc(ui.videoSinSonido)} ${esc(p.video.alt)}"></video></figure>\n`
     : '';
-  return head({ title: p.seoTitle, description: p.description, path: p.path, type: 'website', image: SITE.ogImage, ld }) + `
+  const more = lang === 'es' ? [...others, ...posts.slice(0, 2)] : others;
+  return head({ title: p.seoTitle, description: p.description, path: p.path, type: 'website', image: SITE.ogImage, ld, lang, alts }) + localizeLinks(`
 <main id="contenido" tabindex="-1">
 <article class="post pagina calma">
   <header class="post__cab lectura">
-    <nav class="migas sc" aria-label="Estás en"><a href="/">Inicio</a> <span aria-hidden="true">/</span> <span>${esc(p.short)}</span></nav>
+    <nav class="migas sc" aria-label="${esc(ui.estasEn)}"><a href="${homePath(lang)}">${esc(ui.inicio)}</a> <span aria-hidden="true">/</span> <span>${esc(p.short)}</span></nav>
 ${p.rotulo ? `    <p class="sc rotulo">${esc(p.rotulo)}</p>\n` : ''}    <h1>${inline(p.title, p.where)}</h1>
-    <p class="post-meta sc">Actualizado el <time datetime="${p.updated}">${fechaLarga(p.updated)}</time></p>
+    <p class="post-meta sc">${esc(ui.actualizado)} <time datetime="${p.updated}">${fechaLang(p.updated, lang)}</time></p>
   </header>
   <div class="post__body lectura">
-${p.summary ? `<p class="post__resumen"><strong class="sc">En breve.</strong> ${inline(p.summary, p.where)}</p>\n` : ''}${film}${p.html}
+${p.summary ? `<p class="post__resumen"><strong class="sc">${esc(ui.enBreve)}</strong> ${inline(p.summary, p.where)}</p>\n` : ''}${film}${p.html}
   </div>
 </article>
-${p.cta === 'pro' ? ctaPro() : cta()}
+${p.cta === 'pro' ? ctaPro(lang) : cta(lang)}
 <section class="section calma mas" aria-labelledby="t-mas">
   <div class="wrap">
-    <header class="cab"><h2 class="h2" id="t-mas">Más sobre <em>édit</em>.</h2></header>
-${notas([...others, ...posts.slice(0, 2)].map((o) => ({ ...o, title: o.short || o.title })), { tag: 'h3', meta: (o, i) => dos(i + 1), indent: '    ' })}
+    <header class="cab"><h2 class="h2" id="t-mas">${em(ui.masSobre)}</h2></header>
+${notas(more.map((o) => ({ ...o, title: o.short || o.title })), { tag: 'h3', meta: (o, i) => dos(i + 1), indent: '    ' })}
   </div>
 </section>
 </main>
 
-` + foot();
+`, lang, routes) + foot(lang, alts);
 }
 
-function buildPages(pages, posts) {
-  for (const p of pages) write(`${p.slug}/index.html`, renderPage(p, pages, posts));
+function buildPages(pages, posts, altsOf, routes) {
+  for (const p of pages) write(`${p.path.slice(1)}index.html`, renderPage(p, pages, posts, altsOf(p.es), routes));
+}
+
+// ───────────────────────────── 7. Portada en otros idiomas ─────────────────────────────
+// Se genera a partir de index.html (ya con su lista del blog y sus datos estructurados) y content/i18n/<idioma>.json.
+function buildLocalHome(lang, esHtml, pages, alts, routes) {
+  const where = `content/i18n/${lang}.json`;
+  const { portada } = i18n(lang);
+  const missing = [];
+  const used = new Set();
+  let html;
+  try {
+    html = i18nTransform(esHtml, (src) => {
+      const t = portada[src];
+      if (typeof t !== 'string' || !t.trim()) { missing.push(src); return src; }
+      used.add(src);
+      return t;
+    });
+  } catch (e) { fail(`${where}: ${e.message}`); }
+  if (missing.length) fail(`${where}: faltan ${missing.length} traducciones de la portada; la primera: «${missing[0]}». La lista completa está en content/i18n/_catalogo-portada.json`);
+  const stale = Object.keys(portada).filter((k) => !used.has(k));
+  if (stale.length) console.warn(`AVISO: ${where}: ${stale.length} traducciones ya no corresponden a ningún texto de la portada (la primera: «${stale[0]}»)`);
+  const info = LANG_INFO[lang];
+  const home = homePath(lang);
+  html = html.replace('<html lang="es"', `<html lang="${info.hreflang}"`);
+  // Rutas desde la raíz: la página vive en /<idioma>/.
+  html = html.replace(/(\s(?:href|src|srcset|poster|data-ancho|data-movil)=")([^"]*)"/g, (m, a, v) => a + v.replace(/(^|[\s,])(assets\/|favicon\.|apple-touch-icon\.)/g, '$1/$2') + '"');
+  html = html.replace(/(<link rel="canonical" href=")[^"]*"/, `$1${abs(home)}"`).replace(/(<meta property="og:url" content=")[^"]*"/, `$1${abs(home)}"`);
+  html = html.replace(/(<meta property="og:locale" content=")[^"]*"/, `$1${info.locale}"`);
+  // Tiendas e insignias del idioma.
+  const [appStore, googlePlay] = storeLinks(lang);
+  html = html.split(SITE.appStore).join(appStore).split(SITE.googlePlay + '"').join(googlePlay + '"').split(SITE.googlePlay + "'").join(googlePlay + "'");
+  html = html.replace(/\/assets\/img\/badge-app-store\.png/g, '/assets/img/badge-app-store-en.svg')
+    .replace(/(\/assets\/img\/badge-google-play)\.png"([^>]*?)width="486"/g, `$1-${lang}.png"$2width="490"`);
+  // El blog solo está en español: fuera sus enlaces, y en su bloque, las páginas de este idioma.
+  html = html.replace(/[ \t]*<li>\s*<a href="\/blog\/"[^>]*>[\s\S]*?<\/a>\s*<\/li>\n?/g, '').replace(/\s*<a(?:\s[^>]*)?\shref="\/blog\/"[^>]*>[\s\S]*?<\/a>/g, '');
+  html = fillBlogList(html, pages.map((p) => ({ ...p, title: p.short })), `${lang}/index.html`);
+  html = localizeLinks(html, lang, routes);
+  html = fillLangNav(html, lang, alts, `${lang}/index.html`);
+  html = setHreflang(html, alts);
+  html = setHomeLd(html, lang, `${lang}/index.html`);
+  LOCAL_HOME[lang] = html;
+  delete partsCache[lang];
+  delete ogAltCache[lang];
+  write(`${lang}/index.html`, html);
 }
 
 // ───────────────────────────── 6. 404.html ─────────────────────────────
@@ -803,16 +971,23 @@ function build404() {
 }
 
 // ───────────────────────────── 4. sitemap.xml ─────────────────────────────
-function buildSitemap(posts, pages = []) {
+function buildSitemap(posts, pages = [], homeAlts = null, altsOf = () => null) {
   fechaLarga(SITE.homeUpdated);
-  const urls = [{ loc: '/', lastmod: SITE.homeUpdated }];
-  for (const p of pages) urls.push({ loc: p.path, lastmod: p.updated });
+  const urls = [];
+  for (const l of Object.keys(homeAlts || { es: '/' })) urls.push({ loc: homePath(l), lastmod: SITE.homeUpdated, alts: homeAlts });
+  for (const p of pages) urls.push({ loc: p.path, lastmod: p.updated, alts: altsOf(p.es) });
   if (posts.length) {
     urls.push({ loc: '/blog/', lastmod: posts.map((p) => p.updated).sort().pop() });
     for (const p of posts) urls.push({ loc: p.path, lastmod: p.updated });
   }
-  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    urls.map((u) => `  <url><loc>${abs(u.loc)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}</url>`).join('\n') +
+  const links = (alts) => {
+    const ls = LANGS.filter((l) => alts && alts[l]);
+    if (ls.length < 2) return '';
+    return ls.map((l) => `<xhtml:link rel="alternate" hreflang="${LANG_INFO[l].hreflang}" href="${abs(alts[l])}"/>`).join('') +
+      (alts.es ? `<xhtml:link rel="alternate" hreflang="x-default" href="${abs(alts.es)}"/>` : '');
+  };
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
+    urls.map((u) => `  <url><loc>${abs(u.loc)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}${links(u.alts)}</url>`).join('\n') +
     '\n</urlset>\n';
   write('sitemap.xml', xml);
 }
@@ -834,13 +1009,26 @@ function buildLlms(posts, pages = []) {
 // ───────────────────────────── Ejecución ─────────────────────────────
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const posts = loadPosts();
-  const pages = loadPages();
-  buildHome(posts);
+  const langs = activeLangs();
+  const pagesBy = Object.fromEntries(langs.map((l) => [l, loadPages(l)]));
+  // Versiones de cada página: portada y páginas temáticas, por idioma.
+  const homeAlts = Object.fromEntries(langs.map((l) => [l, homePath(l)]));
+  const altsOf = (esSlug) => {
+    const out = {};
+    for (const l of langs) { const p = pagesBy[l].find((x) => x.es === esSlug); if (p) out[l] = p.path; }
+    return out;
+  };
+  for (const l of langs) for (const p of pagesBy[l]) if (l !== 'es' && !pagesBy.es.some((e) => e.slug === p.es)) fail(`${p.where}: «traduce: ${p.es}» no es ninguna página en español`);
+  const routesOf = (l) => Object.fromEntries([['/', homePath(l)], ...pagesBy.es.map((e) => [e.path, altsOf(e.slug)[l]]).filter(([, to]) => to)]);
+  const esHtml = buildHome(posts, homeAlts);
+  write('content/i18n/_catalogo-portada.json', JSON.stringify(i18nCatalog(esHtml).map((u) => u.src), null, 1) + '\n');
+  for (const l of langs) if (l !== 'es') buildLocalHome(l, esHtml, pagesBy[l], homeAlts, routesOf(l));
   buildCss();
   buildBlog(posts);
-  buildPages(pages, posts);
-  buildSitemap(posts, pages);
-  buildLlms(posts, pages);
+  for (const l of langs) buildPages(pagesBy[l], posts, altsOf, routesOf(l));
+  const allPages = langs.flatMap((l) => pagesBy[l]);
+  buildSitemap(posts, allPages, homeAlts, altsOf);
+  buildLlms(posts, pagesBy.es);
   build404();
   if (CHECK) {
     if (changed.length) { console.error('Sin generar o desactualizado: ' + changed.join(', ') + '\nEjecuta: node tools/build.mjs'); process.exit(1); }

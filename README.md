@@ -166,6 +166,16 @@ Un apartado `## Preguntas frecuentes` con sus `###` sale también como FAQPage e
 
 El colofón de la portada enlaza a las páginas de producto (columna «Descubre»); se copia solo a todas las páginas.
 
+## Otros idiomas
+
+La web está en español (raíz) y en inglés, francés, italiano y portugués de Portugal (`/en/`, `/fr/`, `/it/`, `/pt/`): la portada y las páginas de producto. El blog y las comparativas solo están en español.
+
+- **Portada:** no hay una copia por idioma. `tools/build.mjs` la genera a partir de `index.html` con `tools/i18n.mjs`, que recorre sus textos (con las etiquetas de cursiva o enlace como marcas `{0}…{/0}`) y los cambia por los de `content/i18n/<idioma>.json` («portada»). La lista de textos está en `content/i18n/_catalogo-portada.json`. **Si cambias un texto de la portada en español, su traducción deja de encajar y el build falla diciendo cuál**: tradúcelo en los cuatro archivos.
+- **Textos de las plantillas** (migas, «Actualizado el», cierres, selector de idioma…): `ui` en cada `content/i18n/<idioma>.json`.
+- **Páginas de producto:** `content/paginas/<idioma>/<slug>.md`, con `traduce: <slug en español>`. Los enlaces se escriben con la ruta española y el build los cambia a la del idioma. No enlaces al blog ni a las comparativas.
+- En cada página: `hreflang` con sus versiones (y `x-default` a la española), selector de idioma en el colofón, sitemap con las alternativas, insignias de tienda del idioma (la de Apple en inglés) y tiendas sin país fijo.
+- Los vídeos siguen en español; su descripción va traducida.
+
 ## Buscadores y asistentes
 
 - `robots.txt` permite todo salvo `content/`, `tools/` y `README.md`, y declara el sitemap. Cloudflare añade delante sus propias reglas: el acceso de los robots de los asistentes y de entrenamiento se decide en su panel (Security → Settings → Bot traffic), no aquí. Si allí se bloquean, los asistentes no pueden leer ni citar la web, diga lo que diga este archivo.

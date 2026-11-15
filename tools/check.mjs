@@ -33,6 +33,7 @@ const FORBIDDEN = [
   [/(^|[^\p{L}\p{N}])IA(?![\p{L}\p{N}])/u, '«IA»'],
   [/(^|[^\p{L}])AI(?![\p{L}\p{N}])/u, '«AI»'],
   [/inteligencia\s+artificial/i, '«inteligencia artificial»'],
+  [/intelligence\s+artificielle|intelligenza\s+artificiale|intelig[êe]ncia\s+artificial|artificial\s+intelligence/i, '«inteligencia artificial» (en otro idioma)'],
   [/\b(openai|chatgpt|gpt-?\d|gemini|anthropic|claude|replicate|midjourney|llm)\b/i, 'nombre de proveedor o de modelo'],
 ];
 
@@ -77,7 +78,20 @@ const PAGE_SLUGS = existsSync(join(ROOT, 'content/paginas'))
     return ((/^slug:\s*(\S+)/m.exec(src) || [])[1]) || f.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '');
   }).filter(Boolean)
   : [];
+// Idiomas: la portada traducida en <idioma>/index.html y sus páginas en <idioma>/<slug>/index.html.
+const OTHER_LANGS = ['en', 'fr', 'it', 'pt'].filter((l) => existsSync(join(ROOT, 'content/i18n', l + '.json')));
+for (const l of OTHER_LANGS) {
+  const dir = join(ROOT, 'content/paginas', l);
+  if (!existsSync(dir)) continue;
+  for (const f of readdirSync(dir).filter((x) => x.endsWith('.md')).sort()) {
+    const src = readFileSync(join(dir, f), 'utf8');
+    if (/^borrador:\s*s[ií]\s*$/m.test(src)) continue;
+    PAGE_SLUGS.push(l + '/' + (((/^slug:\s*(\S+)/m.exec(src) || [])[1]) || f.replace(/\.md$/, '')));
+  }
+}
 const isPageTematica = (page) => PAGE_SLUGS.some((s) => page === s + '/index.html');
+const isLocalHome = (page) => OTHER_LANGS.some((l) => page === l + '/index.html');
+const langOf = (page) => (OTHER_LANGS.find((l) => page.startsWith(l + '/')) || 'es');
 if (!existsSync(join(ROOT, NOT_FOUND))) err('falta 404.html (lo genera tools/build.mjs)');
 function pages() {
   const out = ['index.html'];
@@ -91,6 +105,7 @@ function pages() {
     }
   };
   walk('blog');
+  for (const l of OTHER_LANGS) if (existsSync(join(ROOT, l, 'index.html'))) out.push(l + '/index.html');
   for (const slug of PAGE_SLUGS) if (existsSync(join(ROOT, slug, 'index.html'))) out.push(slug + '/index.html');
   if (existsSync(join(ROOT, NOT_FOUND))) out.push(NOT_FOUND);
   return out;
@@ -174,7 +189,7 @@ function checkHome(html, where) {
   if (!html.includes('/* tienda:inicio')) err(where + 'falta el script «tienda» que lleva «Descargar» a la tienda del móvil');
   const section = (id) => (new RegExp(`<section[^>]*\\sid="${id}"[\\s\\S]*?</section>`).exec(html) || [''])[0];
   for (const s of ['apps.apple.com', 'play.google.com']) if (!section('descargar').includes(s)) err(where + `la sección #descargar no enlaza a ${s}`);
-  if (!/href="\/blog\/[a-z0-9-]+\/"/.test(section('blog'))) err(where + 'el bloque «Del blog» no enlaza a ningún artículo');
+  if (!/href="\/(?:blog|[a-z]{2})\/[a-z0-9-]+\/"/.test(section('blog'))) err(where + 'el bloque «Del blog» no enlaza a ningún artículo ni página');
   if (!extractFaq(html).length) err(where + 'no hay preguntas frecuentes');
 }
 
@@ -197,7 +212,17 @@ for (const page of pages()) {
     if (titles.has(title)) err(where + 'título repetido con ' + titles.get(title));
     titles.set(title, page);
   }
-  if (!/<html lang="es"/.test(html)) err(where + 'falta lang="es"');
+  if (!new RegExp(`<html lang="${langOf(page)}"`).test(html)) err(where + `falta lang="${langOf(page)}"`);
+  // Versiones en otros idiomas: cada una existe y enlaza de vuelta a esta.
+  {
+    const self = SITE + '/' + page.replace(/index\.html$/, '');
+    for (const m of html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)) {
+      const r = resolveLocal(page, m[2]);
+      if (!r || !existsSync(join(ROOT, r[0]))) { err(where + `hreflang ${m[1]}: ${m[2]} no existe`); continue; }
+      if (m[2] !== self && !read(r[0]).includes(`href="${self}"`)) err(where + `hreflang ${m[1]}: ${m[2]} no enlaza de vuelta a esta página`);
+    }
+    if (langOf(page) !== 'es' && /href="\/blog\//.test(html)) warn(where + 'enlaza al blog, que solo está en español');
+  }
   if (is404) {
     if (!/\bnoindex\b/.test(robots)) err(where + 'debe llevar <meta name="robots" content="noindex">');
     if (canon) err(where + 'no debe llevar canonical: se sirve en cualquier dirección');
@@ -287,7 +312,7 @@ for (const page of pages()) {
     const r = resolveLocal(page, u);
     if (r && !existsSync(join(ROOT, r[0]))) err(where + `JSON-LD apunta a ${u}, que no existe`);
   }
-  if (page === 'index.html') {
+  if (page === 'index.html' || isLocalHome(page)) {
     const faq = extractFaq(html);
     const node = nodes.find((n) => n['@type'] === 'FAQPage');
     if (faq.length && !node) err(where + 'hay preguntas visibles pero no FAQPage');
@@ -417,7 +442,8 @@ for (const css of ['index.html', 'assets/css/blog.css']) {
 
 // ── 3. Textos fuente y llms.txt ──
 const textFiles = ['llms.txt', 'content/llms.txt'];
-for (const d of ['content/blog', 'content/paginas']) if (existsSync(join(ROOT, d))) for (const f of readdirSync(join(ROOT, d)).sort()) if (f.endsWith('.md')) textFiles.push(d + '/' + f);
+for (const d of ['content/blog', 'content/paginas', ...OTHER_LANGS.map((l) => 'content/paginas/' + l)]) if (existsSync(join(ROOT, d))) for (const f of readdirSync(join(ROOT, d)).sort()) if (f.endsWith('.md')) textFiles.push(d + '/' + f);
+for (const l of OTHER_LANGS) textFiles.push('content/i18n/' + l + '.json');
 for (const f of textFiles) {
   if (!existsSync(join(ROOT, f))) { if (f === 'llms.txt') err('falta llms.txt'); continue; }
   const text = read(f);

@@ -164,7 +164,11 @@ p { text-wrap: pretty; }
 .colofon__marca p { margin-top: 8px; max-width: 24ch; }
 .colofon nav .sc { margin-bottom: 10px; }
 .colofon li a { display: inline-flex; align-items: center; min-height: 44px; color: var(--tinta); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .3em; text-decoration-thickness: 1px; transition: text-decoration-color .2s ease; }
-.colofon__base { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--linea); }
+.colofon__base { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--linea); display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 24px; }
+.idiomas { display: flex; flex-wrap: wrap; gap: 0 18px; }
+.idiomas a { display: inline-flex; align-items: center; min-height: 44px; color: var(--texto-2); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .3em; text-decoration-thickness: 1px; transition: text-decoration-color .2s ease; }
+.idiomas a[aria-current] { color: var(--tinta); text-decoration-color: currentColor; }
+@media (hover: hover) and (pointer: fine) { .idiomas a:hover { text-decoration-color: currentColor; } }
 @media (hover: hover) and (pointer: fine) { .colofon li a:hover { text-decoration-color: currentColor; } .tiendas a:hover { opacity: .82; } }
 @media (min-width: 700px) {
   .colofon__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }

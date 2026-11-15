@@ -6,6 +6,12 @@
 <title>édit: app de armario digital, looks y asesora de imagen</title>
 <meta name="description" content="Digitaliza tu armario con fotos, crea looks con tu ropa, pruébatelos sobre una foto tuya y elige tu asesora de imagen. Para iPhone y Android. Descarga gratis.">
 <link rel="canonical" href="https://editstudio.app/">
+<link rel="alternate" hreflang="es" href="https://editstudio.app/">
+<link rel="alternate" hreflang="en" href="https://editstudio.app/en/">
+<link rel="alternate" hreflang="fr" href="https://editstudio.app/fr/">
+<link rel="alternate" hreflang="it" href="https://editstudio.app/it/">
+<link rel="alternate" hreflang="pt" href="https://editstudio.app/pt/">
+<link rel="alternate" hreflang="x-default" href="https://editstudio.app/">
 <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="theme-color" content="#FBF8F3">
 <link rel="icon" href="favicon.ico" sizes="48x48">
@@ -578,7 +584,11 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 .colofon__marca p { margin-top: 8px; max-width: 24ch; }
 .colofon nav .sc { margin-bottom: 10px; }
 .colofon li a { display: inline-flex; align-items: center; min-height: 44px; color: var(--tinta); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .3em; text-decoration-thickness: 1px; transition: text-decoration-color .2s ease; }
-.colofon__base { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--linea); }
+.colofon__base { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--linea); display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 24px; }
+.idiomas { display: flex; flex-wrap: wrap; gap: 0 18px; }
+.idiomas a { display: inline-flex; align-items: center; min-height: 44px; color: var(--texto-2); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .3em; text-decoration-thickness: 1px; transition: text-decoration-color .2s ease; }
+.idiomas a[aria-current] { color: var(--tinta); text-decoration-color: currentColor; }
+@media (hover: hover) and (pointer: fine) { .idiomas a:hover { text-decoration-color: currentColor; } }
 @media (hover: hover) and (pointer: fine) { .colofon li a:hover { text-decoration-color: currentColor; } .tiendas a:hover { opacity: .82; } }
 @media (min-width: 700px) {
   .colofon__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
@@ -687,7 +697,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
 {"@type":"Organization","@id":"https://editstudio.app/#organization","name":"édit","legalName":"WITME ADVERTISING S.L.","url":"https://editstudio.app/","logo":{"@type":"ImageObject","url":"https://editstudio.app/assets/img/icon-512.png","width":512,"height":512},"sameAs":["https://www.instagram.com/editstudio.app/","https://www.linkedin.com/company/146595565/","https://apps.apple.com/es/developer/id6796045069","https://play.google.com/store/apps/developer?id=Witme"]},
-{"@type":"WebSite","@id":"https://editstudio.app/#website","url":"https://editstudio.app/","name":"édit","alternateName":["édit studio","editstudio.app"],"inLanguage":"es","publisher":{"@id":"https://editstudio.app/#organization"}},
+{"@type":"WebSite","@id":"https://editstudio.app/#website","url":"https://editstudio.app/","name":"édit","alternateName":["édit studio","editstudio.app"],"inLanguage":["es","en","fr","it","pt"],"publisher":{"@id":"https://editstudio.app/#organization"}},
 {"@type":"WebPage","@id":"https://editstudio.app/#webpage","url":"https://editstudio.app/","name":"édit: app de armario digital, looks y asesora de imagen","description":"Digitaliza tu armario con fotos, crea looks con tu ropa, pruébatelos sobre una foto tuya y elige tu asesora de imagen. Para iPhone y Android. Descarga gratis.","inLanguage":"es","dateModified":"2026-11-15T09:00:00+01:00","isPartOf":{"@id":"https://editstudio.app/#website"},"about":{"@id":"https://editstudio.app/#app"},"mainEntity":{"@id":"https://editstudio.app/#app"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://editstudio.app/assets/video/hero.jpg","width":720,"height":900},"video":{"@id":"https://editstudio.app/#pelicula"}},
 {"@type":"MobileApplication","@id":"https://editstudio.app/#app","name":"édit","alternateName":["édit: armario y estilo","édit: armario, estilo y looks"],"description":"Digitaliza tu armario con fotos, crea looks con tu ropa, pruébatelos sobre una foto tuya y elige tu asesora de imagen. Para iPhone y Android. Descarga gratis.","url":"https://editstudio.app/","image":"https://editstudio.app/assets/img/icon-512.png","screenshot":{"@type":"ImageObject","url":"https://editstudio.app/assets/img/app-mi-armario.webp","width":632,"height":860,"caption":"Pantalla «Mi armario» de la app édit en un móvil: buscador, filtros por tipo y una cuadrícula de zapatos."},"applicationCategory":"LifestyleApplication","operatingSystem":"iOS, Android","inLanguage":["es","en","fr","it","pt"],"featureList":["Armario: tu armario digital, foto a foto","Probador: probador virtual, sobre tu foto","Looks: outfits con la ropa que ya tienes","Tu semana: el «qué me pongo» de cada día","Color y estilo: tu colorimetría y tu arquetipo","Planes: viajes, eventos, temporadas y maleta","Asesora: una profesional, con tu armario real"],"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"installUrl":["https://apps.apple.com/es/app/id6796045067","https://play.google.com/store/apps/details?id=edit.studio.app"],"downloadUrl":["https://apps.apple.com/es/app/id6796045067","https://play.google.com/store/apps/details?id=edit.studio.app"],"sameAs":["https://apps.apple.com/es/app/id6796045067","https://play.google.com/store/apps/details?id=edit.studio.app"],"publisher":{"@id":"https://editstudio.app/#organization"}},
 {"@type":"VideoObject","@id":"https://editstudio.app/#pelicula","name":"édit en marcha: una foto tuya, tres looks","description":"Una foto tuya de cuerpo entero, subida en el móvil: «Súbela una vez». En un momento aparecen tus looks: «Tres looks. Sobre ti». «Así te queda»: la misma persona con dos looks distintos, guardados en Mis looks.","thumbnailUrl":"https://editstudio.app/assets/video/hero.jpg","contentUrl":"https://editstudio.app/assets/video/hero.mp4","uploadDate":"2026-11-10T09:00:00+01:00","duration":"PT7S","inLanguage":"es","publisher":{"@id":"https://editstudio.app/#organization"}},
@@ -1212,7 +1222,12 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
         </ul>
       </nav>
     </div>
-    <p class="colofon__base sc">© 2026 édit · WITME ADVERTISING S.L.</p>
+    <div class="colofon__base sc">
+      <p>© 2026 édit · WITME ADVERTISING S.L.</p>
+      <!-- idiomas:inicio (generado por tools/build.mjs; no editar a mano) -->
+      <nav class="idiomas" aria-label="Idioma"><a href="/" hreflang="es" lang="es" aria-current="page">Español</a> <a href="/en/" hreflang="en" lang="en">English</a> <a href="/fr/" hreflang="fr" lang="fr">Français</a> <a href="/it/" hreflang="it" lang="it">Italiano</a> <a href="/pt/" hreflang="pt" lang="pt">Português</a></nav>
+      <!-- idiomas:fin -->
+    </div>
   </div>
 </footer>
 
