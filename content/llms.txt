@@ -26,6 +26,10 @@ Datos básicos:
 
 - [édit profesionales](https://editstudio.app/#profesionales): el estudio digital, en web y en app, para asesoras de imagen, estilistas y personal shoppers. Reúne a las clientas y su seguimiento, la ficha de cada una con su colorimetría, su estilo y su armario, los looks y un dossier de estilismo en PDF para entregar.
 
+## Guías de édit
+
+{{paginas}}
+
 ## Preguntas frecuentes
 
 - [Preguntas frecuentes](https://editstudio.app/#preguntas): qué es édit, cómo se digitaliza el armario, si hace falta comprar ropa, cómo se crean los looks, cómo se prepara un viaje o un evento, cómo se trabaja con una asesora de imagen, qué es édit profesionales, cuánto cuesta y dónde se descarga.

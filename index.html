@@ -24,9 +24,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://editstudio.app/assets/img/og.png">
 <meta name="twitter:image:alt" content="édit, app de armario digital y estilismo. «Una foto tuya. Tres looks.», junto a un look de oficina visto sobre la foto de una mujer.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="assets/video/hero.jpg" fetchpriority="high" media="(prefers-reduced-motion: no-preference)">
 <script>
 /* «js»: hay JavaScript. «live»: además se admite movimiento y la pantalla da para el escenario pegado
@@ -41,6 +40,14 @@
 })(document.documentElement.classList, window);
 </script>
 <style>
+/* común:inicio · fuentes propias (Fraunces e Inter, licencia SIL OFL; solo latín y latín ampliado) */
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-italic-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-italic-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 600; font-display: swap; src: url(/assets/fonts/inter-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 600; font-display: swap; src: url(/assets/fonts/inter-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+/* común:fin */
 /* común:inicio — de aquí a la marca de cierre, estilos que también usan el blog y 404.html: tools/build.mjs los copia a assets/css/blog.css */
 /* ───────── Sistema: una sola hoja de variables ───────── */
 :root {
@@ -575,9 +582,12 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 @media (hover: hover) and (pointer: fine) { .colofon li a:hover { text-decoration-color: currentColor; } .tiendas a:hover { opacity: .82; } }
 @media (min-width: 700px) {
   .colofon__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-  .colofon__marca { grid-column: 1 / span 5; }
+  .colofon nav { grid-column: span 3; }
+}
+@media (min-width: 1100px) {
+  .colofon__marca { grid-column: 1 / span 4; }
   .colofon nav { grid-column: span 2; }
-  .colofon nav:first-of-type { grid-column: 7 / span 2; }
+  .colofon nav:first-of-type { grid-column: 5 / span 2; }
 }
 /* común:fin */
 
@@ -678,10 +688,10 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 {"@context":"https://schema.org","@graph":[
 {"@type":"Organization","@id":"https://editstudio.app/#organization","name":"édit","legalName":"WITME ADVERTISING S.L.","url":"https://editstudio.app/","logo":{"@type":"ImageObject","url":"https://editstudio.app/assets/img/icon-512.png","width":512,"height":512},"sameAs":["https://www.instagram.com/editstudio.app/","https://www.linkedin.com/company/146595565/","https://apps.apple.com/es/developer/id6796045069","https://play.google.com/store/apps/developer?id=Witme"]},
 {"@type":"WebSite","@id":"https://editstudio.app/#website","url":"https://editstudio.app/","name":"édit","alternateName":["édit studio","editstudio.app"],"inLanguage":"es","publisher":{"@id":"https://editstudio.app/#organization"}},
-{"@type":"WebPage","@id":"https://editstudio.app/#webpage","url":"https://editstudio.app/","name":"édit: app de armario digital, looks y asesora de imagen","description":"Digitaliza tu armario con fotos, crea looks con tu ropa, pruébatelos sobre una foto tuya y elige tu asesora de imagen. Para iPhone y Android. Descarga gratis.","inLanguage":"es","dateModified":"2026-11-10T09:00:00+01:00","isPartOf":{"@id":"https://editstudio.app/#website"},"about":{"@id":"https://editstudio.app/#app"},"mainEntity":{"@id":"https://editstudio.app/#app"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://editstudio.app/assets/video/hero.jpg","width":720,"height":900},"video":{"@id":"https://editstudio.app/#pelicula"}},
+{"@type":"WebPage","@id":"https://editstudio.app/#webpage","url":"https://editstudio.app/","name":"édit: app de armario digital, looks y asesora de imagen","description":"Digitaliza tu armario con fotos, crea looks con tu ropa, pruébatelos sobre una foto tuya y elige tu asesora de imagen. Para iPhone y Android. Descarga gratis.","inLanguage":"es","dateModified":"2026-11-15T09:00:00+01:00","isPartOf":{"@id":"https://editstudio.app/#website"},"about":{"@id":"https://editstudio.app/#app"},"mainEntity":{"@id":"https://editstudio.app/#app"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://editstudio.app/assets/video/hero.jpg","width":720,"height":900},"video":{"@id":"https://editstudio.app/#pelicula"}},
 {"@type":"MobileApplication","@id":"https://editstudio.app/#app","name":"édit","alternateName":["édit: armario y estilo","édit: armario, estilo y looks"],"description":"Digitaliza tu armario con fotos, crea looks con tu ropa, pruébatelos sobre una foto tuya y elige tu asesora de imagen. Para iPhone y Android. Descarga gratis.","url":"https://editstudio.app/","image":"https://editstudio.app/assets/img/icon-512.png","screenshot":{"@type":"ImageObject","url":"https://editstudio.app/assets/img/app-mi-armario.webp","width":632,"height":860,"caption":"Pantalla «Mi armario» de la app édit en un móvil: buscador, filtros por tipo y una cuadrícula de zapatos."},"applicationCategory":"LifestyleApplication","operatingSystem":"iOS, Android","inLanguage":["es","en","fr","it","pt"],"featureList":["Armario: tu armario digital, foto a foto","Probador: probador virtual, sobre tu foto","Looks: outfits con la ropa que ya tienes","Tu semana: el «qué me pongo» de cada día","Color y estilo: tu colorimetría y tu arquetipo","Planes: viajes, eventos, temporadas y maleta","Asesora: una profesional, con tu armario real"],"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"installUrl":["https://apps.apple.com/es/app/id6796045067","https://play.google.com/store/apps/details?id=edit.studio.app"],"downloadUrl":["https://apps.apple.com/es/app/id6796045067","https://play.google.com/store/apps/details?id=edit.studio.app"],"sameAs":["https://apps.apple.com/es/app/id6796045067","https://play.google.com/store/apps/details?id=edit.studio.app"],"publisher":{"@id":"https://editstudio.app/#organization"}},
 {"@type":"VideoObject","@id":"https://editstudio.app/#pelicula","name":"édit en marcha: una foto tuya, tres looks","description":"Una foto tuya de cuerpo entero, subida en el móvil: «Súbela una vez». En un momento aparecen tus looks: «Tres looks. Sobre ti». «Así te queda»: la misma persona con dos looks distintos, guardados en Mis looks.","thumbnailUrl":"https://editstudio.app/assets/video/hero.jpg","contentUrl":"https://editstudio.app/assets/video/hero.mp4","uploadDate":"2026-11-10T09:00:00+01:00","duration":"PT7S","inLanguage":"es","publisher":{"@id":"https://editstudio.app/#organization"}},
-{"@type":"FAQPage","@id":"https://editstudio.app/#preguntas","inLanguage":"es","isPartOf":{"@id":"https://editstudio.app/#webpage"},"mainEntity":[{"@type":"Question","name":"¿Qué es édit?","acceptedAnswer":{"@type":"Answer","text":"édit es una app de estilismo personal. Digitalizas tu armario, creas looks con la ropa que ya tienes y, si quieres, trabajas con una asesora de imagen. Todo en un mismo sitio, para vestirte con más intención y menos esfuerzo."}},{"@type":"Question","name":"¿Cómo digitalizo mi armario?","acceptedAnswer":{"@type":"Answer","text":"Sube una foto tuya de cuerpo entero y édit saca las prendas que llevas, o haz una foto a cada prenda. édit la reconoce y la organiza por tipo, color y temporada, y tú revisas la ficha antes de guardarla. Con unas pocas prendas ya puedes empezar a combinar."}},{"@type":"Question","name":"¿Tengo que comprar ropa nueva?","acceptedAnswer":{"@type":"Answer","text":"No. édit empieza por lo que ya tienes: te ayuda a redescubrir prendas olvidadas y a encontrar combinaciones nuevas. Y cuando quieras comprar, te ayuda a ver qué falta de verdad en tu armario."}},{"@type":"Question","name":"¿Cómo se crean los looks?","acceptedAnswer":{"@type":"Answer","text":"édit te propone combinaciones con tus propias prendas, pensadas para tu semana, el clima y cómo quieres sentirte. También puedes montar tus looks, guardarlos y repetirlos cuando quieras."}},{"@type":"Question","name":"¿Puedo preparar un viaje o un evento?","acceptedAnswer":{"@type":"Answer","text":"Sí. Con los planes organizas un viaje, un evento o una temporada: eliges los looks de cada día y marcas lo que ya has metido en la maleta."}},{"@type":"Question","name":"¿Cómo trabaja conmigo una asesora de imagen?","acceptedAnswer":{"@type":"Answer","text":"Puedes explorar asesoras de imagen profesionales, ver sus looks y elegir la que encaja contigo. Ella trabaja sobre tu armario real y te envía sus propuestas dentro de la app. La tecnología amplifica su criterio; no lo sustituye."}},{"@type":"Question","name":"¿Qué es édit profesionales?","acceptedAnswer":{"@type":"Answer","text":"Es el estudio digital para asesoras de imagen, estilistas y personal shoppers. Reúne la ficha y el armario de cada clienta, los looks, las cápsulas y las propuestas, para trabajar de forma más visual y organizada."}},{"@type":"Question","name":"¿Cuánto cuesta édit?","acceptedAnswer":{"@type":"Answer","text":"Descargar édit es gratis. Algunas funciones forman parte de la suscripción Premium, que se contrata desde la propia app: allí verás el precio y las condiciones antes de confirmar."}},{"@type":"Question","name":"¿Dónde puedo descargar édit?","acceptedAnswer":{"@type":"Answer","text":"édit está disponible para iPhone en el App Store y para Android en Google Play."}}]}
+{"@type":"FAQPage","@id":"https://editstudio.app/#preguntas","inLanguage":"es","isPartOf":{"@id":"https://editstudio.app/#webpage"},"mainEntity":[{"@type":"Question","name":"¿Qué es édit?","acceptedAnswer":{"@type":"Answer","text":"édit es una app de estilismo personal. Digitalizas tu armario, creas looks con la ropa que ya tienes y, si quieres, trabajas con una asesora de imagen. Todo en un mismo sitio, para vestirte con más intención y menos esfuerzo."}},{"@type":"Question","name":"¿Cómo digitalizo mi armario?","acceptedAnswer":{"@type":"Answer","text":"Sube una foto tuya de cuerpo entero y édit saca las prendas que llevas, o haz una foto a cada prenda. édit la reconoce y la organiza por tipo, color y temporada, y tú revisas la ficha antes de guardarla. Con unas pocas prendas ya puedes empezar a combinar. Más en el armario digital de édit."}},{"@type":"Question","name":"¿Tengo que comprar ropa nueva?","acceptedAnswer":{"@type":"Answer","text":"No. édit empieza por lo que ya tienes: te ayuda a redescubrir prendas olvidadas y a encontrar combinaciones nuevas. Y cuando quieras comprar, te ayuda a ver qué falta de verdad en tu armario."}},{"@type":"Question","name":"¿Cómo se crean los looks?","acceptedAnswer":{"@type":"Answer","text":"édit te propone combinaciones con tus propias prendas, pensadas para tu semana, el clima y cómo quieres sentirte. También puedes montar tus looks, guardarlos y repetirlos cuando quieras."}},{"@type":"Question","name":"¿Puedo preparar un viaje o un evento?","acceptedAnswer":{"@type":"Answer","text":"Sí. Con los planes organizas un viaje, un evento o una temporada: eliges los looks de cada día y marcas lo que ya has metido en la maleta."}},{"@type":"Question","name":"¿Cómo trabaja conmigo una asesora de imagen?","acceptedAnswer":{"@type":"Answer","text":"Puedes explorar asesoras de imagen profesionales, ver sus looks y elegir la que encaja contigo. Ella trabaja sobre tu armario real y te envía sus propuestas dentro de la app. La tecnología amplifica su criterio; no lo sustituye. Más en asesora de imagen online."}},{"@type":"Question","name":"¿Qué es édit profesionales?","acceptedAnswer":{"@type":"Answer","text":"Es el estudio digital para asesoras de imagen, estilistas y personal shoppers. Reúne la ficha y el armario de cada clienta, los looks, las cápsulas y las propuestas, para trabajar de forma más visual y organizada. Más en édit profesionales."}},{"@type":"Question","name":"¿Cuánto cuesta édit?","acceptedAnswer":{"@type":"Answer","text":"Descargar édit es gratis. Algunas funciones forman parte de la suscripción Premium, que se contrata desde la propia app: allí verás el precio y las condiciones antes de confirmar."}},{"@type":"Question","name":"¿Dónde puedo descargar édit?","acceptedAnswer":{"@type":"Answer","text":"édit está disponible para iPhone en el App Store y para Android en Google Play."}}]}
 ]}
 </script>
 <!-- datos-estructurados:fin -->
@@ -1076,7 +1086,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 
       <div class="pro__cta">
         <p>Más clientas, mismo criterio.<br> Sin perder tu sello.</p>
-        <a class="btn btn--claro" href="https://dashboard.editstudio.app/login">Descubre édit Pro</a>
+        <a class="btn btn--claro" href="/profesionales/">Descubre édit Pro</a>
       </div>
     </div>
   </section>
@@ -1092,7 +1102,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
         </details>
         <details>
           <summary><h3>¿Cómo digitalizo mi armario?</h3></summary>
-          <p class="faq-a">Sube una foto tuya de cuerpo entero y édit saca las prendas que llevas, o haz una foto a cada prenda. édit la reconoce y la organiza por tipo, color y temporada, y tú revisas la ficha antes de guardarla. Con unas pocas prendas ya puedes empezar a combinar.</p>
+          <p class="faq-a">Sube una foto tuya de cuerpo entero y édit saca las prendas que llevas, o haz una foto a cada prenda. édit la reconoce y la organiza por tipo, color y temporada, y tú revisas la ficha antes de guardarla. Con unas pocas prendas ya puedes empezar a combinar. Más en <a href="/armario-digital/">el armario digital de édit</a>.</p>
         </details>
         <details>
           <summary><h3>¿Tengo que comprar ropa nueva?</h3></summary>
@@ -1108,11 +1118,11 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
         </details>
         <details>
           <summary><h3>¿Cómo trabaja conmigo una asesora de imagen?</h3></summary>
-          <p class="faq-a">Puedes explorar asesoras de imagen profesionales, ver sus looks y elegir la que encaja contigo. Ella trabaja sobre tu armario real y te envía sus propuestas dentro de la app. La tecnología amplifica su criterio; no lo sustituye.</p>
+          <p class="faq-a">Puedes explorar asesoras de imagen profesionales, ver sus looks y elegir la que encaja contigo. Ella trabaja sobre tu armario real y te envía sus propuestas dentro de la app. La tecnología amplifica su criterio; no lo sustituye. Más en <a href="/asesora-de-imagen-online/">asesora de imagen online</a>.</p>
         </details>
         <details>
           <summary><h3>¿Qué es édit profesionales?</h3></summary>
-          <p class="faq-a">Es el estudio digital para asesoras de imagen, estilistas y <span lang="en">personal shoppers</span>. Reúne la ficha y el armario de cada clienta, los looks, las cápsulas y las propuestas, para trabajar de forma más visual y organizada.</p>
+          <p class="faq-a">Es el estudio digital para asesoras de imagen, estilistas y <span lang="en">personal shoppers</span>. Reúne la ficha y el armario de cada clienta, los looks, las cápsulas y las propuestas, para trabajar de forma más visual y organizada. Más en <a href="/profesionales/">édit profesionales</a>.</p>
         </details>
         <details>
           <summary><h3>¿Cuánto cuesta édit?</h3></summary>
@@ -1135,9 +1145,9 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
       </header>
       <!-- blog:inicio (generado por tools/build.mjs a partir de content/blog; no editar a mano) -->
       <ol class="notas">
-        <li class="nota"><a href="/blog/como-digitalizar-tu-armario/"><span class="sc">01</span><h3 class="h4">Cómo digitalizar tu armario paso a paso</h3><p>Guía práctica para pasar tu ropa al móvil sin agobios: por dónde empezar, cómo hacer las fotos y qué hacer con cada prenda para&nbsp;sacarle&nbsp;partido.</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
-        <li class="nota"><a href="/blog/crear-looks-con-la-ropa-que-ya-tienes/"><span class="sc">02</span><h3 class="h4">¿Qué me pongo? Cómo crear looks con la ropa que ya tienes</h3><p>Un método sencillo para combinar lo que ya está en tu armario, guardar los looks que funcionan y dejar resuelto el de mañana sin&nbsp;comprar&nbsp;nada.</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
-        <li class="nota"><a href="/blog/hacer-la-maleta-por-looks/"><span class="sc">03</span><h3 class="h4">Cómo hacer la maleta por looks: del plan a la maleta</h3><p>Deja de meter prendas sueltas. Planifica el viaje por días, decide los looks antes de salir y lleva solo lo que te vas a poner, sin «por&nbsp;si&nbsp;acaso».</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
+        <li class="nota"><a href="/blog/armario-capsula-otono-invierno/"><span class="sc">01</span><h3 class="h4">Armario cápsula otoño-invierno con lo que ya tienes</h3><p>Cómo montar un armario cápsula de otoño-invierno sin comprar de cero. Cuántas prendas, cuáles elegir, cómo combinarlas y qué hacer con el resto de&nbsp;tu&nbsp;ropa.</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
+        <li class="nota"><a href="/blog/colorimetria-12-estaciones/"><span class="sc">02</span><h3 class="h4">Qué es la colorimetría: las 12 estaciones explicadas</h3><p>Qué estudia la colorimetría, cómo se pasa de cuatro a doce estaciones, qué rasgos definen cada una y cómo usar tu estación con la ropa que&nbsp;ya&nbsp;tienes.</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
+        <li class="nota"><a href="/blog/como-elegir-asesora-de-imagen/"><span class="sc">03</span><h3 class="h4">Cómo elegir asesora de imagen, también online</h3><p>Qué hace una asesora de imagen, qué preguntarle antes de empezar y en qué fijarte para elegir a la profesional que encaja contigo, en persona o&nbsp;a&nbsp;distancia.</p><svg class="go" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"/></svg></a></li>
       </ol>
       <!-- blog:fin -->
     </div>
@@ -1173,6 +1183,16 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
           <li><a href="#profesionales">Profesionales</a></li>
           <li><a href="#preguntas">Preguntas</a></li>
           <li><a href="#descargar">Descargar</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Descubre">
+        <p class="sc" aria-hidden="true">Descubre</p>
+        <ul>
+          <li><a href="/armario-digital/">Armario digital</a></li>
+          <li><a href="/probador-virtual/">Probador virtual</a></li>
+          <li><a href="/colorimetria/">Colorimetría</a></li>
+          <li><a href="/asesora-de-imagen-online/">Asesora de imagen</a></li>
+          <li><a href="/profesionales/">Para profesionales</a></li>
         </ul>
       </nav>
       <nav aria-label="Fuera de página">

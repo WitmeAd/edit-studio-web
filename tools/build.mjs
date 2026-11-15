@@ -11,8 +11,9 @@
 //   4. sitemap.xml
 //   5. llms.txt, a partir de content/llms.txt
 //   6. 404.html, la página de «no encontrada»
+//   7. Páginas temáticas: content/paginas/*.md  ->  <slug>/index.html (armario digital, probador, profesionales…)
 //
-// El blog y 404.html toman de la portada la barra, el colofón, las insignias de tienda, la hoja de fuentes y el
+// El blog y 404.html toman de la portada la barra, el colofón, las insignias de tienda, la precarga de las fuentes y el
 // script de «Descargar»: se cambian en index.html y aquí se copian.
 //
 // No borra nada: si quitas un artículo, borra tú su carpeta en blog/ (el script avisa).
@@ -30,7 +31,7 @@ const SITE = {
   name: 'édit',
   // Fecha del último cambio de contenido de la portada (AAAA-MM-DD). Se actualiza a mano el día en que se publica; sale en
   // sitemap.xml, en llms.txt y en los datos estructurados. tools/check.mjs avisa si index.html ha cambiado después.
-  homeUpdated: '2026-11-10',
+  homeUpdated: '2026-11-15',
   // Otros nombres del sitio, por si el buscador no elige «édit» como nombre: el descriptivo y el dominio.
   alternateNames: ['édit studio', 'editstudio.app'],
   legalName: 'WITME ADVERTISING S.L.',
@@ -209,8 +210,9 @@ function homeParts() {
   const html = read('index.html');
   const where = 'index.html';
   const fromRoot = (s) => s.replace(/href="#top"/g, 'href="/"').replace(/href="#/g, 'href="/#').replace(/(src|srcset)="assets\//g, '$1="/assets/');
-  const fonts = (/<link href="(https:\/\/fonts\.googleapis\.com\/[^"]+)" rel="stylesheet">/.exec(html) || [])[1];
-  if (!fonts) fail(`${where}: no encuentro la hoja de fuentes`);
+  // Fuentes propias: las mismas precargas de la portada (las @font-face viajan en los estilos comunes).
+  const fonts = [...html.matchAll(/<link rel="preload" href="([^"]+\.woff2)" as="font" type="font\/woff2" crossorigin>/g)].map((m) => m[1]);
+  if (!fonts.length) fail(`${where}: no encuentro la precarga de las fuentes (<link rel="preload" … as="font">)`);
   const NAV = '<header class="nav" id="nav">', FOOTER = '<footer class="colofon">', BADGES = '<div class="tiendas">';
   const nav = fromRoot(NAV + between(html, NAV, '</header>', where) + '</header>');
   const foot = fromRoot(FOOTER + between(html, FOOTER, '</footer>', where) + '</footer>')
@@ -365,7 +367,7 @@ function markdown(src, where) {
   const lines = src.replace(/\r\n?/g, '\n').split('\n');
   const out = [];
   const ids = new Set();
-  const isBlock = (l) => /^(#{1,6}\s|>\s?|[-*]\s+|\d+\.\s+|---+\s*$|!\[)/.test(l);
+  const isBlock = (l) => /^(#{1,6}\s|>\s?|[-*]\s+|\d+\.\s+|---+\s*$|!\[|\|)/.test(l);
   let i = 0;
   while (i < lines.length) {
     const l = lines[i];
@@ -382,6 +384,15 @@ function markdown(src, where) {
       i++; continue;
     }
     if (/^---+\s*$/.test(l)) { out.push('<hr>'); i++; continue; }
+    // Tabla: líneas que empiezan por «|». La primera es la cabecera; la de guiones que la sigue se ignora.
+    if (/^\|/.test(l)) {
+      const rows = [];
+      while (i < lines.length && /^\|/.test(lines[i])) rows.push(lines[i++]);
+      const cells = (r) => r.trim().replace(/^\||\|$/g, '').split('|').map((c) => inline(c.trim(), where));
+      const [hd, ...rest] = rows.filter((r) => !/^\|[\s:|-]+\|?\s*$/.test(r));
+      out.push(`<div class="tabla"><table>\n<thead><tr>${cells(hd).map((c) => `<th scope="col">${c}</th>`).join('')}</tr></thead>\n<tbody>\n${rest.map((r) => { const [first, ...o] = cells(r); return `<tr><th scope="row">${first}</th>${o.map((c) => `<td>${c}</td>`).join('')}</tr>`; }).join('\n')}\n</tbody>\n</table></div>`);
+      continue;
+    }
     if ((m = /^!\[([^\]]*)\]\(([^)\s]+)\)\s*$/.exec(l))) {
       const srcUrl = safeUrl(m[2], where);
       if (!m[1].trim()) fail(`${where}: la imagen ${m[2]} necesita un texto alternativo: ![descripción](ruta)`);
@@ -413,30 +424,38 @@ function markdown(src, where) {
   return out.join('\n');
 }
 
+// Lee un .md con cabecera entre líneas ---. Devuelve null si es un borrador.
+function parseMd(dirRel, file) {
+  const where = dirRel + '/' + file;
+  const raw = readFileSync(join(ROOT, dirRel, file), 'utf8').replace(/\r\n?/g, '\n');
+  const m = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(raw);
+  if (!m) fail(`${where}: falta la cabecera entre líneas ---`);
+  const meta = {};
+  for (const line of m[1].split('\n')) {
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    const k = /^([a-z_]+):\s*(.*)$/.exec(line);
+    if (!k) fail(`${where}: línea de cabecera no válida «${line}»`);
+    meta[k[1]] = k[2].trim().replace(/^"(.*)"$/, '$1');
+  }
+  for (const req of ['titulo', 'descripcion', 'fecha']) if (!meta[req]) fail(`${where}: falta «${req}:» en la cabecera`);
+  if (meta.borrador === 'si' || meta.borrador === 'sí') return null;
+  const slug = meta.slug || slugify(file.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, ''));
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) fail(`${where}: slug no válido «${slug}»`);
+  fechaLarga(meta.fecha);
+  if (meta.actualizado) fechaLarga(meta.actualizado);
+  return { where, meta, body: m[2], slug };
+}
+
 function loadPosts() {
   const dir = join(ROOT, 'content/blog');
   if (!existsSync(dir)) return [];
   const posts = [];
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
-    const where = 'content/blog/' + file;
-    const raw = readFileSync(join(dir, file), 'utf8').replace(/\r\n?/g, '\n');
-    const m = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(raw);
-    if (!m) fail(`${where}: falta la cabecera entre líneas ---`);
-    const meta = {};
-    for (const line of m[1].split('\n')) {
-      if (!line.trim() || line.trim().startsWith('#')) continue;
-      const k = /^([a-z_]+):\s*(.*)$/.exec(line);
-      if (!k) fail(`${where}: línea de cabecera no válida «${line}»`);
-      meta[k[1]] = k[2].trim().replace(/^"(.*)"$/, '$1');
-    }
-    for (const req of ['titulo', 'descripcion', 'fecha']) if (!meta[req]) fail(`${where}: falta «${req}:» en la cabecera`);
-    if (meta.borrador === 'si' || meta.borrador === 'sí') continue;
-    const slug = meta.slug || slugify(file.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, ''));
-    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) fail(`${where}: slug no válido «${slug}»`);
+    const parsed = parseMd('content/blog', file);
+    if (!parsed) continue;
+    const { where, meta, slug } = parsed;
     if (posts.some((p) => p.slug === slug)) fail(`${where}: slug repetido «${slug}»`);
-    fechaLarga(meta.fecha);
-    if (meta.actualizado) fechaLarga(meta.actualizado);
-    const body = m[2];
+    const body = parsed.body;
     const words = mdPlain(body).split(' ').filter(Boolean).length + (meta.resumen ? mdPlain(meta.resumen).split(' ').length : 0);
     posts.push({
       slug,
@@ -493,9 +512,7 @@ ${seo}
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-${share}<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="${parts.fonts}" rel="stylesheet">
+${share}${parts.fonts.map((f) => `<link rel="preload" href="${f}" as="font" type="font/woff2" crossorigin>`).join('\n')}
 <link rel="stylesheet" href="/assets/css/blog.css">
 ${noindex ? '' : jsonLd(ld) + '\n'}</head>
 <body id="top">
@@ -635,6 +652,141 @@ function buildBlog(posts) {
   }
 }
 
+// ───────────────────────────── 3b. Páginas temáticas ─────────────────────────────
+// content/paginas/*.md  ->  <slug>/index.html (en la raíz: /armario-digital/, /profesionales/…).
+// Cabecera: titulo (el <h1>), descripcion, fecha, y opcionales: titulo_seo (el <title>, si no, «titulo · édit»), rotulo
+// (versalitas sobre el <h1>), migas (nombre corto en las migas, el colofón y las listas), resumen, actualizado, orden,
+// tipo (producto | comparativa | profesionales), video (nombre de un clip de assets/video) con video_alt, y cta (app | pro).
+// Si el texto lleva un apartado «## Preguntas frecuentes», sus «###» y sus respuestas salen como FAQPage.
+const RESERVED = new Set(['blog', 'assets', 'new', 'content', 'tools']);
+const FAQ_HEAD = /^## Preguntas frecuentes\s*$/m;
+
+export function faqFromMarkdown(body) {
+  const at = body.search(FAQ_HEAD);
+  if (at === -1) return [];
+  const rest = body.slice(at).replace(FAQ_HEAD, '');
+  const end = rest.search(/^## /m);
+  const block = end === -1 ? rest : rest.slice(0, end);
+  return [...block.matchAll(/^### (.+)\n+([\s\S]*?)(?=^### |(?![\s\S]))/gm)].map((m) => ({ q: mdPlain(m[1]), a: mdPlain(m[2]) }));
+}
+
+function loadPages() {
+  const dir = join(ROOT, 'content/paginas');
+  if (!existsSync(dir)) return [];
+  const pages = [];
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) {
+    const parsed = parseMd('content/paginas', file);
+    if (!parsed) continue;
+    const { where, meta, body, slug } = parsed;
+    if (RESERVED.has(slug)) fail(`${where}: «${slug}» es una carpeta reservada`);
+    if (pages.some((p) => p.slug === slug)) fail(`${where}: slug repetido «${slug}»`);
+    const tipo = meta.tipo || 'producto';
+    if (!['producto', 'comparativa', 'profesionales'].includes(tipo)) fail(`${where}: tipo no válido «${tipo}»`);
+    let video = null;
+    if (meta.video) {
+      const base = `/assets/video/${meta.video}`;
+      for (const f of [base + '.mp4', base + '.jpg']) if (!existsSync(join(ROOT, f))) fail(`${where}: no existe ${f}`);
+      if (!meta.video_alt || meta.video_alt.length < 40) fail(`${where}: el vídeo necesita video_alt (qué se ve, 40 caracteres o más)`);
+      const size = imageSize(join(ROOT, base + '.jpg'));
+      video = { file: base + '.mp4', poster: base + '.jpg', alt: meta.video_alt, ...size };
+    }
+    pages.push({
+      slug,
+      where,
+      tipo,
+      title: meta.titulo,
+      seoTitle: meta.titulo_seo || `${meta.titulo} · édit`,
+      short: meta.migas || meta.titulo,
+      rotulo: meta.rotulo || '',
+      description: meta.descripcion,
+      summary: meta.resumen || '',
+      date: meta.fecha,
+      updated: meta.actualizado && meta.actualizado > meta.fecha ? meta.actualizado : meta.fecha,
+      order: Number(meta.orden || 99),
+      cta: meta.cta || (tipo === 'profesionales' ? 'pro' : 'app'),
+      video,
+      faq: faqFromMarkdown(body),
+      html: markdown(body, where),
+      path: `/${slug}/`,
+    });
+  }
+  return pages.sort((a, b) => a.order - b.order || (a.slug < b.slug ? -1 : 1));
+}
+
+// Cierre para profesionales: alta como asesora en la web, y la app en las tiendas.
+function ctaPro() {
+  return `<aside class="cierre cierre--pro" aria-labelledby="t-cierre">
+  <div class="cierre__in">
+    <h2 class="h2" id="t-cierre">Tu estudio, en un <em>sitio</em>.</h2>
+    <p>Crea tu cuenta de asesora en la web y trabaja desde el ordenador o desde la app.</p>
+    <p class="cierre__btns"><a class="btn" href="https://dashboard.editstudio.app/signup?role=stylist">Crear mi cuenta de asesora</a> <a class="link" href="https://dashboard.editstudio.app/login">Ya tengo cuenta</a></p>
+    ${homeParts().badges.replace(/\n {6}/g, '\n    ')}
+  </div>
+</aside>`;
+}
+
+function renderPage(p, pages, posts) {
+  const webpageId = abs(p.path) + '#webpage';
+  const ld = [
+    {
+      '@type': 'WebPage',
+      '@id': webpageId,
+      url: abs(p.path),
+      name: p.title,
+      headline: p.title,
+      description: p.description,
+      inLanguage: 'es',
+      datePublished: fechaHora(p.date),
+      dateModified: fechaHora(p.updated),
+      isPartOf: { '@type': 'WebSite', '@id': WEB_ID, url: SITE.url + '/', name: SITE.name },
+      about: { '@type': 'MobileApplication', '@id': APP_ID, name: SITE.name, url: SITE.url + '/', applicationCategory: 'LifestyleApplication', operatingSystem: 'iOS, Android' },
+      publisher: { '@id': ORG_ID },
+      ...(p.video ? { video: { '@type': 'VideoObject', name: p.title, description: p.video.alt, thumbnailUrl: abs(p.video.poster), contentUrl: abs(p.video.file), uploadDate: fechaHora(p.date), inLanguage: 'es', publisher: { '@id': ORG_ID } } } : {}),
+    },
+    crumbs([['Inicio', '/'], [p.short, p.path]]),
+    orgNode(),
+  ];
+  if (p.faq.length) {
+    ld.push({
+      '@type': 'FAQPage',
+      '@id': abs(p.path) + '#preguntas-frecuentes',
+      inLanguage: 'es',
+      isPartOf: { '@id': webpageId },
+      mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    });
+  }
+  const others = pages.filter((o) => o.slug !== p.slug);
+  const film = p.video
+    ? `<figure class="pagina__film"><video src="${p.video.file}" poster="${p.video.poster}" width="${p.video.width}" height="${p.video.height}" muted playsinline loop controls preload="none" aria-label="Vídeo sin sonido. ${esc(p.video.alt)}"></video></figure>\n`
+    : '';
+  return head({ title: p.seoTitle, description: p.description, path: p.path, type: 'website', image: SITE.ogImage, ld }) + `
+<main id="contenido" tabindex="-1">
+<article class="post pagina calma">
+  <header class="post__cab lectura">
+    <nav class="migas sc" aria-label="Estás en"><a href="/">Inicio</a> <span aria-hidden="true">/</span> <span>${esc(p.short)}</span></nav>
+${p.rotulo ? `    <p class="sc rotulo">${esc(p.rotulo)}</p>\n` : ''}    <h1>${inline(p.title, p.where)}</h1>
+    <p class="post-meta sc">Actualizado el <time datetime="${p.updated}">${fechaLarga(p.updated)}</time></p>
+  </header>
+  <div class="post__body lectura">
+${p.summary ? `<p class="post__resumen"><strong class="sc">En breve.</strong> ${inline(p.summary, p.where)}</p>\n` : ''}${film}${p.html}
+  </div>
+</article>
+${p.cta === 'pro' ? ctaPro() : cta()}
+<section class="section calma mas" aria-labelledby="t-mas">
+  <div class="wrap">
+    <header class="cab"><h2 class="h2" id="t-mas">Más sobre <em>édit</em>.</h2></header>
+${notas([...others, ...posts.slice(0, 2)].map((o) => ({ ...o, title: o.short || o.title })), { tag: 'h3', meta: (o, i) => dos(i + 1), indent: '    ' })}
+  </div>
+</section>
+</main>
+
+` + foot();
+}
+
+function buildPages(pages, posts) {
+  for (const p of pages) write(`${p.slug}/index.html`, renderPage(p, pages, posts));
+}
+
 // ───────────────────────────── 6. 404.html ─────────────────────────────
 // No va en sitemap.xml. Para que el alojamiento la sirva hay que activarlo en su configuración.
 function build404() {
@@ -651,9 +803,10 @@ function build404() {
 }
 
 // ───────────────────────────── 4. sitemap.xml ─────────────────────────────
-function buildSitemap(posts) {
+function buildSitemap(posts, pages = []) {
   fechaLarga(SITE.homeUpdated);
   const urls = [{ loc: '/', lastmod: SITE.homeUpdated }];
+  for (const p of pages) urls.push({ loc: p.path, lastmod: p.updated });
   if (posts.length) {
     urls.push({ loc: '/blog/', lastmod: posts.map((p) => p.updated).sort().pop() });
     for (const p of posts) urls.push({ loc: p.path, lastmod: p.updated });
@@ -665,7 +818,7 @@ function buildSitemap(posts) {
 }
 
 // ───────────────────────────── 5. llms.txt ─────────────────────────────
-function buildLlms(posts) {
+function buildLlms(posts, pages = []) {
   if (!existsSync(join(ROOT, 'content/llms.txt'))) return;
   const tpl = read('content/llms.txt');
   if (!tpl.includes('{{blog}}')) fail('content/llms.txt: falta la marca {{blog}}');
@@ -673,17 +826,21 @@ function buildLlms(posts) {
     ? posts.map((p) => `- [${p.title}](${abs(p.path)}): ${p.description}`).join('\n')
     : '- Todavía no hay artículos publicados.';
   // {{actualizado}} (opcional) es la fecha del último cambio de la portada, la misma del sitemap.
-  write('llms.txt', tpl.replace('{{blog}}', list).replace('{{actualizado}}', fechaLarga(SITE.homeUpdated)));
+  const guides = pages.map((p) => `- [${p.short}](${abs(p.path)}): ${p.description}`).join('\n');
+  if (pages.length && !tpl.includes('{{paginas}}')) fail('content/llms.txt: falta la marca {{paginas}}');
+  write('llms.txt', tpl.replace('{{blog}}', list).replace('{{paginas}}', guides).replace('{{actualizado}}', fechaLarga(SITE.homeUpdated)));
 }
 
 // ───────────────────────────── Ejecución ─────────────────────────────
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const posts = loadPosts();
+  const pages = loadPages();
   buildHome(posts);
   buildCss();
   buildBlog(posts);
-  buildSitemap(posts);
-  buildLlms(posts);
+  buildPages(pages, posts);
+  buildSitemap(posts, pages);
+  buildLlms(posts, pages);
   build404();
   if (CHECK) {
     if (changed.length) { console.error('Sin generar o desactualizado: ' + changed.join(', ') + '\nEjecuta: node tools/build.mjs'); process.exit(1); }

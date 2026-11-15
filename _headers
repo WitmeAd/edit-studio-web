@@ -1,0 +1,16 @@
+# Cabeceras HTTP del sitio (las aplica el alojamiento al publicar la carpeta como recursos estáticos de un Worker).
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Las fuentes no cambian nunca de contenido: si se sustituyen, cambia el nombre del archivo.
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Vídeos e imágenes: un día en caché y, mientras se revalida, se sirve la copia guardada.
+/assets/video/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/assets/img/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

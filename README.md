@@ -55,6 +55,10 @@ Comportamiento que hay que conservar al tocar la página:
 | `blog/` | Páginas del blog | No, las genera `tools/build.mjs` |
 | `sitemap.xml`, `llms.txt` | Mapa del sitio y resumen para asistentes | No, los genera `tools/build.mjs` |
 | `404.html` | Página de «no encontrada» | No, la genera `tools/build.mjs` |
+| `content/paginas/*.md` | Páginas temáticas (armario digital, probador virtual, colorimetría, asesora de imagen, profesionales y comparativas) | Sí |
+| `<slug>/index.html` | Páginas temáticas generadas (`armario-digital/`, `profesionales/`…) | No, las genera `tools/build.mjs` |
+| `assets/fonts/` | Fraunces e Inter (licencia SIL OFL), servidas desde la propia web | Sí, pero si cambia una fuente, cambia también el nombre del archivo |
+| `_headers` | Cabeceras HTTP: seguridad y caché de fuentes, vídeos e imágenes | Sí |
 | `tools/build.mjs` | Generador | |
 | `tools/check.mjs` | Comprobaciones antes de publicar | |
 | `tools/og.html` | Origen de la imagen para compartir | Sí |
@@ -139,6 +143,30 @@ Los tres artículos más recientes salen solos en el bloque «Del blog» de la p
 
 Para retirar un artículo, borra su `.md` y su carpeta en `blog/` (el generador avisa de las carpetas que sobran).
 
+## Publicar una página temática
+
+Son páginas fijas en la raíz, una por búsqueda importante (`/armario-digital/`, `/probador-virtual/`, `/colorimetria/`, `/asesora-de-imagen-online/`, `/profesionales/`, `/alternativas-a-whering/`, `/edit-vs-acloset/`). Se escriben como los artículos, en `content/paginas/<slug>.md`:
+
+```
+---
+titulo: Tu armario digital, en el móvil y en orden      (el <h1>)
+titulo_seo: "App de armario digital: … · édit"           (opcional: el <title>)
+migas: Armario digital                                   (nombre corto: migas, listas y llms.txt)
+rotulo: App de armario digital                           (opcional: versalitas sobre el <h1>)
+descripcion: Entre 70 y 155 caracteres.
+fecha: 2026-11-15
+orden: 1                                                 (orden en «Más sobre édit»)
+tipo: producto | comparativa | profesionales
+video: armario-foto                                      (opcional: un clip de assets/video)
+video_alt: Lo que se ve en el vídeo, como el aria-label de la portada.
+resumen: La respuesta corta, en un recuadro al principio.
+---
+```
+
+Un apartado `## Preguntas frecuentes` con sus `###` sale también como FAQPage en los datos estructurados. Las tablas se escriben con `|`. Las páginas de tipo `profesionales` cierran con el alta de asesora (`/signup?role=stylist`) en vez de con las tiendas. Las comparativas citan la fecha en que se revisaron las fichas de la competencia: revísalas cada pocos meses.
+
+El colofón de la portada enlaza a las páginas de producto (columna «Descubre»); se copia solo a todas las páginas.
+
 ## Buscadores y asistentes
 
 - `robots.txt` permite todo salvo `content/`, `tools/` y `README.md`, y declara el sitemap. Cloudflare añade delante sus propias reglas: el acceso de los robots de los asistentes y de entrenamiento se decide en su panel (Security → Settings → Bot traffic), no aquí. Si allí se bloquean, los asistentes no pueden leer ni citar la web, diga lo que diga este archivo.
@@ -171,4 +199,4 @@ Para retirar un artículo, borra su `.md` y su carpeta en `blog/` (el generador 
 
 ## Ver en local
 
-Sirve la carpeta con cualquier servidor estático (por ejemplo `python3 -m http.server 8000`) y visita la raíz. El blog y `404.html` usan rutas desde la raíz (`/assets/…`), así que hay que verlos con servidor, no abriendo el archivo. El idioma de la página es español.
+Sirve la carpeta con cualquier servidor estático (las fuentes y las páginas temáticas usan rutas desde la raíz) (por ejemplo `python3 -m http.server 8000`) y visita la raíz. El blog y `404.html` usan rutas desde la raíz (`/assets/…`), así que hay que verlos con servidor, no abriendo el archivo. El idioma de la página es español.

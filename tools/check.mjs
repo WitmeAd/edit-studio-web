@@ -69,6 +69,15 @@ try {
 // 404.html se sirve en cualquier dirección que no exista: lleva noindex y no lleva descripción, canonical,
 // etiquetas para compartir ni datos estructurados.
 const NOT_FOUND = '404.html';
+// Páginas temáticas (content/paginas/*.md -> <slug>/index.html): el slug sale de la cabecera o del nombre del archivo.
+const PAGE_SLUGS = existsSync(join(ROOT, 'content/paginas'))
+  ? readdirSync(join(ROOT, 'content/paginas')).filter((f) => f.endsWith('.md')).sort().map((f) => {
+    const src = readFileSync(join(ROOT, 'content/paginas', f), 'utf8');
+    if (/^borrador:\s*s[ií]\s*$/m.test(src)) return null;
+    return ((/^slug:\s*(\S+)/m.exec(src) || [])[1]) || f.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '');
+  }).filter(Boolean)
+  : [];
+const isPageTematica = (page) => PAGE_SLUGS.some((s) => page === s + '/index.html');
 if (!existsSync(join(ROOT, NOT_FOUND))) err('falta 404.html (lo genera tools/build.mjs)');
 function pages() {
   const out = ['index.html'];
@@ -82,6 +91,7 @@ function pages() {
     }
   };
   walk('blog');
+  for (const slug of PAGE_SLUGS) if (existsSync(join(ROOT, slug, 'index.html'))) out.push(slug + '/index.html');
   if (existsSync(join(ROOT, NOT_FOUND))) out.push(NOT_FOUND);
   return out;
 }
@@ -148,7 +158,7 @@ function checkHome(html, where) {
     if (!/\sposter="[^"]+"/.test(v)) err(w + 'falta poster');
   });
 
-  // Cabecera: el póster del primer pantallazo se precarga con prioridad alta y las fuentes tienen preconnect.
+  // Cabecera: el póster del primer pantallazo se precarga con prioridad alta y las fuentes propias se precargan.
   const first = (/<img class="film__poster" src="([^"]*)"/.exec(html) || [])[1];
   const pre = /<link rel="preload" as="image" href="([^"]*)"[^>]*>/.exec(html);
   if (!pre) err(where + 'falta la precarga del póster de la cabecera (<link rel="preload" as="image">)');
@@ -156,7 +166,8 @@ function checkHome(html, where) {
     if (pre[1] !== first) err(where + `se precarga ${pre[1]} y el póster de la cabecera es ${first}`);
     if (!/fetchpriority="high"/.test(pre[0])) err(where + 'la precarga del póster debe llevar fetchpriority="high"');
   }
-  if (!/<link rel="preconnect" href="https:\/\/fonts\.gstatic\.com"/.test(html)) err(where + 'falta el preconnect de las fuentes');
+  if (!/<link rel="preload" href="\/assets\/fonts\/[^"]+\.woff2" as="font" type="font\/woff2" crossorigin>/.test(html)) err(where + 'falta la precarga de las fuentes propias');
+  if (/fonts\.(googleapis|gstatic)\.com/.test(html)) err(where + 'las fuentes se sirven desde la propia web: sobra la referencia a Google Fonts');
 
   // Descarga: botones con data-tienda, el script que los lleva a la tienda del móvil y las dos insignias en #descargar.
   if (!/\sdata-tienda[\s>=]/.test(html)) err(where + 'no hay ningún botón «Descargar» con data-tienda');
@@ -301,6 +312,20 @@ for (const page of pages()) {
       if (film.description && !attrTexts(html).includes(film.description)) err(where + 'VideoObject: la descripción no es la del vídeo de la página (aria-label)');
     }
     checkHome(html, where);
+  } else if (isPageTematica(page)) {
+    const wp = nodes.find((n) => n['@type'] === 'WebPage');
+    if (!wp) err(where + 'falta WebPage');
+    else {
+      for (const k of ['name', 'description', 'datePublished', 'dateModified', 'publisher']) if (!wp[k]) err(where + 'WebPage sin ' + k);
+      const h1Text = unesc(((/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html) || [])[1] || '').replace(/<[^>]+>/g, '')).trim();
+      if (wp.name !== h1Text) err(where + 'el nombre de WebPage no coincide con el <h1>');
+    }
+    if (!nodes.some((n) => n['@type'] === 'BreadcrumbList')) err(where + 'falta BreadcrumbList');
+    const faqNode = nodes.find((n) => n['@type'] === 'FAQPage');
+    if (faqNode) {
+      const vis = visibleText(html);
+      for (const q of faqNode.mainEntity || []) if (!vis.includes(q.name)) err(where + `la pregunta «${q.name}» del marcado no se ve en la página`);
+    }
   } else if (page !== 'blog/index.html' && !is404) {
     const post = nodes.find((n) => n['@type'] === 'BlogPosting');
     if (!post) err(where + 'falta BlogPosting');
@@ -376,6 +401,15 @@ try {
 } catch { /* sin git */ }
 
 // ── 2b. Recursos que ya no usa ninguna página ──
+// Las fuentes y demás archivos a los que apuntan los estilos (url(...) en la portada y en la hoja del blog) también cuentan.
+for (const css of ['index.html', 'assets/css/blog.css']) {
+  if (!existsSync(join(ROOT, css))) continue;
+  for (const m of read(css).matchAll(/url\((\/assets\/[^)'"\s]+)\)/g)) {
+    const rel = m[1].slice(1);
+    if (!existsSync(join(ROOT, rel))) err(`${css}: ${m[1]} no existe`);
+    used.add(rel);
+  }
+}
 {
   const walk = (rel) => readdirSync(join(ROOT, rel)).flatMap((f) => (statSync(join(ROOT, rel, f)).isDirectory() ? walk(rel + '/' + f) : [rel + '/' + f]));
   if (existsSync(join(ROOT, 'assets'))) for (const f of walk('assets')) if (!f.endsWith('.DS_Store') && !used.has(f)) warn(`${f}: ninguna página lo usa; bórralo si sobra`);
@@ -383,7 +417,7 @@ try {
 
 // ── 3. Textos fuente y llms.txt ──
 const textFiles = ['llms.txt', 'content/llms.txt'];
-if (existsSync(join(ROOT, 'content/blog'))) for (const f of readdirSync(join(ROOT, 'content/blog')).sort()) if (f.endsWith('.md')) textFiles.push('content/blog/' + f);
+for (const d of ['content/blog', 'content/paginas']) if (existsSync(join(ROOT, d))) for (const f of readdirSync(join(ROOT, d)).sort()) if (f.endsWith('.md')) textFiles.push(d + '/' + f);
 for (const f of textFiles) {
   if (!existsSync(join(ROOT, f))) { if (f === 'llms.txt') err('falta llms.txt'); continue; }
   const text = read(f);

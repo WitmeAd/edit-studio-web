@@ -1,6 +1,13 @@
 /* Generado por tools/build.mjs: no editar a mano.
    Primera parte: los estilos comunes de la portada (tramos «común» de index.html). Segunda: content/blog.css. */
 
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-italic-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 300 600; font-display: swap; src: url(/assets/fonts/fraunces-italic-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 600; font-display: swap; src: url(/assets/fonts/inter-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400 600; font-display: swap; src: url(/assets/fonts/inter-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
 /* ───────── Sistema: una sola hoja de variables ───────── */
 :root {
   --lienzo: #FBF8F3;
@@ -161,9 +168,12 @@ p { text-wrap: pretty; }
 @media (hover: hover) and (pointer: fine) { .colofon li a:hover { text-decoration-color: currentColor; } .tiendas a:hover { opacity: .82; } }
 @media (min-width: 700px) {
   .colofon__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-  .colofon__marca { grid-column: 1 / span 5; }
+  .colofon nav { grid-column: span 3; }
+}
+@media (min-width: 1100px) {
+  .colofon__marca { grid-column: 1 / span 4; }
   .colofon nav { grid-column: span 2; }
-  .colofon nav:first-of-type { grid-column: 7 / span 2; }
+  .colofon nav:first-of-type { grid-column: 5 / span 2; }
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -241,3 +251,16 @@ main > .cierre:last-child { margin-bottom: clamp(56px, 7vw, 104px); }
 main:has(> .nohay) { display: flex; flex-direction: column; }
 
 @media (prefers-reduced-motion: reduce) { .migas a { transition-duration: .01s !important; } }
+
+/* ───────── Páginas temáticas (armario digital, probador, profesionales…) ───────── */
+.pagina .rotulo { margin: 18px 0 0; color: var(--texto-2); }
+.pagina .post__cab .rotulo + h1 { margin-top: 0; }
+.pagina__film { margin: 0 auto; max-width: 22rem; }
+.pagina__film video { display: block; width: 100%; height: auto; border-radius: var(--r); background: var(--v1); }
+.post__body table { width: 100%; border-collapse: collapse; font-size: .9375rem; line-height: 1.45; }
+.post__body th, .post__body td { padding: 10px 8px; border-bottom: 1px solid var(--linea); text-align: left; vertical-align: top; }
+.post__body th { font-weight: 500; color: var(--texto-2); }
+.tabla { overflow-x: auto; }
+.cierre__btns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 20px; }
+.cierre--pro .tiendas { margin-top: clamp(20px, 2.4vw, 28px); }
+@media (max-width: 699.98px) { .post__body table { font-size: .8125rem; } .post__body th, .post__body td { padding: 8px 5px; } }

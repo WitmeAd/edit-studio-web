@@ -11,7 +11,7 @@ Datos básicos:
 - Empresa: WITME ADVERTISING S.L.
 - Web oficial: https://editstudio.app
 - Soporte: https://dashboard.editstudio.app/soporte
-- Página actualizada el 10 de noviembre de 2026.
+- Página actualizada el 15 de noviembre de 2026.
 
 ## Qué se puede hacer con édit
 
@@ -26,6 +26,16 @@ Datos básicos:
 
 - [édit profesionales](https://editstudio.app/#profesionales): el estudio digital, en web y en app, para asesoras de imagen, estilistas y personal shoppers. Reúne a las clientas y su seguimiento, la ficha de cada una con su colorimetría, su estilo y su armario, los looks y un dossier de estilismo en PDF para entregar.
 
+## Guías de édit
+
+- [Armario digital](https://editstudio.app/armario-digital/): Digitaliza tu armario con una foto tuya o prenda a prenda. édit reconoce cada prenda, le quita el fondo y la ordena por tipo, color y temporada.
+- [Probador virtual](https://editstudio.app/probador-virtual/): Elige un look hecho con tu ropa y míralo sobre una foto tuya antes de ponértelo. Así funciona el probador virtual de édit, en iPhone y Android.
+- [Colorimetría](https://editstudio.app/colorimetria/): Guarda tu estación de color en édit, entre las 12 estaciones, y tus looks la tienen en cuenta. Si aún no la conoces, una asesora de imagen te hace el análisis.
+- [Asesora de imagen online](https://editstudio.app/asesora-de-imagen-online/): Elige una asesora de imagen profesional en édit. Trabaja sobre la ropa que ya tienes y te envía sus looks y propuestas dentro de la app, estés donde estés.
+- [Profesionales](https://editstudio.app/profesionales/): édit Pro reúne a tus clientas, sus armarios, su colorimetría y tus looks en un sitio. Crea planes y entrega dossiers de estilismo en PDF con tu marca.
+- [Alternativas a Whering](https://editstudio.app/alternativas-a-whering/): Cinco alternativas a Whering para digitalizar tu armario y crear looks: édit, Acloset, Stylebook, Indyx y Cladwell. Qué ofrece cada una y para quién encaja.
+- [édit o Acloset](https://editstudio.app/edit-vs-acloset/): Comparamos édit y Acloset: cómo digitalizan el armario, probador virtual, colorimetría, asesoras de imagen, idiomas y modelo de pago.
+
 ## Preguntas frecuentes
 
 - [Preguntas frecuentes](https://editstudio.app/#preguntas): qué es édit, cómo se digitaliza el armario, si hace falta comprar ropa, cómo se crean los looks, cómo se prepara un viaje o un evento, cómo se trabaja con una asesora de imagen, qué es édit profesionales, cuánto cuesta y dónde se descarga.
@@ -39,6 +49,10 @@ Datos básicos:
 ## Blog
 
 - [Blog de édit](https://editstudio.app/blog/): ideas prácticas para ordenar el armario, crear looks y vestirse con más intención.
+- [Armario cápsula otoño-invierno con lo que ya tienes](https://editstudio.app/blog/armario-capsula-otono-invierno/): Cómo montar un armario cápsula de otoño-invierno sin comprar de cero. Cuántas prendas, cuáles elegir, cómo combinarlas y qué hacer con el resto de tu ropa.
+- [Qué es la colorimetría: las 12 estaciones explicadas](https://editstudio.app/blog/colorimetria-12-estaciones/): Qué estudia la colorimetría, cómo se pasa de cuatro a doce estaciones, qué rasgos definen cada una y cómo usar tu estación con la ropa que ya tienes.
+- [Cómo elegir asesora de imagen, también online](https://editstudio.app/blog/como-elegir-asesora-de-imagen/): Qué hace una asesora de imagen, qué preguntarle antes de empezar y en qué fijarte para elegir a la profesional que encaja contigo, en persona o a distancia.
+- [¿Qué me pongo para la oficina? Cinco fórmulas](https://editstudio.app/blog/que-ponerse-para-ir-a-la-oficina/): Cinco fórmulas de looks de oficina que encajan en casi cualquier armario y código de vestimenta, con trucos para no repetirte y ganar tiempo por la mañana.
 - [Cómo digitalizar tu armario paso a paso](https://editstudio.app/blog/como-digitalizar-tu-armario/): Guía práctica para pasar tu ropa al móvil sin agobios: por dónde empezar, cómo hacer las fotos y qué hacer con cada prenda para sacarle partido.
 - [¿Qué me pongo? Cómo crear looks con la ropa que ya tienes](https://editstudio.app/blog/crear-looks-con-la-ropa-que-ya-tienes/): Un método sencillo para combinar lo que ya está en tu armario, guardar los looks que funcionan y dejar resuelto el de mañana sin comprar nada.
 - [Cómo hacer la maleta por looks: del plan a la maleta](https://editstudio.app/blog/hacer-la-maleta-por-looks/): Deja de meter prendas sueltas. Planifica el viaje por días, decide los looks antes de salir y lleva solo lo que te vas a poner, sin «por si acaso».

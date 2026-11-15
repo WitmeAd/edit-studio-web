@@ -68,3 +68,16 @@ main > .cierre:last-child { margin-bottom: clamp(56px, 7vw, 104px); }
 main:has(> .nohay) { display: flex; flex-direction: column; }
 
 @media (prefers-reduced-motion: reduce) { .migas a { transition-duration: .01s !important; } }
+
+/* ───────── Páginas temáticas (armario digital, probador, profesionales…) ───────── */
+.pagina .rotulo { margin: 18px 0 0; color: var(--texto-2); }
+.pagina .post__cab .rotulo + h1 { margin-top: 0; }
+.pagina__film { margin: 0 auto; max-width: 22rem; }
+.pagina__film video { display: block; width: 100%; height: auto; border-radius: var(--r); background: var(--v1); }
+.post__body table { width: 100%; border-collapse: collapse; font-size: .9375rem; line-height: 1.45; }
+.post__body th, .post__body td { padding: 10px 8px; border-bottom: 1px solid var(--linea); text-align: left; vertical-align: top; }
+.post__body th { font-weight: 500; color: var(--texto-2); }
+.tabla { overflow-x: auto; }
+.cierre__btns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 20px; }
+.cierre--pro .tiendas { margin-top: clamp(20px, 2.4vw, 28px); }
+@media (max-width: 699.98px) { .post__body table { font-size: .8125rem; } .post__body th, .post__body td { padding: 8px 5px; } }
