@@ -63,7 +63,6 @@ Comportamiento que hay que conservar al tocar la página:
 | `tools/check.mjs` | Comprobaciones antes de publicar | |
 | `tools/og.html` | Origen de la imagen para compartir | Sí |
 | `.assetsignore` | Lo que el alojamiento no publica: `README.md`, `content/` y `tools/` | Sí |
-| `new/` | Prototipos de las propuestas de diseño, con `noindex` | No se toca |
 
 ### Por qué los estilos de la portada van en línea
 
@@ -181,7 +180,7 @@ El colofón de la portada enlaza a las páginas de producto (columna «Descubre�
 
 1. `node tools/build.mjs` y `node tools/check.mjs`: cero errores y cero avisos.
 2. Fechas: `homeUpdated` y, si la película de la portada es nueva, `heroVideo.published` en `tools/build.mjs` llevan el día en que se publica (salen en `sitemap.xml`, `llms.txt` y los datos estructurados). Lo mismo con `fecha:` en los artículos que se estrenen ese día. Después, `node tools/build.mjs`.
-3. `new/` guarda los prototipos de las propuestas, con `noindex`. Se publica con el resto mientras siga en el repositorio: para retirarla, bórrala o añade `new/` a `.assetsignore`.
+3. Los prototipos de diseño que estuvieron en `new/` se retiraron el 15/11/2026 (siguen en el historial de git).
 4. Tras publicar: comprueba que `https://editstudio.app/README.md` y una dirección inventada devuelven 404 (la segunda, con la página de `404.html`), y que los robots de los asistentes reciben un 200, por ejemplo `curl -A "PerplexityBot/1.0" -o /dev/null -w "%{http_code}" https://editstudio.app/`.
 
 ## Enlaces
