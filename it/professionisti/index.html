@@ -53,6 +53,9 @@
       <a href="/it/#indice">Cosa fa édit</a> <a href="/it/#a-tu-medida">Su misura</a> <a href="/it/#profesionales">Professionisti</a> <a href="/it/#preguntas">Domande</a>
     </nav>
     <div class="nav__fin">
+      <!-- idiomas-barra:inicio (generado por tools/build.mjs; no editar a mano) -->
+      <details class="idioma"><summary aria-label="Lingua: Italiano"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2 2.1 3 4.6 3 7.5s-1 5.4-3 7.5c-2-2.1-3-4.6-3-7.5s1-5.4 3-7.5z"/></svg><span>IT</span></summary><ul><li><a href="/profesionales/" hreflang="es" lang="es">Español</a></li><li><a href="/en/professionals/" hreflang="en" lang="en">English</a></li><li><a href="/fr/professionnels/" hreflang="fr" lang="fr">Français</a></li><li><a href="/it/professionisti/" hreflang="it" lang="it" aria-current="page">Italiano</a></li><li><a href="/pt/profissionais/" hreflang="pt" lang="pt">Português</a></li></ul></details>
+      <!-- idiomas-barra:fin -->
       <a href="https://dashboard.editstudio.app/login">Accedi</a> <a class="btn btn--sm" href="/it/#descargar" data-tienda>Scarica</a>
     </div>
   </div>
@@ -183,6 +186,12 @@
     : /Android/.test(n.userAgent) ? 'https://play.google.com/store/apps/details?id=edit.studio.app&hl=it' : '';
   if (t && !/bot|crawl|spider/i.test(n.userAgent)) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
 })(navigator);
+/* Selector de idioma de la barra: se cierra al tocar fuera o con Escape (sin JavaScript se abre y cierra con su botón). */
+(function (d) {
+  var close = function (e) { [].forEach.call(d.querySelectorAll('details.idioma[open]'), function (x) { if (!e || !x.contains(e.target)) x.open = false; }); };
+  d.addEventListener('click', close);
+  d.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})(document);
 </script>
 </body>
 </html>

@@ -122,17 +122,28 @@ p { text-wrap: pretty; }
 .marca i { font-style: italic; font-weight: 400; }
 .nav__links { display: none; gap: 28px; margin-inline: auto; font-size: .875rem; font-weight: 500; color: var(--texto-2); }
 .nav__links a { padding-block: 12px; transition: color .2s ease; }
-.nav__fin { margin-left: auto; display: flex; align-items: center; gap: clamp(12px, 2vw, 22px); font-size: .875rem; font-weight: 500; }
-.nav__fin > a:first-child { padding-block: 12px; color: var(--texto-2); transition: color .2s ease; }
-@media (hover: hover) and (pointer: fine) { .nav__links a:hover, .nav__fin > a:first-child:hover { color: var(--tinta); } }
+.nav__fin { position: relative; margin-left: auto; display: flex; align-items: center; gap: clamp(12px, 2vw, 22px); font-size: .875rem; font-weight: 500; }
+.nav__fin > a:not(.btn) { padding-block: 12px; white-space: nowrap; color: var(--texto-2); transition: color .2s ease; }
+/* Selector de idioma: globo (y el código del idioma desde 400 px) que despliega los cinco idiomas */
+/* El menú se alinea con el borde derecho del grupo de la barra, no con el globo: así no se sale de la pantalla en el móvil. */
+.idioma summary { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 44px; min-height: 44px; margin-inline: -8px; padding-inline: 8px; color: var(--texto-2); cursor: pointer; list-style: none; border-radius: 999px; transition: color .2s ease; }
+.idioma summary::-webkit-details-marker { display: none; }
+.idioma summary svg { width: 18px; height: 18px; flex: none; }
+.idioma summary span { display: none; font-size: .8125rem; letter-spacing: .06em; }
+@media (min-width: 400px) { .idioma summary span { display: inline; } }
+.idioma ul { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; min-width: 172px; padding: 6px; border: 1px solid var(--linea); border-radius: 16px; background: var(--lienzo); color: var(--tinta); box-shadow: 0 12px 32px rgba(43, 33, 24, .12); }
+.idioma li a { display: flex; align-items: center; min-height: 44px; padding-inline: 12px; border-radius: 10px; color: var(--texto-2); }
+.idioma li a[aria-current] { color: var(--tinta); background: var(--v2); }
+@media (hover: hover) and (pointer: fine) { .idioma summary:hover, .idioma li a:hover { color: var(--tinta); } .idioma li a:hover { background: var(--v2); } }
+@media (hover: hover) and (pointer: fine) { .nav__links a:hover, .nav__fin > a:not(.btn):hover { color: var(--tinta); } }
 @media (min-width: 900px) { .nav__links { display: flex; } .nav__fin { margin-left: 0; } }
 /* Sobre el mundo Pro la barra cambia de material: umber translúcido */
 .nav.is-osc { background: rgba(61, 47, 36, .95); color: var(--hueso); }
 .nav.is-osc .marca span { color: var(--terra-clara); }
-.nav.is-osc .nav__links, .nav.is-osc .nav__fin > a:first-child { color: var(--arena); }
+.nav.is-osc .nav__links, .nav.is-osc .nav__fin > a:not(.btn), .nav.is-osc .idioma summary { color: var(--arena); }
 .nav.is-osc .btn { background: var(--hueso); color: var(--tinta); }
 @media (hover: hover) and (pointer: fine) {
-  .nav.is-osc .nav__links a:hover, .nav.is-osc .nav__fin > a:first-child:hover { color: #fff; }
+  .nav.is-osc .nav__links a:hover, .nav.is-osc .nav__fin > a:not(.btn):hover, .nav.is-osc .idioma summary:hover { color: #fff; }
   .nav.is-osc .btn:hover { background: #fff; }
 }
 

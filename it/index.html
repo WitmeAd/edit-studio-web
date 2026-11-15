@@ -169,17 +169,28 @@ p { text-wrap: pretty; }
 .marca i { font-style: italic; font-weight: 400; }
 .nav__links { display: none; gap: 28px; margin-inline: auto; font-size: .875rem; font-weight: 500; color: var(--texto-2); }
 .nav__links a { padding-block: 12px; transition: color .2s ease; }
-.nav__fin { margin-left: auto; display: flex; align-items: center; gap: clamp(12px, 2vw, 22px); font-size: .875rem; font-weight: 500; }
-.nav__fin > a:first-child { padding-block: 12px; color: var(--texto-2); transition: color .2s ease; }
-@media (hover: hover) and (pointer: fine) { .nav__links a:hover, .nav__fin > a:first-child:hover { color: var(--tinta); } }
+.nav__fin { position: relative; margin-left: auto; display: flex; align-items: center; gap: clamp(12px, 2vw, 22px); font-size: .875rem; font-weight: 500; }
+.nav__fin > a:not(.btn) { padding-block: 12px; white-space: nowrap; color: var(--texto-2); transition: color .2s ease; }
+/* Selector de idioma: globo (y el código del idioma desde 400 px) que despliega los cinco idiomas */
+/* El menú se alinea con el borde derecho del grupo de la barra, no con el globo: así no se sale de la pantalla en el móvil. */
+.idioma summary { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 44px; min-height: 44px; margin-inline: -8px; padding-inline: 8px; color: var(--texto-2); cursor: pointer; list-style: none; border-radius: 999px; transition: color .2s ease; }
+.idioma summary::-webkit-details-marker { display: none; }
+.idioma summary svg { width: 18px; height: 18px; flex: none; }
+.idioma summary span { display: none; font-size: .8125rem; letter-spacing: .06em; }
+@media (min-width: 400px) { .idioma summary span { display: inline; } }
+.idioma ul { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; min-width: 172px; padding: 6px; border: 1px solid var(--linea); border-radius: 16px; background: var(--lienzo); color: var(--tinta); box-shadow: 0 12px 32px rgba(43, 33, 24, .12); }
+.idioma li a { display: flex; align-items: center; min-height: 44px; padding-inline: 12px; border-radius: 10px; color: var(--texto-2); }
+.idioma li a[aria-current] { color: var(--tinta); background: var(--v2); }
+@media (hover: hover) and (pointer: fine) { .idioma summary:hover, .idioma li a:hover { color: var(--tinta); } .idioma li a:hover { background: var(--v2); } }
+@media (hover: hover) and (pointer: fine) { .nav__links a:hover, .nav__fin > a:not(.btn):hover { color: var(--tinta); } }
 @media (min-width: 900px) { .nav__links { display: flex; } .nav__fin { margin-left: 0; } }
 /* Sobre el mundo Pro la barra cambia de material: umber translúcido */
 .nav.is-osc { background: rgba(61, 47, 36, .95); color: var(--hueso); }
 .nav.is-osc .marca span { color: var(--terra-clara); }
-.nav.is-osc .nav__links, .nav.is-osc .nav__fin > a:first-child { color: var(--arena); }
+.nav.is-osc .nav__links, .nav.is-osc .nav__fin > a:not(.btn), .nav.is-osc .idioma summary { color: var(--arena); }
 .nav.is-osc .btn { background: var(--hueso); color: var(--tinta); }
 @media (hover: hover) and (pointer: fine) {
-  .nav.is-osc .nav__links a:hover, .nav.is-osc .nav__fin > a:first-child:hover { color: #fff; }
+  .nav.is-osc .nav__links a:hover, .nav.is-osc .nav__fin > a:not(.btn):hover, .nav.is-osc .idioma summary:hover { color: #fff; }
   .nav.is-osc .btn:hover { background: #fff; }
 }
 /* común:fin */
@@ -364,7 +375,7 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
 .tira { padding-block: clamp(40px, 5vw, 72px) clamp(20px, 2.6vw, 36px); }
 .tira__head { display: grid; gap: 24px; margin-bottom: clamp(22px, 2.8vw, 40px); }
 .tira__head p { margin-top: 16px; max-width: 30rem; color: var(--texto-2); }
-.tira__meta { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.tira__meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 /* Tramo a la vista («01–04 de 08»): los dos números ruedan con el desplazamiento */
 .tira__count { display: flex; align-items: flex-end; gap: 12px; }
 .tira__nums { display: flex; align-items: flex-end; font-family: var(--serif); font-weight: 350; font-variation-settings: "opsz" 110; font-size: clamp(2.6rem, 11.6vw, 4.25rem); line-height: .8; letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; }
@@ -717,6 +728,9 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
       <a href="#indice">Cosa fa édit</a> <a href="#a-tu-medida">Su misura</a> <a href="#profesionales">Professionisti</a> <a href="#preguntas">Domande</a>
     </nav>
     <div class="nav__fin">
+      <!-- idiomas-barra:inicio (generado por tools/build.mjs; no editar a mano) -->
+      <details class="idioma"><summary aria-label="Lingua: Italiano"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2 2.1 3 4.6 3 7.5s-1 5.4-3 7.5c-2-2.1-3-4.6-3-7.5s1-5.4 3-7.5z"/></svg><span>IT</span></summary><ul><li><a href="/" hreflang="es" lang="es">Español</a></li><li><a href="/en/" hreflang="en" lang="en">English</a></li><li><a href="/fr/" hreflang="fr" lang="fr">Français</a></li><li><a href="/it/" hreflang="it" lang="it" aria-current="page">Italiano</a></li><li><a href="/pt/" hreflang="pt" lang="pt">Português</a></li></ul></details>
+      <!-- idiomas-barra:fin -->
       <a href="https://dashboard.editstudio.app/login">Accedi</a> <a class="btn btn--sm" href="#descargar" data-tienda>Scarica</a>
     </div>
   </div>
@@ -1212,6 +1226,12 @@ html.live .chapter__txt p { font-size: 1rem; line-height: 1.5; margin-top: 10px;
     : /Android/.test(n.userAgent) ? 'https://play.google.com/store/apps/details?id=edit.studio.app&hl=it' : '';
   if (t && !/bot|crawl|spider/i.test(n.userAgent)) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
 })(navigator);
+/* Selector de idioma de la barra: se cierra al tocar fuera o con Escape (sin JavaScript se abre y cierra con su botón). */
+(function (d) {
+  var close = function (e) { [].forEach.call(d.querySelectorAll('details.idioma[open]'), function (x) { if (!e || !x.contains(e.target)) x.open = false; }); };
+  d.addEventListener('click', close);
+  d.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})(document);
 /* tienda:fin */
 </script>
 

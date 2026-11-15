@@ -22,6 +22,7 @@ const REGIONS = [
   ['<!-- datos-estructurados:inicio', '<!-- datos-estructurados:fin -->'],
   ['<!-- blog:inicio', '<!-- blog:fin -->'],
   ['<!-- idiomas:inicio', '<!-- idiomas:fin -->'],
+  ['<!-- idiomas-barra:inicio', '<!-- idiomas-barra:fin -->'],
 ];
 
 const hasWords = (s) => /\p{L}{2,}/u.test(s.replace(/\{\/?\d+\/?\}/g, '').replace(/\bédit\b|\bé\b|\bdit\b/g, ''));

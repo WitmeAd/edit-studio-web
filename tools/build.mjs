@@ -137,6 +137,26 @@ function fillLangNav(html, lang, alts, where) {
   const nav = langNav(lang, alts);
   return html.slice(0, a) + IDIOMAS_INI + '\n' + (nav ? indent + nav + '\n' : '') + indent + html.slice(b);
 }
+// Selector de idioma de la barra: un <details> con el globo y el código del idioma, que despliega la misma página en
+// cada idioma (o su portada si no está traducida). Sin JavaScript también se abre y se cierra.
+const BARRA_INI = '<!-- idiomas-barra:inicio (generado por tools/build.mjs; no editar a mano) -->';
+const BARRA_FIN = '<!-- idiomas-barra:fin -->';
+const GLOBO = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2 2.1 3 4.6 3 7.5s-1 5.4-3 7.5c-2-2.1-3-4.6-3-7.5s1-5.4 3-7.5z"/></svg>';
+function langBar(lang, alts) {
+  const langs = activeLangs();
+  if (langs.length < 2) return '';
+  const ui = i18n(lang).ui;
+  const items = langs.map((l) => `<li><a href="${(alts && alts[l]) || homePath(l)}" hreflang="${LANG_INFO[l].hreflang}" lang="${LANG_INFO[l].hreflang}"${l === lang ? ' aria-current="page"' : ''}>${LANG_INFO[l].name}</a></li>`).join('');
+  return `<details class="idioma"><summary aria-label="${esc(ui.idioma)}: ${LANG_INFO[lang].name}">${GLOBO}<span>${lang.toUpperCase()}</span></summary><ul>${items}</ul></details>`;
+}
+function fillLangBar(html, lang, alts, where) {
+  const a = html.indexOf(BARRA_INI), b = html.indexOf(BARRA_FIN);
+  if (a === -1 || b < a) fail(`${where}: faltan las marcas «idiomas-barra:inicio» e «idiomas-barra:fin» de la barra`);
+  const indent = (/\n([ \t]*)$/.exec(html.slice(0, a)) || ['', ''])[1];
+  const bar = langBar(lang, alts);
+  return html.slice(0, a) + BARRA_INI + '\n' + (bar ? indent + bar + '\n' : '') + indent + html.slice(b);
+}
+
 // Pone (o renueva) los <link rel="alternate" hreflang> justo después de la canónica.
 function setHreflang(html, alts) {
   html = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">\n/g, '');
@@ -331,6 +351,7 @@ function buildHome(posts, alts) {
   let html = read('index.html');
   html = fillBlogList(html, posts.slice(0, SITE.homePosts), 'index.html');
   html = fillLangNav(html, 'es', alts, 'index.html');
+  html = fillLangBar(html, 'es', alts, 'index.html');
   html = setHreflang(html, alts);
   html = setHomeLd(html, 'es', 'index.html');
   write('index.html', html);
@@ -604,7 +625,8 @@ ${ogImageTags(image, alt, path)}${extra}<meta name="twitter:card" content="summa
 <meta name="twitter:image:alt" content="${esc(alt)}">
 `;
   // La barra es la de la portada; en el blog, su enlace queda marcado (como página actual en el índice; como sección en los artículos).
-  const nav = path && path.startsWith('/blog/') ? parts.nav.replace('<a href="/blog/">', `<a href="/blog/" aria-current="${path === '/blog/' ? 'page' : 'true'}">`) : parts.nav;
+  const navBase = fillLangBar(parts.nav, lang, alts, `${lang}: barra`);
+  const nav = path && path.startsWith('/blog/') ? navBase.replace('<a href="/blog/">', `<a href="/blog/" aria-current="${path === '/blog/' ? 'page' : 'true'}">`) : navBase;
   return `<!DOCTYPE html>
 <html lang="${LANG_INFO[lang].hreflang}">
 <head>
@@ -947,6 +969,7 @@ function buildLocalHome(lang, esHtml, pages, alts, routes) {
   html = fillBlogList(html, pages.map((p) => ({ ...p, title: p.short })), `${lang}/index.html`);
   html = localizeLinks(html, lang, routes);
   html = fillLangNav(html, lang, alts, `${lang}/index.html`);
+  html = fillLangBar(html, lang, alts, `${lang}/index.html`);
   html = setHreflang(html, alts);
   html = setHomeLd(html, lang, `${lang}/index.html`);
   LOCAL_HOME[lang] = html;

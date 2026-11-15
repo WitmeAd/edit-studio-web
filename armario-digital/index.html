@@ -57,6 +57,9 @@
       <a href="/blog/">Blog</a>
     </nav>
     <div class="nav__fin">
+      <!-- idiomas-barra:inicio (generado por tools/build.mjs; no editar a mano) -->
+      <details class="idioma"><summary aria-label="Idioma: Español"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2 2.1 3 4.6 3 7.5s-1 5.4-3 7.5c-2-2.1-3-4.6-3-7.5s1-5.4 3-7.5z"/></svg><span>ES</span></summary><ul><li><a href="/armario-digital/" hreflang="es" lang="es" aria-current="page">Español</a></li><li><a href="/en/digital-closet/" hreflang="en" lang="en">English</a></li><li><a href="/fr/dressing-virtuel/" hreflang="fr" lang="fr">Français</a></li><li><a href="/it/armadio-digitale/" hreflang="it" lang="it">Italiano</a></li><li><a href="/pt/guarda-roupa-digital/" hreflang="pt" lang="pt">Português</a></li></ul></details>
+      <!-- idiomas-barra:fin -->
       <a href="https://dashboard.editstudio.app/login">Iniciar sesión</a>
       <a class="btn btn--sm" href="/#descargar" data-tienda>Descargar</a>
     </div>
@@ -192,6 +195,12 @@
     : /Android/.test(n.userAgent) ? 'https://play.google.com/store/apps/details?id=edit.studio.app' : '';
   if (t && !/bot|crawl|spider/i.test(n.userAgent)) [].forEach.call(document.querySelectorAll('a[data-tienda]'), function (a) { a.href = t; });
 })(navigator);
+/* Selector de idioma de la barra: se cierra al tocar fuera o con Escape (sin JavaScript se abre y cierra con su botón). */
+(function (d) {
+  var close = function (e) { [].forEach.call(d.querySelectorAll('details.idioma[open]'), function (x) { if (!e || !x.contains(e.target)) x.open = false; }); };
+  d.addEventListener('click', close);
+  d.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})(document);
 </script>
 </body>
 </html>
