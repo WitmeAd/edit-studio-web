@@ -1,0 +1,127 @@
+<!--
+  Landing de édit Pro (/profesionales/ y sus traducciones). Se edita a mano, en español.
+  tools/build.mjs la mete en la página de content/paginas/profesionales.md (que pone título, descripción, ruta y
+  preguntas frecuentes) y la traduce con tools/i18n.mjs y el apartado «profesionales» de content/i18n/<idioma>.json
+  (si una frase ya está traducida en «portada», se usa esa). Si cambias un texto, el build dice qué falta traducir.
+  Marcas que rellena el build: el comentario «partners» (logos de content/partners.json) y el comentario «preguntas» (las del .md).
+-->
+<section class="lp-hero" aria-labelledby="t-lp">
+  <div class="lp-hero__bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="pro__top">
+      <span class="marca" role="img" aria-label="édit Pro"><span>é</span>dit<i>Pro</i></span>
+      <p class="sc">Para asesoras de imagen · en web y en app</p>
+    </div>
+    <div class="lp-hero__intro">
+      <h1 class="display" id="t-lp">Tu estudio digital de&nbsp;<em>estilismo</em>.</h1>
+      <div class="lp-hero__txt">
+        <p class="lp-hero__lead">Tus clientas, sus armarios, su colorimetría y tus looks, en un solo sitio. Para asesoras de imagen, estilistas y <span lang="en">personal shoppers</span>.</p>
+        <p class="lp-btns"><a class="btn btn--claro" href="https://dashboard.editstudio.app/signup?role=stylist">Crear mi cuenta de asesora</a> <a class="link" href="https://dashboard.editstudio.app/login">Ya tengo una cuenta</a></p>
+        <p class="lp-nota">Empiezas con una prueba gratis de édit&nbsp;Pro.</p>
+      </div>
+    </div>
+    <figure class="lp-hero__stage">
+      <video class="lp-video" data-ancho="/assets/video/pro-estudio.mp4" data-movil="/assets/video/pro-estudio-m.mp4" data-poster-ancho="/assets/video/pro-estudio.jpg" data-poster-movil="/assets/video/pro-estudio-m.jpg" poster="/assets/video/pro-estudio.jpg" width="1000" height="800" muted playsinline loop preload="none" aria-label="Vídeo sin sonido. El estudio de édit Pro en una tableta: el panel con todas tus clientas y su seguimiento; la ficha de una clienta, con su colorimetría, su estilo y su armario; y un dossier de estilismo en PDF listo para entregar."></video>
+    </figure>
+    <ol class="lp-caps" aria-label="Lo que enseña el vídeo">
+      <li>Todas tus clientas, de un vistazo.</li>
+      <li>Colorimetría, estilo y armario, juntos.</li>
+      <li>Entrégale un dossier de estilismo.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="lp-partners" aria-labelledby="t-partners">
+  <div class="wrap">
+    <h2 class="sc" id="t-partners">Escuelas y partners que trabajan con édit&nbsp;Pro</h2>
+    <!--partners-->
+  </div>
+</section>
+
+<section class="lp-respiro" aria-label="Por qué édit Pro">
+  <div class="wrap">
+    <p class="lp-cita">Fotos en WhatsApp, carpetas, hojas de cálculo y un PDF montado a mano. <em>édit&nbsp;Pro</em> lo junta en un estudio, para que tu tiempo vaya al&nbsp;criterio.</p>
+  </div>
+</section>
+
+<section class="section calma lp-pasos" aria-labelledby="t-pasos">
+  <div class="wrap">
+    <header class="cab">
+      <h2 class="h2" id="t-pasos">Así trabajas con cada&nbsp;<em>clienta</em>.</h2>
+      <p class="sc">De la ficha al dossier</p>
+    </header>
+    <ol class="lp-grid">
+      <li class="lp-paso">
+        <figure class="lp-media"><video class="lp-video" data-src="/assets/video/color.mp4" poster="/assets/video/color.jpg" width="720" height="900" muted playsinline loop preload="none" aria-label="Vídeo sin sonido. Pasan las paletas de las 12 estaciones hasta la de la clienta, Invierno Profundo, y después looks elegidos con esa paleta."></video></figure>
+        <p class="sc">01 · Su ficha</p>
+        <h3 class="h4">Su colorimetría y su estilo, a&nbsp;mano.</h3>
+        <p>Importas tu informe de colorimetría en PDF, imagen o Word y la ficha se rellena sola, pendiente de que la revises. Su arquetipo, sus documentos y sus fotos, en el mismo&nbsp;sitio.</p>
+      </li>
+      <li class="lp-paso">
+        <figure class="lp-media"><video class="lp-video" data-src="/assets/video/armario-foto.mp4" poster="/assets/video/armario-foto.jpg" width="720" height="900" muted playsinline loop preload="none" aria-label="Vídeo sin sonido. Una foto de cuerpo entero: édit reconoce la camiseta, la gabardina, el vaquero y los botines, y crea la ficha de cada prenda."></video></figure>
+        <p class="sc">02 · Su armario</p>
+        <h3 class="h4">Su armario, digitalizado sin&nbsp;esfuerzo.</h3>
+        <p>Subes fotos de su ropa, varias prendas por foto y también desde WhatsApp, o pegas el enlace de una tienda. Las prendas se recortan y se ordenan mientras sigues&nbsp;trabajando.</p>
+      </li>
+      <li class="lp-paso">
+        <figure class="lp-media"><video class="lp-video" data-src="/assets/video/probador.mp4" poster="/assets/video/probador.jpg" width="720" height="900" muted playsinline loop preload="none" aria-label="Vídeo sin sonido. Un look del armario en el móvil: «Probar en mí». Una modelo lleva el jersey de punto, el pantalón ancho, el bolso burdeos y los mocasines del look."></video></figure>
+        <p class="sc">03 · Sus looks</p>
+        <h3 class="h4">Looks que ves puestos antes de&nbsp;enviarlos.</h3>
+        <p>Eliges la prenda principal y el montador te enseña lo que falta para completar el look con su armario. Después lo ves sobre su foto, antes de&nbsp;enviárselo.</p>
+      </li>
+      <li class="lp-paso">
+        <figure class="lp-media lp-media--plano"><img src="/assets/img/app-plan-evento.webp" alt="Un plan para un evento en la app: los looks elegidos para cada momento." width="840" height="374" loading="lazy" decoding="async"></figure>
+        <p class="sc">04 · Planes y dossier</p>
+        <h3 class="h4">Planes y dossier, con tu&nbsp;marca.</h3>
+        <p>Organizas un viaje, una semana o un evento con sus looks y descargas un dossier de estilismo en PDF con tu marca, listo para enviárselo por WhatsApp o por&nbsp;correo.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section lp-dos" aria-labelledby="t-clienta">
+  <div class="wrap lp-dos__grid">
+    <div>
+      <h2 class="h2" id="t-clienta">Y ella lo recibe en&nbsp;<em>su app</em>.</h2>
+      <ul class="lp-lista">
+        <li><strong>Propuestas con respuesta.</strong> Tus looks, planes y recomendaciones le llegan al móvil, y te da su opinión sobre cada&nbsp;uno.</li>
+        <li><strong>Chat con su asesora.</strong> Habláis dentro de la app, sin pasar por&nbsp;WhatsApp.</li>
+        <li><strong>Sin coste para ella.</strong> La cuenta de la clienta que invitas va incluida contigo: no paga nada por trabajar&nbsp;contigo.</li>
+        <li><strong>En su idioma.</strong> La app está en español, inglés, francés, italiano y portugués, para clientas de cualquier&nbsp;país.</li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="h2" id="t-encuentran">Clientas nuevas que te&nbsp;<em>encuentran</em>.</h2>
+      <ul class="lp-lista">
+        <li><strong>Invita a las tuyas.</strong> Escribes su nombre y su email y le llega la&nbsp;invitación.</li>
+        <li><strong>Recibe solicitudes.</strong> Las usuarias de édit exploran asesoras, ven tu portfolio y te escriben. Te llegan a Mi estudio y decides si las&nbsp;aceptas.</li>
+        <li><strong>Tu perfil público.</strong> Tu presentación, tu portfolio y tus inspiraciones. Cuando tengas la agenda llena, dejas de recibir&nbsp;solicitudes.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section calma lp-precio" id="precio" aria-labelledby="t-precio">
+  <div class="wrap">
+    <div class="lp-plan">
+      <div class="lp-plan__cab">
+        <p class="sc">édit Pro</p>
+        <h2 class="h2" id="t-precio">Todo tu estudio, en un <em>plan</em>.</h2>
+        <p class="lp-plan__precio"><strong>49&nbsp;€</strong> <span>al mes</span></p>
+        <p class="lp-btns"><a class="btn" href="https://dashboard.editstudio.app/signup?role=stylist">Empezar la prueba gratis</a></p>
+        <p class="lp-nota">Tus clientas no pagan nada por trabajar contigo.</p>
+      </div>
+      <ul class="lp-incluye" aria-label="Lo que incluye édit Pro">
+        <li>Clientas, fichas y armarios digitales</li>
+        <li>Importación de informes de colorimetría</li>
+        <li>Montador de looks y prueba sobre la foto de tu clienta</li>
+        <li>Planes y dossier de estilismo en PDF con tu marca</li>
+        <li>Chat y propuestas en la app de tu clienta</li>
+        <li>Perfil público y solicitudes de clientas nuevas</li>
+        <li>Web y app para iPhone y Android, con la misma cuenta</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!--preguntas-->

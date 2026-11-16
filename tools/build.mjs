@@ -32,7 +32,7 @@ const SITE = {
   name: 'édit',
   // Fecha del último cambio de contenido de la portada (AAAA-MM-DD). Se actualiza a mano el día en que se publica; sale en
   // sitemap.xml, en llms.txt y en los datos estructurados. tools/check.mjs avisa si index.html ha cambiado después.
-  homeUpdated: '2026-11-15',
+  homeUpdated: '2026-11-16',
   // Otros nombres del sitio, por si el buscador no elige «édit» como nombre: el descriptivo y el dominio.
   alternateNames: ['édit studio', 'editstudio.app'],
   legalName: 'WITME ADVERTISING S.L.',
@@ -89,7 +89,7 @@ const UI_ES = {
 };
 const I18N = {};
 function i18n(lang) {
-  if (lang === 'es') return { ui: UI_ES, portada: null };
+  if (lang === 'es') return { ui: UI_ES, portada: null, plantillas: {} };
   if (!I18N[lang]) {
     const rel = `content/i18n/${lang}.json`;
     if (!existsSync(join(ROOT, rel))) return null;
@@ -97,7 +97,9 @@ function i18n(lang) {
     try { data = JSON.parse(read(rel)); } catch (e) { fail(`${rel}: JSON no válido (${e.message})`); }
     const ui = { ...data.ui };
     for (const k of Object.keys(UI_ES)) if (!ui[k]) fail(`${rel}: falta ui.${k}`);
-    I18N[lang] = { ui, portada: data.portada || {} };
+    // Plantillas de página (content/plantillas/<nombre>.html): sus traducciones van en un apartado con su nombre.
+    const plantillas = Object.fromEntries(Object.entries(data).filter(([k, v]) => !['ui', 'portada'].includes(k) && v && typeof v === 'object'));
+    I18N[lang] = { ui, portada: data.portada || {}, plantillas };
   }
   return I18N[lang];
 }
@@ -834,6 +836,7 @@ function loadPages(lang = 'es') {
       updated: meta.actualizado && meta.actualizado > meta.fecha ? meta.actualizado : meta.fecha,
       order: Number(meta.orden || 99),
       cta: meta.cta || (tipo === 'profesionales' ? 'pro' : 'app'),
+      plantilla: meta.plantilla ? plantillaPath(meta.plantilla, where) : null,
       video,
       faq: faqFromMarkdown(body, ui.preguntasFrecuentes),
       html: markdown(body, where),
@@ -843,6 +846,107 @@ function loadPages(lang = 'es') {
     });
   }
   return pages.sort((a, b) => a.order - b.order || (a.slug < b.slug ? -1 : 1));
+}
+
+// ───────────── Páginas con plantilla propia (landing de profesionales) ─────────────
+// content/plantillas/<nombre>.html: el cuerpo de la página, en español. El .md pone título, descripción, ruta, idiomas
+// y preguntas frecuentes. Se traduce como la portada, con el apartado <nombre> de content/i18n/<idioma>.json; si una
+// frase ya está traducida en «portada», vale esa.
+function plantillaPath(name, where) {
+  if (!/^[a-z0-9-]+$/.test(name)) fail(`${where}: plantilla no válida «${name}»`);
+  const rel = `content/plantillas/${name}.html`;
+  if (!existsSync(join(ROOT, rel))) fail(`${where}: no existe ${rel}`);
+  return name;
+}
+const plantillaEs = (name) => read(`content/plantillas/${name}.html`).replace(/^\s*<!--[\s\S]*?-->\s*/, '');
+
+function translatePlantilla(name, lang) {
+  const src = plantillaEs(name);
+  if (lang === 'es') return src;
+  const where = `content/i18n/${lang}.json («${name}»)`;
+  const { portada, plantillas } = i18n(lang);
+  const own = plantillas[name] || {};
+  const missing = [];
+  const used = new Set();
+  let html;
+  try {
+    html = i18nTransform(src, (s) => {
+      const t = typeof own[s] === 'string' && own[s].trim() ? own[s] : portada[s];
+      if (typeof t !== 'string' || !t.trim()) { missing.push(s); return s; }
+      if (own[s]) used.add(s);
+      return t;
+    });
+  } catch (e) { fail(`${where}: ${e.message}`); }
+  if (missing.length) fail(`${where}: faltan ${missing.length} traducciones; la primera: «${missing[0]}». La lista está en content/i18n/_catalogo-${name}.json`);
+  const stale = Object.keys(own).filter((k) => !used.has(k));
+  if (stale.length) console.warn(`AVISO: ${where}: ${stale.length} traducciones ya no corresponden a ningún texto (la primera: «${stale[0]}»)`);
+  return html;
+}
+
+// Logos de escuelas y partners (content/partners.json). Sin logo todavía, su nombre en la tipografía de la marca.
+function partnersHtml() {
+  const rel = 'content/partners.json';
+  if (!existsSync(join(ROOT, rel))) return '';
+  let list;
+  try { list = JSON.parse(read(rel)); } catch (e) { fail(`${rel}: JSON no válido (${e.message})`); }
+  if (!Array.isArray(list) || !list.length) return '';
+  const items = list.map((x, i) => {
+    if (!x || !x.nombre) fail(`${rel}: al partner ${i + 1} le falta «nombre»`);
+    if (x.logo && !existsSync(join(ROOT, x.logo.replace(/^\//, '')))) fail(`${rel}: no existe el logo ${x.logo}`);
+    if (x.url && !/^https:\/\//.test(x.url)) fail(`${rel}: la web de ${x.nombre} tiene que empezar por https://`);
+    const size = x.logo && !x.logo.endsWith('.svg') ? imageSize(join(ROOT, x.logo.replace(/^\//, ''))) : null;
+    const inner = x.logo
+      ? `<img src="${esc(x.logo)}" alt="${esc(x.nombre)}"${size ? ` width="${size.width}" height="${size.height}"` : ''} loading="lazy" decoding="async">`
+      : `<span class="lp-partner__nombre">${esc(x.nombre)}</span>`;
+    return `      <li class="lp-partner">${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${inner}</a>` : inner}</li>`;
+  });
+  return `<ul class="lp-partners__lista">\n${items.join('\n')}\n    </ul>`;
+}
+
+function faqSection(p) {
+  if (!p.faq.length) return '';
+  const ui = i18n(p.lang).ui;
+  return `<section class="section calma lp-faq" id="preguntas-frecuentes" aria-labelledby="t-faq">
+  <div class="wrap lp-faq__grid">
+    <h2 class="h2" id="t-faq">${esc(ui.preguntasFrecuentes)}</h2>
+    <div class="faq">
+${p.faq.map((f) => `      <details>\n        <summary><h3>${esc(f.q)}</h3></summary>\n        <p class="faq-a">${esc(f.a)}</p>\n      </details>`).join('\n')}
+    </div>
+  </div>
+</section>`;
+}
+
+// Vídeos de la landing: cada uno empieza al verse y se para al salir de la pantalla; en móvil, el clip vertical.
+// Con «reducir movimiento», no arrancan solos: se quedan en su fotograma con los controles.
+const LP_SCRIPT = `<script>
+(function () {
+  var movil = matchMedia('(max-width: 719.98px)').matches;
+  var quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var vids = document.querySelectorAll('.lp-video');
+  vids.forEach(function (v) {
+    var src = v.dataset.src || (movil ? v.dataset.movil : v.dataset.ancho);
+    var poster = movil ? v.dataset.posterMovil : v.dataset.posterAncho;
+    if (poster) v.poster = poster;
+    if (movil && v.dataset.movil) { v.width = 720; v.height = 900; }
+    v.dataset.lista = src;
+    if (quieto) { v.src = src; v.controls = true; }
+  });
+  if (quieto || !('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var v = e.target;
+      if (e.isIntersecting) { if (!v.getAttribute('src')) v.src = v.dataset.lista; var p = v.play(); if (p && p.catch) p.catch(function () { v.controls = true; }); }
+      else v.pause();
+    });
+  }, { rootMargin: '120px 0px' });
+  vids.forEach(function (v) { io.observe(v); });
+})();
+</script>`;
+
+function landingBody(p) {
+  return translatePlantilla(p.plantilla, p.lang)
+    .replace('<!--partners-->', partnersHtml())
+    .replace('<!--preguntas-->', faqSection(p));
 }
 
 // Cierre para profesionales: alta como asesora en la web, y la app en las tiendas.
@@ -905,6 +1009,27 @@ function renderPage(p, pages, posts, alts, routes) {
     ? `<figure class="pagina__film"><video src="${p.video.file}" poster="${p.video.poster}" width="${p.video.width}" height="${p.video.height}" muted playsinline loop controls preload="none" aria-label="${esc(ui.videoSinSonido)} ${esc(p.video.alt)}"></video></figure>\n`
     : '';
   const more = lang === 'es' ? [...others, ...posts.slice(0, 2)] : others;
+  const masSobre = `<section class="section calma mas" aria-labelledby="t-mas">
+  <div class="wrap">
+    <header class="cab"><h2 class="h2" id="t-mas">${em(ui.masSobre)}</h2></header>
+${notas(more.map((o) => ({ ...o, title: o.short || o.title })), { tag: 'h3', meta: (o, i) => dos(i + 1), indent: '    ' })}
+  </div>
+</section>`;
+  if (p.plantilla) {
+    // El <h1> lo pone la plantilla: el nombre de la página en los datos estructurados es ese.
+    const body = landingBody(p);
+    const h1 = plain((/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(body) || [])[1] || '');
+    if (!h1) fail(`content/plantillas/${p.plantilla}.html: falta el <h1>`);
+    ld[0].name = ld[0].headline = h1;
+    return head({ title: p.seoTitle, description: p.description, path: p.path, type: 'website', image: SITE.ogImage, ld, lang, alts }) + localizeLinks(`
+<main id="contenido" tabindex="-1" class="lp">
+${body}
+${masSobre}
+</main>
+${LP_SCRIPT}
+
+`, lang, routes) + foot(lang, alts);
+  }
   return head({ title: p.seoTitle, description: p.description, path: p.path, type: 'website', image: SITE.ogImage, ld, lang, alts }) + localizeLinks(`
 <main id="contenido" tabindex="-1">
 <article class="post pagina calma">
@@ -1045,6 +1170,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const routesOf = (l) => Object.fromEntries([['/', homePath(l)], ...pagesBy.es.map((e) => [e.path, altsOf(e.slug)[l]]).filter(([, to]) => to)]);
   const esHtml = buildHome(posts, homeAlts);
   write('content/i18n/_catalogo-portada.json', JSON.stringify(i18nCatalog(esHtml).map((u) => u.src), null, 1) + '\n');
+  for (const name of [...new Set(pagesBy.es.map((p) => p.plantilla).filter(Boolean))]) {
+    write(`content/i18n/_catalogo-${name}.json`, JSON.stringify(i18nCatalog(plantillaEs(name)).map((u) => u.src), null, 1) + '\n');
+  }
   for (const l of langs) if (l !== 'es') buildLocalHome(l, esHtml, pagesBy[l], homeAlts, routesOf(l));
   buildCss();
   buildBlog(posts);
